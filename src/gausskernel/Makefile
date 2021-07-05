@@ -244,6 +244,11 @@ endif
 
 LIBS += -l${PROTOBUF_LIB_NAME}
 
+################################################################################
+# zeromq
+################################################################################
+LIBS += -lzmq
+
 ##################################################################################
 # kerberos
 ##################################################################################
@@ -645,6 +650,8 @@ endif
 	cp -d $(HLL_LIB_PATH)/libhll* '$(DESTDIR)$(libdir)/'
 	cp -d $(CJSON_LIB_PATH)/libcjson* '$(DESTDIR)$(libdir)/'
 	cp $(GRPC_LIB_PATH)/* '$(DESTDIR)$(libdir)/'
+	cp -r $(ZEROMQ_LIB_PATH)/* '$(DESTDIR)$(libdir)/'
+	cp -r $(PROTOBUF_LIB_PATH)/* '$(DESTDIR)$(libdir)/'
 ifneq (, $(findstring __USE_NUMA, $(CFLAGS)))
 	cp $(NUMA_LIB_PATH)/* '$(DESTDIR)$(libdir)/'
 endif

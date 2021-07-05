@@ -325,6 +325,47 @@ static void check_boot_name(char** argv, int argc, char** name_thread)
         case WalWriterProcess:
             *name_thread = "WalWriter";
             break;
+
+        //ADDBY NEU
+        case EpochLogicalTimerManagerProcess:
+            *name_thread = "EpochLogicalTimerManager";
+            break;
+        case EpochPhysicalTimerManagerProcess:
+            *name_thread = "EpochPhysicalTimerManager";
+            break;
+        case EpochMessageCacheManagerProcess:
+            *name_thread = "EpochMessageCacheManager";
+            break;
+        case EpochMessageManagerProcess:
+            *name_thread = "EpochMessageManager";
+            break;
+        case EpochNotifyProcess:
+            *name_thread = "EpochNotify";
+            break;
+        case EpochPackProcess:
+            *name_thread = "EpochPack";
+            break;
+        case EpochSendProcess:
+            *name_thread = "EpochSend";
+            break;
+        case EpochListenProcess:
+            *name_thread = "EpochListen";
+            break;
+        case EpochUnseriProcess:
+            *name_thread = "EpochUnseri";
+            break;
+        case EpochUnpackProcess:
+            *name_thread = "EpochUnpack";
+            break;
+        case EpochMergeProcess:
+            *name_thread = "EpochMerge";
+            break;
+        case EpochCommitProcess:
+            *name_thread = "EpochCommit";
+            break;
+
+
+
         case WalWriterAuxiliaryProcess:
             *name_thread = "WalWriterAuxiliary";
             break;

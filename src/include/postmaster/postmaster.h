@@ -15,6 +15,19 @@
 
 #include "replication/replicainternal.h"
 
+//ADDBY NEU
+#include <string>
+#include<vector>
+extern std::vector<std::string> kServerIp;
+extern std::vector<uint64_t> port;
+extern uint64_t kServerNum, kPortNum, kPackageNum, kNotifyThreadNum, kPackThreadNum, kSendThreadNum, 
+    kListenThreadNum, kUnseriThreadNum, kUnpackThreadNum, kMergeThreadNum, kCommitThreadNum, kSendMessageNum, kReceiveMessageNum, 
+    kSleepTime, local_ip_index;
+extern std::vector<std::string> send_ips;
+extern std::vector<uint64_t>send_ports;
+
+
+
 extern THR_LOCAL bool comm_client_bind;
 
 extern bool FencedUDFMasterMode;

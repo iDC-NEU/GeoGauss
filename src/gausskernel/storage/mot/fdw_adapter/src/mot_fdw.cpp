@@ -2377,3 +2377,43 @@ uint16_t MOTDateToStr(uintptr_t src, char* destBuf, size_t len)
     securec_check_ss(erc, "\0", "\0");
     return erc;
 }
+
+//ADDBY NEU
+void FDWEpochLogicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index){
+    EpochLogicalTimerManagerThreadMain(id, kServerIp, kServerNum, kPackageNum, kNotifyThreadNum, kPackThreadNum, local_ip_index);
+}
+void FDWEpochPhysicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index, uint64_t kSleepTime){
+    EpochPhysicalTimerManagerThreadMain(id, kServerIp, kServerNum, kPackageNum, kNotifyThreadNum, kPackThreadNum, local_ip_index, kSleepTime);
+}
+void FDWEpochMessageCacheManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index){
+    // EpochMessageCacheManagerThreadMain(id, kServerIp, kServerNum, kPackageNum, kNotifyThreadNum, kPackThreadNum, local_ip_index);
+}
+void FDWEpochMessageManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index){
+    
+}
+
+void FDWEpochNotifyThreadMain(uint64_t id){
+    // EpochNotifyThreadMain(id);
+}
+void FDWEpochPackThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index){
+    // EpochPackThreadMain(id, kServerIp, kServerNum, kPackageNum, kNotifyThreadNum, kPackThreadNum, local_ip_index);
+}
+void FDWEpochSendThreadMain(uint64_t id, std::string kServerIp, uint64_t port){
+    // EpochSendThreadMain(id, kServerIp, port);
+}
+
+void FDWEpochListenThreadMain(uint64_t id, uint64_t port){
+    // EpochListenThreadMain(id, port);
+}
+void FDWEpochUnseriThreadMain(uint64_t id){
+    // EpochUnseriThreadMain(id);
+}
+void FDWEpochUnpackThreadMain(uint64_t id){
+    // EpochUnpackThreadMain(id);
+}
+void FDWEpochMergeThreadMain(uint64_t id){
+    // EpochMergeThreadMain(id);
+}
+void FDWEpochCommitThreadMain(uint64_t id){
+    // EpochCommitThreadMain(id);
+}

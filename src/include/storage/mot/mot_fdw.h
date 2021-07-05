@@ -82,4 +82,21 @@ extern void MOTCheckpointFetchUnlock();
 extern bool MOTCheckpointExists(
     char* ctrlFilePath, size_t ctrlLen, char* checkpointDir, size_t checkpointLen, size_t& basePathLen);
 
+
+#include <string>
+#include <vector>
+//ADDBY NEU
+extern void FDWEpochLogicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageMessageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index);
+extern void FDWEpochPhysicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageMessageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index, uint64_t kSleepTime);
+extern void FDWEpochMessageCacheManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageMessageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index);
+extern void FDWEpochMessageManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageMessageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index);
+extern void FDWEpochNotifyThreadMain(uint64_t id);
+extern void FDWEpochPackThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageMessageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index);
+extern void FDWEpochSendThreadMain(uint64_t id, std::string kServerIp, uint64_t port);
+extern void FDWEpochListenThreadMain(uint64_t id, uint64_t port);
+extern void FDWEpochUnseriThreadMain(uint64_t id);
+extern void FDWEpochUnpackThreadMain(uint64_t id);
+extern void FDWEpochMergeThreadMain(uint64_t id);
+extern void FDWEpochCommitThreadMain(uint64_t id);
+
 #endif  // MOT_FDW_H

@@ -2797,6 +2797,79 @@ typedef struct knl_t_barrier_creator_context {
     volatile sig_atomic_t shutdown_requested;
 } knl_t_barrier_creator_context;
 
+//ADDBY NEU
+typedef struct knl_t_epochlogicaltimermanager_context {
+    volatile sig_atomic_t got_SIGHUP;
+    volatile sig_atomic_t shutdown_requested;
+    int epochlogicaltimermanager_id;
+} knl_t_epochlogicaltimermanager_context;
+
+typedef struct knl_t_epochphysicaltimermanager_context {
+    volatile sig_atomic_t got_SIGHUP;
+    volatile sig_atomic_t shutdown_requested;
+    int epochphysicaltimermanager_id;
+} knl_t_epochphysicaltimermanager_context;
+
+typedef struct knl_t_epochmessagecachemanager_context {
+    volatile sig_atomic_t got_SIGHUP;
+    volatile sig_atomic_t shutdown_requested;
+    int epochmessagecachemanager_id;
+} knl_t_epochmessagecachemanager_context;
+
+typedef struct knl_t_epochmessagemanager_context {
+    volatile sig_atomic_t got_SIGHUP;
+    volatile sig_atomic_t shutdown_requested;
+    int epochmessagemanager_id;
+} knl_t_epochmessagemanager_context;
+
+typedef struct knl_t_epochnotify_context {
+    volatile sig_atomic_t got_SIGHUP;
+    volatile sig_atomic_t shutdown_requested;
+    int epochnotify_id;
+} knl_t_epochnotify_context;
+
+typedef struct knl_t_epochpack_context {
+    volatile sig_atomic_t got_SIGHUP;
+    volatile sig_atomic_t shutdown_requested;
+    int epochpack_id;
+} knl_t_epochpack_context;
+
+typedef struct knl_t_epochsend_context {
+    volatile sig_atomic_t got_SIGHUP;
+    volatile sig_atomic_t shutdown_requested;
+    int epochsend_id;
+} knl_t_epochsend_context;
+
+typedef struct knl_t_epochlisten_context {
+    volatile sig_atomic_t got_SIGHUP;
+    volatile sig_atomic_t shutdown_requested;
+    int epochlisten_id;
+} knl_t_epochlisten_context;
+
+typedef struct knl_t_epochunseri_context {
+    volatile sig_atomic_t got_SIGHUP;
+    volatile sig_atomic_t shutdown_requested;
+    int epochunseri_id;
+} knl_t_epochunseri_context;
+
+typedef struct knl_t_epochunpack_context {
+    volatile sig_atomic_t got_SIGHUP;
+    volatile sig_atomic_t shutdown_requested;
+    int epochunpack_id;
+} knl_t_epochunpack_context;
+
+typedef struct knl_t_epochmerge_context {
+    volatile sig_atomic_t got_SIGHUP;
+    volatile sig_atomic_t shutdown_requested;
+    int epochmerge_id;
+} knl_t_epochmerge_context;
+
+typedef struct knl_t_epochcommit_context {
+    volatile sig_atomic_t got_SIGHUP;
+    volatile sig_atomic_t shutdown_requested;
+    int epochcommit_id;
+} knl_t_epochcommit_context;
+
 /* thread context. */
 typedef struct knl_thrd_context {
     knl_thread_role role;
@@ -2906,6 +2979,21 @@ typedef struct knl_thrd_context {
     knl_t_mot_context mot_cxt;
 #endif
     knl_t_barrier_creator_context barrier_creator_cxt;
+
+    //ADDBY NEU
+    knl_t_epochlogicaltimermanager_context epochlogicaltimermanager_cxt;
+    knl_t_epochphysicaltimermanager_context epochphysicaltimermanager_cxt;
+    knl_t_epochmessagecachemanager_context epochmessagecachemanager_cxt;
+    knl_t_epochmessagemanager_context epochmessagemanager_cxt;
+    knl_t_epochnotify_context epochnotify_cxt;
+    knl_t_epochpack_context epochpack_cxt;
+    knl_t_epochsend_context epochsend_cxt;
+    knl_t_epochlisten_context epochlisten_cxt;
+    knl_t_epochunseri_context epochunseri_cxt;
+    knl_t_epochunpack_context epochunpack_cxt;
+    knl_t_epochmerge_context epochmerge_cxt;
+    knl_t_epochcommit_context epochcommit_cxt;
+
 } knl_thrd_context;
 
 #ifdef ENABLE_MOT

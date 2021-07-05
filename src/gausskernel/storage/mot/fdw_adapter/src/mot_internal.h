@@ -41,9 +41,203 @@
 #include "bitmapset.h"
 #include "storage/mot/jit_exec.h"
 #include "mot_match_index.h"
+#include <atomic>
+#include <unordered_set>
+#include <unordered_map>
+#include <functional>
+#include <mutex>
+#include <condition_variable>
+#include "pthread.h"
+#include "table.h"
+#include "row.h"
+#include "neu_concurrency_tools/blockingconcurrentqueue.h"
+#include "neu_concurrency_tools/blocking_mpmc_queue.h"
+#include "neu_concurrency_tools/ThreadPool.h"
+#include <vector>
+#include <typeinfo>
 
 using std::map;
 using std::string;
+
+extern void EpochLogicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index);
+extern void EpochPhysicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index, uint64_t kSleepTime);
+extern void EpochMessageManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index);
+extern void EpochMessageCacheManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index);
+
+extern void EpochNotifyThreadMain(uint64_t id);
+extern void EpochPackThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index);
+extern void EpochSendThreadMain(uint64_t id, std::string kServerIp, uint64_t port);
+
+extern void EpochListenThreadMain(uint64_t id, uint64_t port);
+extern void EpochUnseriThreadMain(uint64_t id);
+extern void EpochUnpackThreadMain(uint64_t id);
+extern void EpochMergeThreadMain(uint64_t id);
+extern void EpochCommitThreadMain(uint64_t id);
+
+
+class LockCV{//只能提供给两个线程同时访问，多个线程同时访问同一个mutex需要多个创建多个unique对这个mutex进行上锁set_lock()，不能使用同一个unique_lock，否则会出现死锁(同一unique的多次调用)
+private:
+public:
+    std::mutex _mutex;
+    std::condition_variable _cv;
+
+    template <class _Predicate>
+    void wait_self_generate_lock(std::unique_lock<std::mutex>& _lock, _Predicate _Pred) {
+        _lock.lock();
+        while(!_Pred()){
+            _cv.wait( _lock);
+        }
+        _lock.unlock();
+    }
+
+    void wait_self_generate_lock(std::unique_lock<std::mutex>& _lock) { 
+        _lock.lock();
+        _cv.wait( _lock);
+        _lock.unlock();
+    }
+
+    void notify_all_self_generate_lock(std::unique_lock<std::mutex>& _lock){
+        _lock.lock();
+        _cv.notify_all();
+        _lock.unlock();
+    }
+
+    void notify_one_self_generate_lock(std::unique_lock<std::mutex>& _lock){
+        _lock.lock();
+        _cv.notify_one();
+        _lock.unlock();
+    }
+
+    void notify_all_without_lock(){
+        _cv.notify_all();
+    }
+
+    void notify_one_without_lock(){
+        _cv.notify_one();
+    }
+    
+    void set_lock(std::unique_lock<std::mutex>& _lock){
+        std::unique_lock<std::mutex> lock_tmp(_mutex);
+        _lock = std::move(lock_tmp);
+        _lock.unlock();
+    }
+
+
+    template <class _Predicate>
+    void wait(_Predicate _Pred) {
+        std::unique_lock<std::mutex> lock(_mutex);
+        while(!_Pred()){
+            _cv.wait( lock);
+        }
+    }
+
+    void wait() {
+        std::unique_lock<std::mutex> lock(_mutex);
+        _cv.wait( lock);
+    }
+
+    void notify_all(){
+        std::unique_lock<std::mutex> lock(_mutex);
+        _cv.notify_all();
+    }
+
+    void notify_one(){
+        std::unique_lock<std::mutex> lock(_mutex);
+        _cv.notify_one();
+    }
+
+};
+
+
+namespace aum {
+    class SpinLock {
+        public:
+        // constructors
+        SpinLock() = default;
+
+        SpinLock(const SpinLock &) = delete;            // non construction-copyable
+        SpinLock &operator=(const SpinLock &) = delete; // non copyable
+
+        // Modifiers
+        void lock() {
+            while (lock_.test_and_set(std::memory_order_acquire));
+        }
+
+        void unlock() { lock_.clear(std::memory_order_release); }
+
+        private:
+        std::atomic_flag lock_ = ATOMIC_FLAG_INIT;
+    };
+
+    template<typename key, typename value>
+    class atomic_unordered_map {
+    public:
+        typedef typename std::unordered_map<key, value>::iterator map_iterator;
+        typedef typename std::unordered_map<key, value>::size_type size_type;
+    public:
+
+        void insert(key k, value v, bool &result, 
+                        std::function<bool(const value &, const value &)> cmp = [](const value& o, const value& n){return n < o;}) 
+        {
+            lock.lock();
+            map_iterator iter = map.find(k);
+            if (iter == map.end()) {
+                map[k] = v;
+                result = true;
+            } else {
+                // cmp(oldCsn, newCsn) -> bool
+                // if true: 新的事务覆盖旧的事务
+                if (cmp(iter->second, v)) {
+                    map[k] = v;
+                    result = true;
+                } else {
+                    result = false;
+                }
+            }
+            lock.unlock();
+        }
+
+
+        void remove(key k, value v) 
+        {
+            lock.lock();
+            map_iterator iter = map.find(k);
+            if (iter != map.end()) {
+                if (iter->second == v) {//if the abort txn has insert row and has not been modifid by ohters then remove it from map;or keep it 
+                    map.erase(iter);
+                } 
+            }
+            lock.unlock();
+        }
+
+        void clear() {
+            lock.lock();
+            map.clear();
+            lock.unlock();
+        }
+
+        void unsafe_clear() { map.clear(); }
+
+        map_iterator unsafe_begin() {
+            return map.begin();
+        }
+
+        map_iterator unsafe_end() {
+            return map.end();
+        }
+
+        map_iterator unsafe_find(key k) {
+            return map.find(k);
+        }
+
+        size_type size() { return map.size(); }
+
+    private:
+        std::unordered_map<key, value> map;
+        aum::SpinLock lock;
+    };
+}; // NAMESPACE AUM
+
 
 #define MIN_DYNAMIC_PROCESS_MEMORY 2 * 1024 * 1024
 
@@ -322,6 +516,200 @@ private:
     static void TimestampToMOTKey(MOT::Column* col, Oid datumType, Datum datum, uint8_t* data);
     static void TimestampTzToMOTKey(MOT::Column* col, Oid datumType, Datum datum, uint8_t* data);
     static void DateToMOTKey(MOT::Column* col, Oid datumType, Datum datum, uint8_t* data);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+private:
+    typedef typename std::unordered_set<MOT::TxnManager *> TxnBuffer;
+    typedef typename TxnBuffer::iterator TxnBufferIter;
+    static TxnBuffer txnBuffer;
+    
+    static bool timerStop;
+    //ADDBY NUE Concurrency
+    static volatile bool remoteExeced;
+    static volatile uint64_t logical_epoch;
+    static volatile uint64_t physical_epoch;
+
+    static std::atomic<uint64_t> unpackaged_message_num;
+    static std::atomic<uint64_t> unpackaged_txn_num;
+    static std::atomic<uint64_t> merged_txn_num;
+    static std::atomic<uint64_t> committed_txn_num;
+    
+
+public:
+    static LockCV lock_cv_epoch_cache;
+    static LockCV lock_cv_epoch_manager;
+    static std::vector<LockCV*> lock_cv_pack_threads;
+    static std::vector<LockCV*> lock_cv_notify_threads;
+
+    // static std::vector<moodycamel::BlockingConcurrentQueue<std::shared_ptr<LockCV>>*> lock_cv_txn_queues;
+    // static std::vector<moodycamel::BlockingConcurrentQueue<std::shared_ptr<LockCV>>*> lock_cv_commit_queues;
+
+    static std::vector<BlockingMPMCQueue<std::shared_ptr<LockCV>>*> lock_cv_txn_queues;
+    static std::vector<BlockingMPMCQueue<std::shared_ptr<LockCV>>*> lock_cv_commit_queues;
+
+    static std::vector<std::atomic<uint64_t>*> local_txn_counters;//本地事务执行阶段计数器
+
+    static std::atomic<uint64_t> local_txn_counter;
+
+    static std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>> local_change_set_txn_num_ptr1;
+    static std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>> local_change_set_txn_num_ptr2;
+    
+
+    static aum::atomic_unordered_map<std::string, uint64_t> insertSet;
+
+    static uint64_t kPackageNum, kPackThreadNum, kNotifyThreadNum;
+
+    static void setTimerStop(bool value) {timerStop = value;}
+
+    static bool isTimerStop() {return timerStop;}
+
+    static bool isRemoteExeced() {return remoteExeced;}
+
+    static void setRemoteExeced(bool value) {remoteExeced = value;}
+
+    static bool add(MOT::TxnManager *txnManager){return txnBuffer.insert(txnManager).second;}
+
+    static void clear(){txnBuffer.clear();}
+
+    static TxnBufferIter begin(){return txnBuffer.begin();}
+
+    static TxnBufferIter end(){return txnBuffer.end();}
+    
+
+    static void IncLocalTxnCounter(uint64_t index){ (*(local_txn_counters[index])).fetch_add(10000000001);}// 10 000 000 000 + 1
+    
+    static void DecLocalTxnCounter(uint64_t index){ (*(local_txn_counters[index])).fetch_sub(10000000001);}
+
+    static void DecExeCounter(uint64_t index){ (*(local_txn_counters[index])).fetch_sub(1);}
+
+    static uint64_t GetExeCounter(uint64_t index) {return (*(local_txn_counters[index])).load() - (((*(local_txn_counters[index])).load() / 1e10) * 1e10);}
+
+    static void DecComCounter(uint64_t index){ (*(local_txn_counters[index])).fetch_sub(10000000000);}
+
+    static uint64_t GetComCounter(uint64_t index) {return (*(local_txn_counters[index])).load();}
+
+    static bool IsExcCounterEqualZero(){
+        for(auto &i : local_txn_counters){
+            if( ( (*i) - (((*i)/ 1e10) * 1e10) ) != 0) return false;
+        }
+        return true;
+    }
+
+    static bool IsComCounterEqualZero(){
+        for(auto &i : local_txn_counters){
+            if((*i) != 0) return false;
+        }
+        return true;
+    }
+
+    static void IncLocalTxnCounter(){ local_txn_counter.fetch_add(10000000001);}// 10 000 000 000 + 1
+    
+    static void DecLocalTxnCounter(){ local_txn_counter.fetch_sub(10000000001);}
+
+    static void DecExeCounter(){ local_txn_counter.fetch_sub(1);}
+
+    static uint64_t GetExeCounter() {return  local_txn_counter.load() - ((local_txn_counter.load() / 1e10) * 1e10);}
+
+    static void DecComCounter(){ local_txn_counter.fetch_sub(10000000000);}
+
+    static uint64_t GetComCounter() {return local_txn_counter.load();}
+
+
+
+    static void AddUnpackagedMessageNum(){unpackaged_message_num.fetch_add(1);}
+
+    static uint64_t GetUnpackagedMessageNum(){return unpackaged_message_num.load();}
+
+    static void AddUnpackagedTxnNum(){unpackaged_txn_num.fetch_add(1);}
+
+    static uint64_t GetUnpackagedTxnNum(){return unpackaged_txn_num.load();}
+
+    static void AddMergedTxnNum(){merged_txn_num.fetch_add(1);}
+
+    static uint64_t GetMergedTxnNum(){return merged_txn_num.load();}
+
+    static void AddCommittedTxnNum(){committed_txn_num.fetch_add(1);}
+
+    static uint64_t GetCommittedTxnNum(){return committed_txn_num.load();}
+
+
+    static void SetPhysicalEpoch(int value){physical_epoch = value;}
+
+    static void AddPhysicalEpoch(){physical_epoch++;}
+
+    static uint64_t GetPhysicalEpoch(){return physical_epoch;}
+
+    static void SetLogicalEpoch(int value){logical_epoch = value;}
+
+    static void AddLogicalEpoch(){logical_epoch++;}
+
+    static uint64_t GetLogicalEpoch(){return logical_epoch;}
+
+
+    static uint64_t GetLocalChangeSetNum(uint64_t index){ return (*local_change_set_txn_num_ptr1)[index]->load(); }
+
+    static void IncLocalChangeSetNum(uint64_t index){ 
+        // Assert(index < kPackageMessageThreadNum); 
+        // Assert(local_change_set_txn_num_ptr1 != nullptr);
+        // Assert((*local_change_set_txn_num_ptr1).size() > index);
+        // Assert((*local_change_set_txn_num_ptr1)[index] != nullptr);
+        // Assert(typeid(*((*local_change_set_txn_num_ptr1)[index])) == typeid(std::atomic<uint64_t>));//使用typeid 开启了 RTTI 后续需关闭
+        (*((*local_change_set_txn_num_ptr1)[index])) ++; 
+    }
+
+    static void DecLocalChangeSetNum(uint64_t index){
+        (*((*local_change_set_txn_num_ptr1)[index])) --; 
+    }
+
+
+    static void LogicalEndEpochClear(){
+        unpackaged_message_num = 0;
+        unpackaged_txn_num = 0;
+        merged_txn_num = 0;
+        committed_txn_num = 0;
+        insertSet.clear();
+        remoteExeced = false;
+    }
+
+    static void InsertRowToSet(MOT::TxnManager* txnMa, uint64_t index);
+
+
 };
 
 inline MOT::TxnManager* GetSafeTxn(const char* callerSrc, ::TransactionId txn_id = 0)

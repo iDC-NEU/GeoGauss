@@ -342,6 +342,24 @@ typedef enum {
     BgWriterProcess,
     CheckpointerProcess,
     WalWriterProcess,
+
+    //ADDBY NEU
+    EpochLogicalTimerManagerProcess,
+    EpochPhysicalTimerManagerProcess,
+    EpochMessageCacheManagerProcess,
+    EpochMessageManagerProcess,
+
+    EpochNotifyProcess,
+    EpochPackProcess,
+    EpochSendProcess,
+
+    EpochListenProcess,
+    EpochUnseriProcess,
+    EpochUnpackProcess,
+    EpochMergeProcess,
+    EpochCommitProcess,
+
+
     WalWriterAuxiliaryProcess,
     WalReceiverProcess,
     WalRcvWriterProcess,
@@ -404,7 +422,19 @@ typedef enum {
 #define AmTsCompactionAuxiliaryProcess() (t_thrd.bootstrap_cxt.MyAuxProcType == TsCompactionAuxiliaryProcess)
 #define AmPageRedoWorker() (t_thrd.bootstrap_cxt.MyAuxProcType == PageRedoProcess)
 
-
+//ADDBY NEU
+#define AmEpochLogicalTimerManagerProcess() (t_thrd.bootstrap_cxt.MyAuxProcType == EpochLogicalTimerManagerProcess)
+#define AmEpochPhysicalTimerManagerProcess() (t_thrd.bootstrap_cxt.MyAuxProcType == EpochPhysicalTimerManagerProcess)
+#define AmEpochMessageCacheManagerProcess() (t_thrd.bootstrap_cxt.MyAuxProcType == EpochMessageCacheManagerProcess)
+#define AmEpochMessageManagerProcess() (t_thrd.bootstrap_cxt.MyAuxProcType == EpochMessageManagerProcess)
+#define AmEpochNotifyProcess() (t_thrd.bootstrap_cxt.MyAuxProcType == EpochNotifyProcess)
+#define AmEpochPackProcess() (t_thrd.bootstrap_cxt.MyAuxProcType == EpochPackProcess)
+#define AmEpochSendProcess() (t_thrd.bootstrap_cxt.MyAuxProcType == EpochSendProcess)
+#define AmEpochListenProcess() (t_thrd.bootstrap_cxt.MyAuxProcType == EpochListenProcess)
+#define AmEpochUnseriProcess() (t_thrd.bootstrap_cxt.MyAuxProcType == EpochUnseriProcess)
+#define AmEpochUnpackProcess() (t_thrd.bootstrap_cxt.MyAuxProcType == EpochUnpackProcess)
+#define AmEpochMergeProcess() (t_thrd.bootstrap_cxt.MyAuxProcType == EpochMergeProcess)
+#define AmEpochCommitProcess() (t_thrd.bootstrap_cxt.MyAuxProcType == EpochCommitProcess)
 
 
 /*****************************************************************************

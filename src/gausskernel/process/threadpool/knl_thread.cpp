@@ -962,6 +962,93 @@ static void knl_t_walwriter_init(knl_t_walwriter_context* walwriter_cxt)
     walwriter_cxt->shutdown_requested = false;
 }
 
+//ADDBY NEU
+static void knl_t_epochlogicaltimermanager_init(knl_t_epochlogicaltimermanager_context* epochlogicaltimermanager_cxt)
+{
+    epochlogicaltimermanager_cxt->got_SIGHUP = false;
+    epochlogicaltimermanager_cxt->shutdown_requested = false;
+    epochlogicaltimermanager_cxt->epochlogicaltimermanager_id = -1;
+}
+
+static void knl_t_epochphysicaltimermanager_init(knl_t_epochphysicaltimermanager_context* epochphysicaltimermanager_cxt)
+{
+    epochphysicaltimermanager_cxt->got_SIGHUP = false;
+    epochphysicaltimermanager_cxt->shutdown_requested = false;
+    epochphysicaltimermanager_cxt->epochphysicaltimermanager_id = -1;
+}
+
+static void knl_t_epochmessagecachemanager_init(knl_t_epochmessagecachemanager_context* epochmessagecachemanager_cxt)
+{
+    epochmessagecachemanager_cxt->got_SIGHUP = false;
+    epochmessagecachemanager_cxt->shutdown_requested = false;
+    epochmessagecachemanager_cxt->epochmessagecachemanager_id = -1;
+}
+
+static void knl_t_epochmessagemanager_init(knl_t_epochmessagemanager_context* epochmessagemanager_cxt)
+{
+    epochmessagemanager_cxt->got_SIGHUP = false;
+    epochmessagemanager_cxt->shutdown_requested = false;
+    epochmessagemanager_cxt->epochmessagemanager_id = -1;
+}
+
+static void knl_t_epochnotify_init(knl_t_epochnotify_context* epochnotify_cxt)
+{
+    epochnotify_cxt->got_SIGHUP = false;
+    epochnotify_cxt->shutdown_requested = false;
+    epochnotify_cxt->epochnotify_id = -1;
+}
+
+static void knl_t_epochpack_init(knl_t_epochpack_context* epochpack_cxt)
+{
+    epochpack_cxt->got_SIGHUP = false;
+    epochpack_cxt->shutdown_requested = false;
+    epochpack_cxt->epochpack_id = -1;
+}
+
+static void knl_t_epochsend_init(knl_t_epochsend_context* epochsend_cxt)
+{
+    epochsend_cxt->got_SIGHUP = false;
+    epochsend_cxt->shutdown_requested = false;
+    epochsend_cxt->epochsend_id = -1;
+}
+
+static void knl_t_epochlisten_init(knl_t_epochlisten_context* epochlisten_cxt)
+{
+    epochlisten_cxt->got_SIGHUP = false;
+    epochlisten_cxt->shutdown_requested = false;
+    epochlisten_cxt->epochlisten_id = -1;
+}
+
+static void knl_t_epochunseri_init(knl_t_epochunseri_context* epochunseri_cxt)
+{
+    epochunseri_cxt->got_SIGHUP = false;
+    epochunseri_cxt->shutdown_requested = false;
+    epochunseri_cxt->epochunseri_id = -1;
+}
+
+static void knl_t_epochunpack_init(knl_t_epochunpack_context* epochunpack_cxt)
+{
+    epochunpack_cxt->got_SIGHUP = false;
+    epochunpack_cxt->shutdown_requested = false;
+    epochunpack_cxt->epochunpack_id = -1;
+}
+
+static void knl_t_epochmerge_init(knl_t_epochmerge_context* epochmerge_cxt)
+{
+    epochmerge_cxt->got_SIGHUP = false;
+    epochmerge_cxt->shutdown_requested = false;
+    epochmerge_cxt->epochmerge_id = -1;
+}
+
+static void knl_t_epochcommit_init(knl_t_epochcommit_context* epochcommit_cxt)
+{
+    epochcommit_cxt->got_SIGHUP = false;
+    epochcommit_cxt->shutdown_requested = false;
+    epochcommit_cxt->epochcommit_id = -1;
+}
+
+
+
 static void knl_t_walwriterauxiliary_init(knl_t_walwriterauxiliary_context *const walwriterauxiliary_cxt)
 {
     walwriterauxiliary_cxt->got_SIGHUP = false;
@@ -1579,6 +1666,21 @@ void knl_thread_init(knl_thread_role role)
 #ifdef ENABLE_MOT
     knl_t_mot_init(&t_thrd.mot_cxt);
 #endif
+
+    //ADDBY NEU
+    knl_t_epochlogicaltimermanager_init(&t_thrd.epochlogicaltimermanager_cxt);
+    knl_t_epochphysicaltimermanager_init(&t_thrd.epochphysicaltimermanager_cxt);
+    knl_t_epochmessagecachemanager_init(&t_thrd.epochmessagecachemanager_cxt);
+    knl_t_epochmessagemanager_init(&t_thrd.epochmessagemanager_cxt);
+    knl_t_epochnotify_init(&t_thrd.epochnotify_cxt);
+    knl_t_epochpack_init(&t_thrd.epochpack_cxt);
+    knl_t_epochsend_init(&t_thrd.epochsend_cxt);
+    knl_t_epochlisten_init(&t_thrd.epochlisten_cxt);
+    knl_t_epochunseri_init(&t_thrd.epochunseri_cxt);
+    knl_t_epochunpack_init(&t_thrd.epochunpack_cxt);
+    knl_t_epochmerge_init(&t_thrd.epochmerge_cxt);
+    knl_t_epochcommit_init(&t_thrd.epochcommit_cxt);
+
 }
 
 __attribute__ ((__used__)) knl_thrd_context *GetCurrentThread()

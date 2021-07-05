@@ -169,6 +169,21 @@ typedef struct knl_g_pid_context {
     ThreadId* CommReceiverPIDS;
     ThreadId TsCompactionPID;
     ThreadId TsCompactionAuxiliaryPID;
+
+    //ADDBY NEU
+    ThreadId* EpochLogicalTimerManagerPIDS;
+    ThreadId* EpochPhysicalTimerManagerPIDS;
+    ThreadId* EpochMessageCacheManagerPIDS;
+    ThreadId* EpochMessageManagerPIDS;
+    ThreadId* EpochNotifyPIDS;
+    ThreadId* EpochPackPIDS;
+    ThreadId* EpochSendPIDS;
+    ThreadId* EpochListenPIDS;
+    ThreadId* EpochUnseriPIDS;
+    ThreadId* EpochUnpackPIDS;
+    ThreadId* EpochMergePIDS;
+    ThreadId* EpochCommitPIDS;
+
 } knl_g_pid_context;
 
 typedef struct knl_g_stat_context {
