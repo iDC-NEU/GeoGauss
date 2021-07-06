@@ -2277,8 +2277,11 @@ std::vector<LockCV*> MOTAdaptor::lock_cv_notify_threads;
 
 // std::vector<moodycamel::BlockingConcurrentQueue<std::shared_ptr<LockCV>>*> MOTAdaptor::lock_cv_txn_queues;
 // std::vector<moodycamel::BlockingConcurrentQueue<std::shared_ptr<LockCV>>*> MOTAdaptor::lock_cv_commit_queues;
-std::vector<BlockingMPMCQueue<std::shared_ptr<LockCV>>*> MOTAdaptor::lock_cv_txn_queues;
-std::vector<BlockingMPMCQueue<std::shared_ptr<LockCV>>*> MOTAdaptor::lock_cv_commit_queues;
+// std::vector<BlockingMPMCQueue<std::shared_ptr<LockCV>>*> MOTAdaptor::lock_cv_txn_queues;
+// std::vector<BlockingMPMCQueue<std::shared_ptr<LockCV>>*> MOTAdaptor::lock_cv_commit_queues;
+
+std::vector<LockCV*> MOTAdaptor::lock_cv_txn_v;
+std::vector<LockCV*> MOTAdaptor::lock_cv_commit_v;
 
 std::vector<std::atomic<uint64_t>*> MOTAdaptor::local_txn_counters;
 std::atomic<uint64_t> MOTAdaptor::local_txn_counter;
@@ -2288,7 +2291,7 @@ std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>> MOTAdaptor:
 
 aum::atomic_unordered_map<std::string, uint64_t> MOTAdaptor::insertSet;
 
-uint64_t MOTAdaptor::kPackageNum = 1, MOTAdaptor::kPackThreadNum = 1, MOTAdaptor::kNotifyThreadNum = 1;
+uint64_t MOTAdaptor::kPackageNum = 1, MOTAdaptor::kNotifyNum = 1, MOTAdaptor::kPackThreadNum = 1, MOTAdaptor::kNotifyThreadNum = 1;
 
 
 
@@ -2339,12 +2342,12 @@ uint64_t GetSleeptime(uint64_t kSleepTime);
 // void SwitchLocalChangeSetPtr(uint64_t kPackageMessageThreadNum);
 // void InsertRowToLocalSet(MOT::TxnManager * txMan, uint64_t index);
 
-void EpochLogicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index);
-void EpochPhysicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index, uint64_t kSleepTime);
+void EpochLogicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index);
+void EpochPhysicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index, uint64_t kSleepTime);
 
 
 
-void InitEpochTimerManager(uint64_t kPackageNum){
+void InitEpochTimerManager(uint64_t kPackageNum, uint64_t kNotifyNum){
     //==========Logical=============创建唤醒线程池以及唤醒队列
     // notify_threads_pool_ptr = new ThreadPool(kPackageNum);// kPackageNum * 2
     for(int i = 0; i < (int)kPackageNum; i++){
@@ -2354,16 +2357,22 @@ void InitEpochTimerManager(uint64_t kPackageNum){
         // MOTAdaptor::lock_cv_txn_queues.push_back(std::move(new moodycamel::BlockingConcurrentQueue<std::shared_ptr<LockCV>>()));//阻塞本地事务队列
         // MOTAdaptor::lock_cv_commit_queues.push_back(std::move(new moodycamel::BlockingConcurrentQueue<std::shared_ptr<LockCV>>()));//阻塞提交事务队列
 
-        MOTAdaptor::lock_cv_txn_queues.push_back(std::move(new BlockingMPMCQueue<std::shared_ptr<LockCV>>()));//阻塞本地事务队列
-        MOTAdaptor::lock_cv_commit_queues.push_back(std::move(new BlockingMPMCQueue<std::shared_ptr<LockCV>>()));//阻塞提交事务队列
+        // MOTAdaptor::lock_cv_txn_queues.push_back(std::move(new BlockingMPMCQueue<std::shared_ptr<LockCV>>()));//阻塞本地事务队列
+        // MOTAdaptor::lock_cv_commit_queues.push_back(std::move(new BlockingMPMCQueue<std::shared_ptr<LockCV>>()));//阻塞提交事务队列
 
-        // MOTAdaptor::lock_cv_pack_threads.push_back(std::move(new LockCV()));//阻塞打包线程
-        // MOTAdaptor::lock_cv_notify_threads.push_back(std::move(new LockCV()));//阻塞唤醒线程
+        MOTAdaptor::lock_cv_pack_threads.push_back(std::move(new LockCV()));//阻塞打包线程
+        MOTAdaptor::lock_cv_notify_threads.push_back(std::move(new LockCV()));//阻塞唤醒线程
     
+    }
+
+    for(int i = 0; i < (int)kNotifyNum; i++){//阻塞唤醒
+        MOTAdaptor::lock_cv_commit_v.push_back(new LockCV());
+        MOTAdaptor::lock_cv_txn_v.push_back(new LockCV());
     }
 
     //==========Physical============创建监听和发送本地write_set线程池和监听队列
     MOTAdaptor::kPackageNum = kPackageNum;
+    MOTAdaptor::kNotifyNum = kNotifyNum;
     MOTAdaptor::SetPhysicalEpoch(1);
     MOTAdaptor::SetLogicalEpoch(1);
 
@@ -2393,7 +2402,7 @@ void InitEpochTimerManager(uint64_t kPackageNum){
 
 
 
-void EpochLogicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index){
+void EpochLogicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index){
     SetCPU();
     MOT_LOG_INFO("线程开始工作 EpochLogicalTimerManagerThreadMain ");
     uint64_t kReceiveMessageNum = (kServerNum - 1) * kPackageNum;
@@ -2450,11 +2459,11 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kS
 }
 
 
-void EpochPhysicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index, uint64_t kSleepTime){
+void EpochPhysicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index, uint64_t kSleepTime){
     SetCPU();
     MOT_LOG_INFO("线程开始工作 EpochPhysicalTimerManagerThreadMain ");
 
-    InitEpochTimerManager(kPackageNum);
+    InitEpochTimerManager(kPackageNum, kNotifyNum);
 
     while(!MOTAdaptor::isTimerStop()){
         MOT_LOG_INFO("====开始一个Physiacal Epoch physical epoch：%llu logical epoch %llu ",MOTAdaptor::GetPhysicalEpoch(), MOTAdaptor::GetLogicalEpoch());
@@ -2492,3 +2501,4 @@ uint64_t GetSleeptime(uint64_t kSleepTime){
         return kSleepTime - sleep_time;
     } 
 }
+

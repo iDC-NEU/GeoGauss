@@ -225,7 +225,7 @@ void EpochLogicalTimerManagerMain(void)
             /* Normal exit from the epochlogicaltimermanager is here */
             proc_exit(0); /* done */
         }
-        FDWEpochLogicalTimerManagerThreadMain(id, kServerIp, kServerNum, kPackageNum, kNotifyThreadNum, kPackThreadNum, local_ip_index);
+        FDWEpochLogicalTimerManagerThreadMain(id, kServerIp, kServerNum, kPackageNum, kNotifyNum, kPackThreadNum, kNotifyThreadNum, local_ip_index);
 
         pgstat_report_activity(STATE_IDLE, NULL);
     }

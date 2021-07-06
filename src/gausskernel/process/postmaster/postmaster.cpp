@@ -247,7 +247,7 @@
 #include<vector>
 std::vector<std::string> kServerIp;
 std::vector<uint64_t> port; // ServerNum * PackageNum
-uint64_t kServerNum = 1, kPortNum = 1, kPackageNum = 1, kNotifyThreadNum = 1, kPackThreadNum = 1, kSendThreadNum = 1, 
+uint64_t kServerNum = 1, kPortNum = 1, kPackageNum = 1, kNotifyNum = 1, kNotifyThreadNum = 1, kPackThreadNum = 1, kSendThreadNum = 1, 
     kListenThreadNum = 1, kUnseriThreadNum = 1, kUnpackThreadNum = 1, kMergeThreadNum = 1, kCommitThreadNum = 1, kSendMessageNum = 1, kReceiveMessageNum = 1, 
     kSleepTime = 1, local_ip_index = 0;
 std::vector<std::string> send_ips;
@@ -11206,46 +11206,46 @@ void GenerateEpochThreads(){
     if (g_instance.pid_cxt.EpochPhysicalTimerManagerPIDS == NULL) {
         ereport(FATAL, (errmsg("communicator palloc EpochPhysicalTimerManagerPIDS mempry failed")));
     }
-    // g_instance.pid_cxt.EpochMessageCacheManagerPIDS = (ThreadId*)palloc( 1 * sizeof(ThreadId));
-    // if (g_instance.pid_cxt.EpochMessageCacheManagerPIDS == NULL) {
-    //     ereport(FATAL, (errmsg("communicator palloc EpochMessageCacheManagerPIDS mempry failed")));
-    // }
-    // g_instance.pid_cxt.EpochMessageManagerPIDS = (ThreadId*)palloc( 1 * sizeof(ThreadId));
-    // if (g_instance.pid_cxt.EpochMessageManagerPIDS == NULL) {
-    //     ereport(FATAL, (errmsg("communicator palloc EpochMessageManagerPIDS mempry failed")));
-    // }
-    // g_instance.pid_cxt.EpochPackPIDS = (ThreadId*)palloc( (kPackageMessageThreadNum * 2) * sizeof(ThreadId));
-    // if (g_instance.pid_cxt.EpochPackPIDS == NULL) {
-    //     ereport(FATAL, (errmsg("communicator palloc EpochPackPIDS mempry failed")));
-    // }
-    // g_instance.pid_cxt.EpochNotifyPIDS = (ThreadId*)palloc( (kPackageMessageThreadNum * 4) * sizeof(ThreadId));
-    // if (g_instance.pid_cxt.EpochNotifyPIDS == NULL) {
-    //     ereport(FATAL, (errmsg("communicator palloc EpochNotifyPIDS mempry failed")));
-    // }
-    // g_instance.pid_cxt.EpochSendPIDS = (ThreadId*)palloc( kMessageSendThreadNum * sizeof(ThreadId));
-    // if (g_instance.pid_cxt.EpochSendPIDS == NULL) {
-    //     ereport(FATAL, (errmsg("communicator palloc EpochSendPIDS mempry failed")));
-    // }
-    // g_instance.pid_cxt.EpochListenPIDS = (ThreadId*)palloc( kMessageListenThreadNum * sizeof(ThreadId));
-    // if (g_instance.pid_cxt.EpochListenPIDS == NULL) {
-    //     ereport(FATAL, (errmsg("communicator palloc EpochListenPIDS mempry failed")));
-    // }
-    // g_instance.pid_cxt.EpochUnseriPIDS = (ThreadId*)palloc( kUnserializeThreadNum * sizeof(ThreadId));
-    // if (g_instance.pid_cxt.EpochUnseriPIDS == NULL) {
-    //     ereport(FATAL, (errmsg("communicator palloc EpochUnseriPIDS mempry failed")));
-    // }
-    // g_instance.pid_cxt.EpochUnpackPIDS = (ThreadId*)palloc( kUnpackageMessageThreadNum * sizeof(ThreadId));
-    // if (g_instance.pid_cxt.EpochUnpackPIDS == NULL) {
-    //     ereport(FATAL, (errmsg("communicator palloc EpochUnpackPIDS mempry failed")));
-    // }
-    // g_instance.pid_cxt.EpochMergePIDS = (ThreadId*)palloc( kMergeThreadNum * sizeof(ThreadId));
-    // if (g_instance.pid_cxt.EpochMergePIDS == NULL) {
-    //     ereport(FATAL, (errmsg("communicator palloc EpochMergePIDS mempry failed")));
-    // }
-    // g_instance.pid_cxt.EpochCommitPIDS = (ThreadId*)palloc( kCommitThreadNum * sizeof(ThreadId));
-    // if (g_instance.pid_cxt.EpochCommitPIDS == NULL) {
-    //     ereport(FATAL, (errmsg("communicator palloc EpochCommitPIDS mempry failed")));
-    // }
+    g_instance.pid_cxt.EpochMessageCacheManagerPIDS = (ThreadId*)palloc( 1 * sizeof(ThreadId));
+    if (g_instance.pid_cxt.EpochMessageCacheManagerPIDS == NULL) {
+        ereport(FATAL, (errmsg("communicator palloc EpochMessageCacheManagerPIDS mempry failed")));
+    }
+    g_instance.pid_cxt.EpochMessageManagerPIDS = (ThreadId*)palloc( 1 * sizeof(ThreadId));
+    if (g_instance.pid_cxt.EpochMessageManagerPIDS == NULL) {
+        ereport(FATAL, (errmsg("communicator palloc EpochMessageManagerPIDS mempry failed")));
+    }
+    g_instance.pid_cxt.EpochPackPIDS = (ThreadId*)palloc( kPackThreadNum * sizeof(ThreadId));
+    if (g_instance.pid_cxt.EpochPackPIDS == NULL && kPackThreadNum != 0) {
+        ereport(FATAL, (errmsg("communicator palloc EpochPackPIDS mempry failed")));
+    }
+    g_instance.pid_cxt.EpochNotifyPIDS = (ThreadId*)palloc( kNotifyThreadNum * sizeof(ThreadId));
+    if (g_instance.pid_cxt.EpochNotifyPIDS == NULL && kNotifyThreadNum != 0) {
+        ereport(FATAL, (errmsg("communicator palloc EpochNotifyPIDS mempry failed")));
+    }
+    g_instance.pid_cxt.EpochSendPIDS = (ThreadId*)palloc( kSendThreadNum * sizeof(ThreadId));
+    if (g_instance.pid_cxt.EpochSendPIDS == NULL && kSendThreadNum != 0) {
+        ereport(FATAL, (errmsg("communicator palloc EpochSendPIDS mempry failed")));
+    }
+    g_instance.pid_cxt.EpochListenPIDS = (ThreadId*)palloc( kListenThreadNum * sizeof(ThreadId));
+    if (g_instance.pid_cxt.EpochListenPIDS == NULL && kListenThreadNum != 0) {
+        ereport(FATAL, (errmsg("communicator palloc EpochListenPIDS mempry failed")));
+    }
+    g_instance.pid_cxt.EpochUnseriPIDS = (ThreadId*)palloc( kUnseriThreadNum * sizeof(ThreadId));
+    if (g_instance.pid_cxt.EpochUnseriPIDS == NULL && kUnseriThreadNum != 0) {
+        ereport(FATAL, (errmsg("communicator palloc EpochUnseriPIDS mempry failed")));
+    }
+    g_instance.pid_cxt.EpochUnpackPIDS = (ThreadId*)palloc( kUnpackThreadNum * sizeof(ThreadId));
+    if (g_instance.pid_cxt.EpochUnpackPIDS == NULL && kUnpackThreadNum != 0) {
+        ereport(FATAL, (errmsg("communicator palloc EpochUnpackPIDS mempry failed")));
+    }
+    g_instance.pid_cxt.EpochMergePIDS = (ThreadId*)palloc( kMergeThreadNum * sizeof(ThreadId));
+    if (g_instance.pid_cxt.EpochMergePIDS == NULL && kMergeThreadNum != 0) {
+        ereport(FATAL, (errmsg("communicator palloc EpochMergePIDS mempry failed")));
+    }
+    g_instance.pid_cxt.EpochCommitPIDS = (ThreadId*)palloc( kCommitThreadNum * sizeof(ThreadId));
+    if (g_instance.pid_cxt.EpochCommitPIDS == NULL && kCommitThreadNum != 0) {
+        ereport(FATAL, (errmsg("communicator palloc EpochCommitPIDS mempry failed")));
+    }
 
     
     for (int i = 0 ; i < 1 ; i++){
@@ -11261,11 +11261,11 @@ void GenerateEpochThreads(){
     }
 
     
-    // for (int i = 0 ; i < 1 ; i++){
-    //     g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i] = initialize_util_thread(EPOCH_MESSAGE_CACHE_MANAGER); 
-    //     epoch_cache_thread_ids.push_back(g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i]);
-    //     ereport(LOG, (errmsg("EpochMessageCacheManagerThread第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i])));
-    // }
+    for (int i = 0 ; i < 1 ; i++){
+        g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i] = initialize_util_thread(EPOCH_MESSAGE_CACHE_MANAGER); 
+        epoch_cache_thread_ids.push_back(g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i]);
+        ereport(LOG, (errmsg("EpochMessageCacheManagerThread第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i])));
+    }
 
     
     // for (int i = 0 ; i < 1 ; i++){
@@ -11275,21 +11275,21 @@ void GenerateEpochThreads(){
     // }
 
     
-    // for (int i = 0 ; i < (int)(kPackageMessageThreadNum * 2) ; i++){
+    // for (int i = 0 ; i < (int)kPackThreadNum; i++){
     //     g_instance.pid_cxt.EpochPackPIDS[i] = initialize_util_thread(EPOCH_PACK); 
     //     epoch_pack_thread_ids.push_back(g_instance.pid_cxt.EpochPackPIDS[i]);
     //     ereport(LOG, (errmsg("EpochMessagePackThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochPackPIDS[i])));
     // }
 
     
-    // for (int i = 0 ; i < (int)(kPackageMessageThreadNum * 4) ; i++){
+    // for (int i = 0 ; i < (int)kNotifyThreadNum; i++){
     //     g_instance.pid_cxt.EpochNotifyPIDS[i] = initialize_util_thread(EPOCH_NOTIFY); 
     //     epoch_notify_thread_ids.push_back(g_instance.pid_cxt.EpochNotifyPIDS[i]);
     //     ereport(LOG, (errmsg("EpochNotifyThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochNotifyPIDS[i])));
     // }
 
     
-    // for (int i = 0 ; i < (int)kMessageSendThreadNum ; i++){
+    // for (int i = 0 ; i < (int)kSendThreadNum ; i++){
     //     g_instance.pid_cxt.EpochSendPIDS[i] = initialize_util_thread(EPOCH_SEND);
     //     epoch_send_thread_ids.push_back(g_instance.pid_cxt.EpochSendPIDS[i]);
     //     ereport(LOG, (errmsg("EpochSendThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochSendPIDS[i])));
@@ -11297,7 +11297,7 @@ void GenerateEpochThreads(){
 
 
     
-    // for (int i = 0 ; i < (int)kMessageListenThreadNum ; i++){
+    // for (int i = 0 ; i < (int)kListenThreadNum ; i++){
     //     g_instance.pid_cxt.EpochListenPIDS[i] = initialize_util_thread(EPOCH_LISTEN); 
     //     epoch_listen_thread_ids.push_back(g_instance.pid_cxt.EpochListenPIDS[i]);
     //     ereport(LOG, (errmsg("EpochListenThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochListenPIDS[i])));
@@ -11305,14 +11305,14 @@ void GenerateEpochThreads(){
 
 
     
-    // for (int i = 0 ; i < (int)kUnserializeThreadNum ; i++){
+    // for (int i = 0 ; i < (int)kUnseriThreadNum ; i++){
     //     g_instance.pid_cxt.EpochUnseriPIDS[i] = initialize_util_thread(EPOCH_UNSERI); 
     //     epoch_unseri_thread_ids.push_back(g_instance.pid_cxt.EpochUnseriPIDS[i]);
     //     ereport(LOG, (errmsg("EpochUnseriThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochUnseriPIDS[i])));
     // }
 
     
-    // for (int i = 0 ; i < (int)kUnpackageMessageThreadNum ; i++){
+    // for (int i = 0 ; i < (int)kUnpackThreadNum ; i++){
     //     g_instance.pid_cxt.EpochUnpackPIDS[i] = initialize_util_thread(EPOCH_UNPACK); 
     //     epoch_unpack_thread_ids.push_back(g_instance.pid_cxt.EpochUnpackPIDS[i]);
     //     ereport(LOG, (errmsg("EpochUnpackThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochUnpackPIDS[i])));
@@ -11355,14 +11355,14 @@ void CkeckEpochThreadsI(){
             }
         }
 
-    // if (g_instance.pid_cxt.EpochMessageCacheManagerPIDS != NULL) 
-    //     for (int i = 0 ; i < 1 ; i++){
-    //         if (g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i] == 0 && pmState == PM_RUN){
-    //             g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i] = initialize_util_thread(EPOCH_MESSAGE_CACHE_MANAGER); 
-    //             epoch_cache_thread_ids[i] = g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i];
-    //             ereport(LOG, (errmsg("EpochMessageCacheManagerThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i])));
-    //         }
-    //     }
+    if (g_instance.pid_cxt.EpochMessageCacheManagerPIDS != NULL) 
+        for (int i = 0 ; i < 1 ; i++){
+            if (g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i] == 0 && pmState == PM_RUN){
+                g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i] = initialize_util_thread(EPOCH_MESSAGE_CACHE_MANAGER); 
+                epoch_cache_thread_ids[i] = g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i];
+                ereport(LOG, (errmsg("EpochMessageCacheManagerThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i])));
+            }
+        }
 
     // if (g_instance.pid_cxt.EpochMessageManagerPIDS != NULL) 
     //     for (int i = 0 ; i < 1 ; i++){
@@ -11374,7 +11374,7 @@ void CkeckEpochThreadsI(){
     //     }
 
     // if (g_instance.pid_cxt.EpochPackPIDS != NULL) 
-    //     for (int i = 0 ; i < (int)(kPackageMessageThreadNum * 2) ; i++){
+    //     for (int i = 0 ; i < (int)kPackThreadNum; i++){
     //         if (g_instance.pid_cxt.EpochPackPIDS[i] == 0 && pmState == PM_RUN){
     //             g_instance.pid_cxt.EpochPackPIDS[i] = initialize_util_thread(EPOCH_PACK); 
     //             epoch_pack_thread_ids[i] = g_instance.pid_cxt.EpochPackPIDS[i];
@@ -11383,7 +11383,7 @@ void CkeckEpochThreadsI(){
     //     }
     
     // if (g_instance.pid_cxt.EpochNotifyPIDS != NULL) 
-    //     for (int i = 0 ; i < (int)(kPackageMessageThreadNum * 4) ; i++){
+    //     for (int i = 0 ; i < (int)kNotifyThreadNum; i++){
     //         if (g_instance.pid_cxt.EpochNotifyPIDS[i] == 0 && pmState == PM_RUN){
     //             g_instance.pid_cxt.EpochNotifyPIDS[i] = initialize_util_thread(EPOCH_NOTIFY); 
     //             epoch_notify_thread_ids[i] = g_instance.pid_cxt.EpochNotifyPIDS[i];
@@ -11392,7 +11392,7 @@ void CkeckEpochThreadsI(){
     //     }
 
     // if (g_instance.pid_cxt.EpochSendPIDS != NULL) 
-    //     for (int i = 0 ; i < (int)kMessageSendThreadNum ; i++){
+    //     for (int i = 0 ; i < (int)kSendThreadNum ; i++){
     //         if (g_instance.pid_cxt.EpochSendPIDS[i] == 0 && pmState == PM_RUN){
     //             g_instance.pid_cxt.EpochSendPIDS[i] = initialize_util_thread(EPOCH_SEND); 
     //             epoch_send_thread_ids[i] == g_instance.pid_cxt.EpochSendPIDS[i];
@@ -11401,7 +11401,7 @@ void CkeckEpochThreadsI(){
     //     }
 
     // if (g_instance.pid_cxt.EpochListenPIDS != NULL) 
-    //     for (int i = 0 ; i < (int)kMessageListenThreadNum ; i++){
+    //     for (int i = 0 ; i < (int)kListenThreadNum ; i++){
     //         if (g_instance.pid_cxt.EpochListenPIDS[i] == 0 && pmState == PM_RUN){
     //             g_instance.pid_cxt.EpochListenPIDS[i] = initialize_util_thread(EPOCH_LISTEN); 
     //             epoch_listen_thread_ids[i] = g_instance.pid_cxt.EpochListenPIDS[i];
@@ -11410,7 +11410,7 @@ void CkeckEpochThreadsI(){
     //     }
     
     // if (g_instance.pid_cxt.EpochUnseriPIDS != NULL) 
-    //     for (int i = 0 ; i < (int)kUnserializeThreadNum ; i++){
+    //     for (int i = 0 ; i < (int)kUnseriThreadNum ; i++){
     //         if (g_instance.pid_cxt.EpochUnseriPIDS[i] == 0 && pmState == PM_RUN){
     //             g_instance.pid_cxt.EpochUnseriPIDS[i] = initialize_util_thread(EPOCH_UNSERI); 
     //             epoch_unseri_thread_ids[i] = g_instance.pid_cxt.EpochUnseriPIDS[i];
@@ -11419,7 +11419,7 @@ void CkeckEpochThreadsI(){
     //     }
 
     // if (g_instance.pid_cxt.EpochUnpackPIDS != NULL) 
-    //     for (int i = 0 ; i < (int)kUnpackageMessageThreadNum ; i++){
+    //     for (int i = 0 ; i < (int)kUnpackThreadNum ; i++){
     //         if (g_instance.pid_cxt.EpochUnpackPIDS[i] == 0 && pmState == PM_RUN){
     //             g_instance.pid_cxt.EpochUnpackPIDS[i] = initialize_util_thread(EPOCH_UNPACK); 
     //             epoch_unpack_thread_ids[i] = g_instance.pid_cxt.EpochUnpackPIDS[i];
@@ -11480,6 +11480,9 @@ void GetServerInfo(){
 
     tinyxml2::XMLElement* package_num = root->FirstChildElement("package_num");
     kPackageNum = std::stoull(package_num->GetText());
+
+    tinyxml2::XMLElement* notify_num = root->FirstChildElement("notify_num");
+    kNotifyNum = std::stoull(notify_num->GetText());
 
     tinyxml2::XMLElement* notify_thread_num = root->FirstChildElement("notify_thread_num");
     kNotifyThreadNum = std::stoull(notify_thread_num->GetText());

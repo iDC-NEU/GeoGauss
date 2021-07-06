@@ -59,13 +59,13 @@
 using std::map;
 using std::string;
 
-extern void EpochLogicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index);
-extern void EpochPhysicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index, uint64_t kSleepTime);
-extern void EpochMessageManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index);
-extern void EpochMessageCacheManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index);
+extern void EpochLogicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index);
+extern void EpochPhysicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index, uint64_t kSleepTime);
+extern void EpochMessageManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index);
+extern void EpochMessageCacheManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index);
 
 extern void EpochNotifyThreadMain(uint64_t id);
-extern void EpochPackThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyThreadNum, uint64_t kPackThreadNum, uint64_t local_ip_index);
+extern void EpochPackThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index);
 extern void EpochSendThreadMain(uint64_t id, std::string kServerIp, uint64_t port);
 
 extern void EpochListenThreadMain(uint64_t id, uint64_t port);
@@ -580,8 +580,11 @@ public:
     // static std::vector<moodycamel::BlockingConcurrentQueue<std::shared_ptr<LockCV>>*> lock_cv_txn_queues;
     // static std::vector<moodycamel::BlockingConcurrentQueue<std::shared_ptr<LockCV>>*> lock_cv_commit_queues;
 
-    static std::vector<BlockingMPMCQueue<std::shared_ptr<LockCV>>*> lock_cv_txn_queues;
-    static std::vector<BlockingMPMCQueue<std::shared_ptr<LockCV>>*> lock_cv_commit_queues;
+    // static std::vector<BlockingMPMCQueue<std::shared_ptr<LockCV>>*> lock_cv_txn_queues;
+    // static std::vector<BlockingMPMCQueue<std::shared_ptr<LockCV>>*> lock_cv_commit_queues;
+
+    static std::vector<LockCV*> lock_cv_txn_v;
+    static std::vector<LockCV*> lock_cv_commit_v;
 
     static std::vector<std::atomic<uint64_t>*> local_txn_counters;//本地事务执行阶段计数器
 
@@ -593,7 +596,7 @@ public:
 
     static aum::atomic_unordered_map<std::string, uint64_t> insertSet;
 
-    static uint64_t kPackageNum, kPackThreadNum, kNotifyThreadNum;
+    static uint64_t kPackageNum, kNotifyNum, kPackThreadNum, kNotifyThreadNum;
 
     static void setTimerStop(bool value) {timerStop = value;}
 
@@ -612,28 +615,28 @@ public:
     static TxnBufferIter end(){return txnBuffer.end();}
     
 
-    static void IncLocalTxnCounter(uint64_t index){ (*(local_txn_counters[index])).fetch_add(10000000001);}// 10 000 000 000 + 1
+    static void IncLocalTxnCounter(uint64_t index){ local_txn_counters[index]->fetch_add(10000000001);}// 10 000 000 000 + 1
     
-    static void DecLocalTxnCounter(uint64_t index){ (*(local_txn_counters[index])).fetch_sub(10000000001);}
+    static void DecLocalTxnCounter(uint64_t index){ local_txn_counters[index]->fetch_sub(10000000001);}
 
-    static void DecExeCounter(uint64_t index){ (*(local_txn_counters[index])).fetch_sub(1);}
+    static void DecExeCounter(uint64_t index){ local_txn_counters[index]->fetch_sub(1);}
 
-    static uint64_t GetExeCounter(uint64_t index) {return (*(local_txn_counters[index])).load() - (((*(local_txn_counters[index])).load() / 1e10) * 1e10);}
+    static uint64_t GetExeCounter(uint64_t index) { return local_txn_counters[index]->load() % static_cast<uint64_t>(1e10);}
 
-    static void DecComCounter(uint64_t index){ (*(local_txn_counters[index])).fetch_sub(10000000000);}
+    static void DecComCounter(uint64_t index){ local_txn_counters[index]->fetch_sub(10000000000);}
 
-    static uint64_t GetComCounter(uint64_t index) {return (*(local_txn_counters[index])).load();}
+    static uint64_t GetComCounter(uint64_t index) {return local_txn_counters[index]->load();}
 
     static bool IsExcCounterEqualZero(){
         for(auto &i : local_txn_counters){
-            if( ( (*i) - (((*i)/ 1e10) * 1e10) ) != 0) return false;
+            if( i->load() % static_cast<uint64_t>(1e10) != 0) return false;
         }
         return true;
     }
 
     static bool IsComCounterEqualZero(){
         for(auto &i : local_txn_counters){
-            if((*i) != 0) return false;
+            if(i->load() != 0) return false;
         }
         return true;
     }

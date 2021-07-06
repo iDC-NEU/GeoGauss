@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+	<server_num priority="0">1</server_num>
+	
+	<local_remote_ip>
+		<ip>172.21.16.6</ip>
+	</local_remote_ip>
+	
+	<local_ip_index>0</local_ip_index><!-- 0, 1, 2, ...-->
+	
+	<sleep_time priority="5">20000</sleep_time>
+	
+	<package_num priority="0">1</package_num><!-- 一个epoch打包的数量 -->
+
+	<notify_num priority="0">1</notify_num><!-- 共享条件变量的数量 -->
+	
+	<notify_thread_num priority="0">1</notify_thread_num><!-- 使用队列进行唤醒的线程数量 在使用共享条件变量的情况下不需要-->
+	
+	<pack_thread_num priority="0">1</pack_thread_num><!-- 打包的线程数量 -->
+	
+	<unseri_thread_num priority="0">2</unseri_thread_num><!-- 反序列化线程数量 -->
+	
+	<unpack_thread_num priority="0">2</unpack_thread_num><!-- 拆分txn线程数量 -->
+	
+	<merge_thread_num priority="0">2</merge_thread_num><!-- 远端txn RowHeader写入数量 -->
+	
+	<commit_thread_num priority="0">2</commit_thread_num><!-- 远端txn提交线程数量 -->
+
+	<!-- 
+		
+		端口监听规则 20000 + ip_index*100 + package ， 一个package交由多个发送线程发送往其他peer节点 
+		
+		发送线程数量为 (server_num - 1) * (package_num) 与端口监听线程数量相同
+		
+		notify线程数量为packnum的4倍
+		
+		pack线程数量为packnum的2倍
+	-->
+
+</root>

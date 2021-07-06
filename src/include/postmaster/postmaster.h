@@ -20,7 +20,7 @@
 #include<vector>
 extern std::vector<std::string> kServerIp;
 extern std::vector<uint64_t> port;
-extern uint64_t kServerNum, kPortNum, kPackageNum, kNotifyThreadNum, kPackThreadNum, kSendThreadNum, 
+extern uint64_t kServerNum, kPortNum, kPackageNum, kNotifyNum, kNotifyThreadNum, kPackThreadNum, kSendThreadNum, 
     kListenThreadNum, kUnseriThreadNum, kUnpackThreadNum, kMergeThreadNum, kCommitThreadNum, kSendMessageNum, kReceiveMessageNum, 
     kSleepTime, local_ip_index;
 extern std::vector<std::string> send_ips;
