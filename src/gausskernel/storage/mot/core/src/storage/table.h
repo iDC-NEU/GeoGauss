@@ -1082,6 +1082,9 @@ public:
      * @param dataOut The output buffer
      */
     void SerializeRedo(char* dataOut);
+
+    //ADDBY NEU
+    Key* BuildKeyByRow(Row* row, TxnManager* txn);
 };
 
 /** @typedef internal table identifier. */

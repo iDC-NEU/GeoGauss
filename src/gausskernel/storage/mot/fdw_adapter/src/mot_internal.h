@@ -82,7 +82,7 @@ public:
     std::condition_variable _cv;
 
     template <class _Predicate>
-    void wait_self_generate_lock(std::unique_lock<std::mutex>& _lock, _Predicate _Pred) {
+    void wait(std::unique_lock<std::mutex>& _lock, _Predicate _Pred) {
         _lock.lock();
         while(!_Pred()){
             _cv.wait( _lock);
@@ -90,19 +90,19 @@ public:
         _lock.unlock();
     }
 
-    void wait_self_generate_lock(std::unique_lock<std::mutex>& _lock) { 
+    void wait(std::unique_lock<std::mutex>& _lock) { 
         _lock.lock();
         _cv.wait( _lock);
         _lock.unlock();
     }
 
-    void notify_all_self_generate_lock(std::unique_lock<std::mutex>& _lock){
+    void notify_all(std::unique_lock<std::mutex>& _lock){
         _lock.lock();
         _cv.notify_all();
         _lock.unlock();
     }
 
-    void notify_one_self_generate_lock(std::unique_lock<std::mutex>& _lock){
+    void notify_one(std::unique_lock<std::mutex>& _lock){
         _lock.lock();
         _cv.notify_one();
         _lock.unlock();
@@ -577,18 +577,13 @@ public:
     static std::vector<LockCV*> lock_cv_pack_threads;
     static std::vector<LockCV*> lock_cv_notify_threads;
 
-    // static std::vector<moodycamel::BlockingConcurrentQueue<std::shared_ptr<LockCV>>*> lock_cv_txn_queues;
-    // static std::vector<moodycamel::BlockingConcurrentQueue<std::shared_ptr<LockCV>>*> lock_cv_commit_queues;
-
-    // static std::vector<BlockingMPMCQueue<std::shared_ptr<LockCV>>*> lock_cv_txn_queues;
-    // static std::vector<BlockingMPMCQueue<std::shared_ptr<LockCV>>*> lock_cv_commit_queues;
-
     static std::vector<LockCV*> lock_cv_txn_v;
     static std::vector<LockCV*> lock_cv_commit_v;
 
     static std::vector<std::atomic<uint64_t>*> local_txn_counters;//本地事务执行阶段计数器
 
     static std::atomic<uint64_t> local_txn_counter;
+    static std::atomic<uint64_t> local_txn_index;
 
     static std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>> local_change_set_txn_num_ptr1;
     static std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>> local_change_set_txn_num_ptr2;
@@ -654,6 +649,9 @@ public:
     static uint64_t GetComCounter() {return local_txn_counter.load();}
 
 
+    static uint64_t IncLocalTxnIndex(){ return local_txn_index.fetch_add(1);}
+
+
 
     static void AddUnpackagedMessageNum(){unpackaged_message_num.fetch_add(1);}
 
@@ -706,6 +704,7 @@ public:
         unpackaged_txn_num = 0;
         merged_txn_num = 0;
         committed_txn_num = 0;
+        local_txn_index = 0;
         insertSet.clear();
         remoteExeced = false;
     }

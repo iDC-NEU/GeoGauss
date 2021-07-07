@@ -203,6 +203,22 @@ private:
 
     /** @var Validate-no-wait configuration. */
     bool m_validationNoWait;
+
+///ADDBY NEU
+public:
+ 
+    void updateInsertSetSize(TxnManager * txMan);
+    void recoverRowHeader(TxnManager * txMax);
+    bool ValidateAndSetWriteSet(TxnManager *txMan);
+    bool ValidateReadInMerge(TxnManager * txMan);
+    bool ValidateWriteSetII(TxnManager *txMan);
+
+    RC ExecutionPhase(TxnManager *txMan);
+    RC CommitPhase(TxnManager *txMan);
+    RC PreCommitPhase(TxnManager* tx);
+
+    ///
+
 };
 }  // namespace MOT
 

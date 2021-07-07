@@ -55,7 +55,8 @@ std::string ExecOsCommand(const char* cmd);
  * @return The formatted hexa-decimal string.
  */
 std::string HexStr(const uint8_t* data, uint16_t len);
-
+uint8_t* StrToUint(std::string data);//ADDBY NEU
+uint64_t now_to_us();//ADDBY NEU
 /** @define Likely execution path to assist compiler optimizations. */
 #ifndef likely
 #define likely(x) __builtin_expect(!!(x), 1)

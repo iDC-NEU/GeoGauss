@@ -432,7 +432,7 @@ void CheckpointManager::ApplyWrite(TxnManager* txnMan, Row* origRow, AccessType 
             }
             break;
         default:
-            MOT_LOG_ERROR("Unknown transaction start phase: %s", CheckpointManager::PhaseToString(startPhase));
+            // MOT_LOG_ERROR("Unknown transaction start phase: %s", CheckpointManager::PhaseToString(startPhase));//ADDBY NEU
             MOT_ASSERT(false);
     }
 }

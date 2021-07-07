@@ -53,7 +53,10 @@
 #include <stdlib.h>
 #include <sys/utsname.h>
 #include <fstream>
-
+//ADDBY NEU
+#include "string"
+#include "sstream"
+#include "pthread.h"
 namespace MOT {
 IMPLEMENT_CLASS_LOGGER(MOTEngine, System);
 

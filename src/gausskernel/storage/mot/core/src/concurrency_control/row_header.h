@@ -240,6 +240,83 @@ private:
     friend CheckpointWorkerPool;
     friend RecoveryOps;
     friend Index;
+
+
+public:
+///ADDBY NEU
+    bool ValidateAndSetWrite(uint64_t m_csn, uint64_t start_epoch, uint64_t commit_epoch);
+
+    uint64_t GetStableCSN() const
+    {
+        return (stable_csnWord & CSN_BITS);
+    }
+
+    /** Set th CSN of the row   */
+    void SetStableCSN(uint64_t csn)
+    {
+        stable_csnWord = (stable_csnWord & STATUS_BITS) | (csn & CSN_BITS);
+    }
+    uint64_t GetStableCommitEpoch() const
+    {
+        return stable_commitEpoch;
+    }
+
+    /** Set th stable   commit epoch of the row   */
+    void SetStableCommitEpoch(uint64_t commit_epoch)
+    {
+        stable_commitEpoch = commit_epoch;
+    }
+
+    uint64_t GetStableStartEpoch() const {
+        return stable_startEpoch;
+    }
+
+    void SetStableStartEpoch(uint64_t start_epoch) {
+        stable_startEpoch = start_epoch;
+    }
+
+        uint64_t GetCommitEpoch() const
+    {
+        return commitEpoch;
+    }
+
+    /** Set th last motify commit epoch of the row   */
+    void SetCommitEpoch(uint64_t commit_epoch)
+    {
+        commitEpoch = commit_epoch;
+    }
+
+    uint64_t GetStartEpoch() const {
+        return startEpoch;
+    }
+
+    void setStartEpoch(uint64_t start_epoch) {
+        startEpoch = start_epoch;
+    }
+
+    void recoverToStable(){
+        Lock();
+        startEpoch = stable_startEpoch;
+        commitEpoch = stable_commitEpoch;
+        m_csnWord = stable_csnWord;
+        Release();
+    }
+
+    void keepStable(){
+        stable_startEpoch = startEpoch;
+        stable_commitEpoch = commitEpoch;
+        stable_csnWord = m_csnWord;
+    }
+
+private:
+    volatile uint64_t commitEpoch = 0;//ADDBY NEU
+    volatile uint64_t startEpoch = 0;
+
+    volatile uint64_t stable_csnWord;
+    volatile uint64_t stable_commitEpoch;
+    volatile uint64_t stable_startEpoch;
+
+    friend TxnAccess;//ADDBY NEU
 };
 }  // namespace MOT
 

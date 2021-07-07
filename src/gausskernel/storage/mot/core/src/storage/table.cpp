@@ -1270,4 +1270,19 @@ void Table::SerializeRedo(char* dataOut)
         dataOut = SerializeItem(dataOut, GetField(i));
     }
 }
+
+
+//ADDBY NEU//创建Key
+Key* Table::BuildKeyByRow(Row* row, TxnManager* txn)
+{
+    MOT::Key* key = nullptr;
+    // MOT_LOG_INFO("构造自己的key");
+    MOT::Index* ix = GetPrimaryIndex();
+    key = txn->GetTxnKey(ix);
+    ix->BuildKey(this, row, key);
+    // std::string key_str = key.GetKeyStr();
+    // MOT_LOG_INFO(("build_key:" + key_str).c_str());
+    return key;
+}
+
 }  // namespace MOT

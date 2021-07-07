@@ -162,6 +162,10 @@ private:
     uint32_t m_bufferId;
 
     friend class TxnAccess;
+
+public:
+    //ADDBY NEU
+    uint64_t m_cts = 0; //the latest commit timestamp for this row
 };
 }  // namespace MOT
 

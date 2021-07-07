@@ -571,6 +571,51 @@ public:
 
     /** @var holds query states from MOTAdaptor */
     std::unordered_map<uint64_t, uint64_t> m_queryState;
+
+public:
+    void CommitInternalII();//ADDBY NEU
+    bool isOnlyRead();//ADDBY NEU
+    void CommitForRemote();//ADDBY NEU
+    RC ValidateOcc();//ADDBY NEU
+    bool localMergeValidate(uint64_t csn);//ADDBY NEU
+
+    inline void SetFailedCommitPrepared(bool value)//ADDBY NEU
+    {
+        m_failedCommitPrepared = value;
+    }
+
+    void SetStartEpoch(uint64_t start_epoch)//ADDBY NEU
+    {
+        startEpoch = start_epoch;
+    }
+    uint64_t GetStartEpoch()//ADDBY NEU
+    {
+        return startEpoch;
+    }
+    void SetCommitEpoch(uint64_t commit_epoch) {
+        CommitEpoch = commit_epoch;
+    }
+    uint64_t GetCommitEpoch() {
+        return CommitEpoch;
+    }
+    void SetStartInMerge(bool inMerge){//ADDBY NEU
+        startInMerge = inMerge;
+    }
+    bool GetStartInMerge(){//ADDBY NEU
+        return startInMerge;
+    }
+
+private:
+
+    bool m_failedCommitPrepared;
+    /** @var timestamp for start and commit of the transaction. */
+    // uint64_t startts;//ADDBY NEU
+    // uint64_t committs;
+    uint64_t startEpoch;
+    uint64_t CommitEpoch;
+    bool startInMerge;
+    uint64_t startTime;
+    
 };
 }  // namespace MOT
 

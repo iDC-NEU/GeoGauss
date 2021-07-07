@@ -123,7 +123,8 @@ void RowHeader::WriteChangesToRow(const Access* access, uint64_t csn)
         case WR:
             MOT_ASSERT(access->m_params.IsPrimarySentinel() == true);
             row->Copy(access->m_localRow);
-            m_csnWord = (csn | LOCK_BIT);
+            //ADDBY NEU
+            // m_csnWord = (csn | LOCK_BIT);
             break;
         case DEL:
             MOT_ASSERT(access->m_origSentinel->IsCommited() == true);
@@ -144,7 +145,9 @@ void RowHeader::WriteChangesToRow(const Access* access, uint64_t csn)
                     access->m_auxRow->UnsetAbsentRow();
                     access->m_auxRow->SetCommitSequenceNumber(csn);
                 } else {
-                    m_csnWord = (csn | LOCK_BIT);
+                    //ADDBY NEU
+                    // m_csnWord = (csn | LOCK_BIT);
+                    m_csnWord = csn;
                 }
             }
             break;
@@ -161,4 +164,44 @@ void RowHeader::Lock()
         v = m_csnWord;
     }
 }
+
+
+
+
+///ADDBY NEU
+bool RowHeader::ValidateAndSetWrite(uint64_t m_csn, uint64_t start_epoch, uint64_t commit_epoch) {
+    /// get the lock first
+    Lock();
+    bool result = true;
+    if(commit_epoch > GetCommitEpoch()) { // the first transaction in current epoch, direct write is ok
+
+        //When first modify the RowHeader, keep current meta-info as the stable RowHeader state
+        keepStable();
+
+        SetCSN(m_csn);
+        setStartEpoch(start_epoch);
+        SetCommitEpoch(commit_epoch);
+    } else {
+        if(GetStartEpoch() < start_epoch) { // current transaction is the shorter transaction, win
+            SetCSN(m_csn);
+            setStartEpoch(start_epoch);
+        } else if(GetStartEpoch() > start_epoch){ // current transaction is the longer transaction, failed
+            result = false;
+        } else {
+            if(GetCSN() < m_csn) { // current transaction commit later, abort
+                result = false;
+            } else if(GetCSN() > m_csn) { // current transaction commit earlier, commit
+                SetCSN(m_csn);
+                setStartEpoch(start_epoch);
+            } else {// csn equals, will?
+                // now do nothing
+            }
+        }
+    }
+    /// release the lock
+    Release();
+    return result;
+}
+///
+
 }  // namespace MOT

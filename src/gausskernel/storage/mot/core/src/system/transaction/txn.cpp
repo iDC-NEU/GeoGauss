@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2020 Huawei Technologies Co.,Ltd.
  *
@@ -36,7 +37,7 @@
 #include "db_session_statistics.h"
 #include "utilities.h"
 #include "mm_api.h"
-
+#include "../../../../fdw_adapter/src/mot_internal.h"//ADDBY NEU
 namespace MOT {
 DECLARE_LOGGER(TxnManager, System);
 
@@ -259,19 +260,22 @@ RC TxnManager::ValidateCommit()
 
 void TxnManager::RecordCommit()
 {
-    CommitInternal();
+    //ADDBY NEU
+    // CommitInternal();
+    CommitInternalII();//原来为CommitInternal
     MOT::DbSessionStatisticsProvider::GetInstance().AddCommitTxn();
 }
 
-RC TxnManager::Commit()
-{
-    // Validate concurrency control
-    RC rc = ValidateCommit();
-    if (rc == RC_OK) {
-        RecordCommit();
-    }
-    return rc;
-}
+//ADDBY NEU
+// RC TxnManager::Commit()
+// {
+//     // Validate concurrency control
+//     RC rc = ValidateCommit();
+//     if (rc == RC_OK) {
+//         RecordCommit();
+//     }
+//     return rc;
+// }
 
 void TxnManager::LiteCommit()
 {
@@ -1237,4 +1241,189 @@ RC TxnManager::DropIndex(MOT::Index* index)
     m_txnDdlAccess->Add(new_ddl_access);
     return res;
 }
+
+
+
+//ADDBY NEU
+bool TxnManager::localMergeValidate(uint64_t csn)
+{
+    TxnOrderedSet_t& orderedSet = this->m_accessMgr->GetOrderedRowSet();
+    for (const auto& raPair : orderedSet) {
+        const Access* ac = raPair.second;
+        if (ac->m_type == RD or !ac->m_params.IsPrimarySentinel()) {
+            continue;
+        }
+
+        if (ac->GetRowFromHeader()->GetCommitSequenceNumber()!=csn) {
+            return false;
+        }
+    }
+    return true;
+}
+//ADDBY NEU
+bool TxnManager::isOnlyRead()
+{
+    TxnOrderedSet_t &orderedSet = this->m_accessMgr->GetOrderedRowSet();
+    if (orderedSet.size() == 0)
+        return false;
+    for (const auto &raPair : orderedSet)
+    {
+        const Access *ac = raPair.second;
+        if (ac->m_type != RD)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+//ADDBY NEU
+void TxnManager::CommitInternalII()
+{
+    // first write to redo log, then write changes
+    
+    //不写log
+    //m_redoLog.Commit();
+    m_occManager.WriteChanges(this);
+
+    if (GetGlobalConfiguration().m_enableCheckpoint) {
+        GetCheckpointManager()->EndCommit(this);
+    }
+
+    if (!GetGlobalConfiguration().m_enableRedoLog) {
+        m_occManager.ReleaseLocks(this);
+    }
+}
+
+//ADDBY NEU
+void TxnManager::CommitForRemote()
+{
+    m_occManager.updateInsertSetSize(this);
+    CommitInternalII();
+    MOT::DbSessionStatisticsProvider::GetInstance().AddCommitTxn();
+}
+
+uint64_t GetThreadID(){
+    return (uint64_t) std::hash<std::thread::id>{}(std::this_thread::get_id());
+    // std::stringstream thread_id_stream;
+    // thread_id_stream << std::this_thread::get_id();
+    // return std::stoull(thread_id_stream.str());
+}
+//txn.cpp
+//ADDBY NEU
+/**
+ * @brief Commit
+ * 改动：改为先写胜利的情况下，不需要precommit阶段，只保留两个计数器
+ * 新增 while(MOTAdaptor::GetPhysicalEpoch() != MOTAdaptor::GetLogicalEpoch()) ; 
+ * 只有当logical epoch和 physical epoch 相差1时才能继续接收新事务
+ * while(!MOTAdaptor::isRemoteExeced()|| !MOTAdaptor::isMergeSent()); 改为while(!MOTAdaptor::isRemoteExeced());
+ * 发送线程无影响
+ * */
+std::atomic<int> wait_count(0);
+std::atomic<int> wait_count_commit(0);
+
+RC TxnManager::Commit()
+{
+    // uint64_t thread_id = GetThreadID();//随机分布
+    // auto startCommit = now_to_us();
+    // MOT_LOG_INFO("time from start to begin commit = %lu", (startCommit - startTime));
+    bool result = isOnlyRead();
+    if (this->m_accessMgr->m_rowCnt > 0 && !result)
+    {
+        uint64_t thread_id = GetThreadID();//随机分布
+        // uint64_t thread_id = MOTAdaptor::IncLocalTxnIndex();//均匀分布
+        uint64_t index_pack = thread_id % MOTAdaptor::kPackageNum;
+        uint64_t index_notify = thread_id % MOTAdaptor::kNotifyNum;
+        begin:
+        // while(MOTAdaptor::GetPhysicalEpoch() != MOTAdaptor::GetLogicalEpoch()) usleep(500);
+
+        if(MOTAdaptor::GetPhysicalEpoch() != MOTAdaptor::GetLogicalEpoch()){//到达一个新physical epoch 新来线程被阻塞
+            wait_count += 1;
+            // MOT_LOG_INFO("等待阻塞 等待事务数量：%d", wait_count.load());
+            MOTAdaptor::lock_cv_txn_v[index_notify]->wait([]{ return MOTAdaptor::GetPhysicalEpoch() == MOTAdaptor::GetLogicalEpoch();});
+            wait_count -= 1;
+            // MOT_LOG_INFO("恢复阻塞 等待事务还剩数量：%d", wait_count.load());
+        }
+        // auto firstWait = now_to_us();
+        // MOT_LOG_INFO("time for first wait = %lu", (firstWait - startCommit));
+        
+        MOTAdaptor::IncLocalTxnCounter();
+        // MOTAdaptor::IncLocalTxnCounter(index_pack);
+
+        SetCommitSequenceNumber(now_to_us());
+        SetCommitEpoch(MOTAdaptor::GetPhysicalEpoch());
+
+
+        if( (MOTAdaptor::GetPhysicalEpoch() != MOTAdaptor::GetLogicalEpoch() && MOTAdaptor::GetLocalChangeSetNum(index_pack) == 0) || MOTAdaptor::isRemoteExeced() ){
+            //写集可能已经被发送出去或merge已进行到提交阶段,当前事务停止继续运行，阻塞到下一个epoch
+            //如果此时isRemoteExeced 为true 表明先前IncLocalTxnCounter无效 事务不应该继续运行  （单机问题，多主情况下由于网络延迟，不会产生此类问题）
+            MOTAdaptor::DecLocalTxnCounter();
+            MOT_LOG_INFO("事务跳转 goto begin");
+            goto begin;
+        }
+        MOTAdaptor::IncLocalChangeSetNum(index_pack);
+
+        if(!m_occManager.ValidateReadInMerge(this)){
+            MOTAdaptor::DecLocalChangeSetNum(index_pack);
+            // MOTAdaptor::DecLocalTxnCounter(index_pack);
+            MOTAdaptor::DecLocalTxnCounter();
+            return RC_ABORT;
+        }
+
+        uint64_t currentEpoch = MOTAdaptor::GetPhysicalEpoch();
+        RC rc = m_occManager.ExecutionPhase(this);
+
+        // auto exec = now_to_us();
+        // MOT_LOG_INFO("time for execution = %lu", (exec - firstWait));
+        if (rc != RC_OK)
+        {
+            MOTAdaptor::DecLocalChangeSetNum(index_pack);
+            // MOTAdaptor::DecLocalTxnCounter(index_pack);
+            MOTAdaptor::DecLocalTxnCounter();
+            return rc;
+        }
+        else
+            MOTAdaptor::InsertRowToSet(this, index_pack);
+        // MOTAdaptor::DecExeCounter(index_pack);
+        MOTAdaptor::DecExeCounter();
+
+        // auto insert = now_to_us();
+        // MOT_LOG_INFO("time for insert to queue = %lu", (insert - exec));
+
+        // MOT_LOG_INFO("commit阶段 被阻塞等待事务数量：%d", wait_count_commit.load());
+
+        if(!MOTAdaptor::isRemoteExeced()){
+            wait_count_commit += 1;
+            // MOT_LOG_INFO("commit阶段 等待阻塞 等待事务数量：%d %llu", wait_count_commit.load());
+            MOTAdaptor::lock_cv_commit_v[index_notify]->wait([]{ return MOTAdaptor::isRemoteExeced(); });
+            wait_count_commit -= 1;
+            // MOT_LOG_INFO("commit阶段 恢复阻塞 等待事务还剩数量：%d %llu", wait_count_commit.load(), MOTAdaptor::GetComCounter());
+        }
+
+        // auto secondWait = now_to_us();
+        // MOT_LOG_INFO("time for second waits = %lu", (secondWait - insert));
+        rc = m_occManager.CommitPhase(this);
+        //在record commit中写这个
+        // if (rc == RC_OK)
+        // {
+        //     MOT::DbSessionStatisticsProvider::GetInstance().AddCommitTxn();
+        // }
+        MOTAdaptor::DecComCounter();
+        // MOTAdaptor::DecComCounter(index_pack);
+        // auto comm = now_to_us();
+        // MOT_LOG_INFO("time for commit waits = %lu", (comm - secondWait));
+        // MOT_LOG_INFO("本地提交事务还剩数量：%llu", MOTAdaptor::GetComCounter(index));
+        return rc;
+    }
+    else
+    {
+        if(!m_occManager.ValidateReadInMerge(this)){
+            return RC_ABORT;
+        }
+        //没有读stale数据， return ok
+        return RC_OK;
+    }
+}
+
+
 }  // namespace MOT

@@ -552,7 +552,8 @@ MOT::RC MOTAdaptor::ValidateCommit()
     EnsureSafeThreadAccessInline();
     MOT::TxnManager* txn = GetSafeTxn(__FUNCTION__);
     if (!IS_PGXC_COORDINATOR) {
-        return txn->ValidateCommit();
+        // return txn->ValidateCommit();//ADDBY NEU change to Commit
+        return txn->Commit();
     } else {
         // Nothing to do in coordinator
         return MOT::RC_OK;
@@ -2275,16 +2276,12 @@ LockCV MOTAdaptor::lock_cv_epoch_manager;
 std::vector<LockCV*> MOTAdaptor::lock_cv_pack_threads;
 std::vector<LockCV*> MOTAdaptor::lock_cv_notify_threads;
 
-// std::vector<moodycamel::BlockingConcurrentQueue<std::shared_ptr<LockCV>>*> MOTAdaptor::lock_cv_txn_queues;
-// std::vector<moodycamel::BlockingConcurrentQueue<std::shared_ptr<LockCV>>*> MOTAdaptor::lock_cv_commit_queues;
-// std::vector<BlockingMPMCQueue<std::shared_ptr<LockCV>>*> MOTAdaptor::lock_cv_txn_queues;
-// std::vector<BlockingMPMCQueue<std::shared_ptr<LockCV>>*> MOTAdaptor::lock_cv_commit_queues;
-
 std::vector<LockCV*> MOTAdaptor::lock_cv_txn_v;
 std::vector<LockCV*> MOTAdaptor::lock_cv_commit_v;
 
 std::vector<std::atomic<uint64_t>*> MOTAdaptor::local_txn_counters;
-std::atomic<uint64_t> MOTAdaptor::local_txn_counter;
+std::atomic<uint64_t> MOTAdaptor::local_txn_counter(0);
+std::atomic<uint64_t> MOTAdaptor::local_txn_index(0);
 
 std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>> MOTAdaptor::local_change_set_txn_num_ptr1;
 std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>> MOTAdaptor::local_change_set_txn_num_ptr2;
@@ -2330,39 +2327,56 @@ uint64_t MOTAdaptor::kPackageNum = 1, MOTAdaptor::kNotifyNum = 1, MOTAdaptor::kP
 
 //=========================================================================================================================
 
+struct pack_thread_params{
+    uint64_t index;
+    uint64_t current_epoch;
+    shared_ptr<moodycamel::BlockingConcurrentQueue<merge::MergeRequest_Transaction*>> local_change_set_txn_ptr_temp;
+    shared_ptr<std::atomic<uint64_t>> local_change_set_txn_num_ptr_temp;
+    pack_thread_params(uint64_t index, uint64_t ce, shared_ptr<moodycamel::BlockingConcurrentQueue<merge::MergeRequest_Transaction*>> ptr1, shared_ptr<std::atomic<uint64_t>> ptr2): 
+                        index(index), current_epoch(ce), local_change_set_txn_ptr_temp(ptr1), local_change_set_txn_num_ptr_temp(ptr2){}
+    pack_thread_params(){}
+};
+
+struct send_thread_params{
+    uint64_t current_epoch;
+    shared_ptr<std::string> serialized_req_ptr;
+    send_thread_params(uint64_t ce, shared_ptr<std::string> serialized_req_ptr): 
+                        current_epoch(ce), serialized_req_ptr(serialized_req_ptr){}
+    send_thread_params(){}
+};
+
 uint64_t start_time_ll;
 struct timeval start_time;
 bool init_ok = false;
 std::mutex change_set_mutex;
+std::unique_lock<std::mutex> lock_change_change_set(change_set_mutex, std::defer_lock);//锁住change_set 防止在替换时进行访问 在physical领先logical至少一个时，前者在生成，后者替换，会出现并发访问问题
+std::unique_lock<std::mutex> lock_switch_change_set(change_set_mutex, std::defer_lock);
+
+moodycamel::BlockingConcurrentQueue<pack_thread_params*> pack_pool;
+std::vector<moodycamel::BlockingConcurrentQueue<send_thread_params*>*> send_pools;
+
+std::shared_ptr<std::vector<std::shared_ptr<moodycamel::BlockingConcurrentQueue<merge::MergeRequest_Transaction*>>>> local_change_set_txn_ptr1;
+std::shared_ptr<std::vector<std::shared_ptr<moodycamel::BlockingConcurrentQueue<merge::MergeRequest_Transaction*>>>> local_change_set_txn_ptr2;
 
 
 uint64_t GetSleeptime(uint64_t kSleepTime);
-// void GenerateSendTasks(uint64_t kPackageMessageThreadNum);
-// void ChangeLocalChangeSet(uint64_t kPackageMessageThreadNum);
-// void SwitchLocalChangeSetPtr(uint64_t kPackageMessageThreadNum);
-// void InsertRowToLocalSet(MOT::TxnManager * txMan, uint64_t index);
+void GenerateSendTasks(uint64_t kPackageMessageThreadNum);
+void ChangeLocalChangeSet(uint64_t kPackageMessageThreadNum);
+void SwitchLocalChangeSetPtr(uint64_t kPackageMessageThreadNum);
+void InsertRowToLocalSet(MOT::TxnManager * txMan, uint64_t index);
 
 void EpochLogicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index);
 void EpochPhysicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index, uint64_t kSleepTime);
 
-
+void MOTAdaptor::InsertRowToSet(MOT::TxnManager *txMan, uint64_t index){
+    // InsertRowToLocalSet(txMan, index);
+}
 
 void InitEpochTimerManager(uint64_t kPackageNum, uint64_t kNotifyNum){
-    //==========Logical=============创建唤醒线程池以及唤醒队列
-    // notify_threads_pool_ptr = new ThreadPool(kPackageNum);// kPackageNum * 2
+    //==========Logical=============
     for(int i = 0; i < (int)kPackageNum; i++){
-
         MOTAdaptor::local_txn_counters.push_back(std::move(new std::atomic<uint64_t>(0)));//当前epoch本地事务计数器 包括Exc和Com
-
-        // MOTAdaptor::lock_cv_txn_queues.push_back(std::move(new moodycamel::BlockingConcurrentQueue<std::shared_ptr<LockCV>>()));//阻塞本地事务队列
-        // MOTAdaptor::lock_cv_commit_queues.push_back(std::move(new moodycamel::BlockingConcurrentQueue<std::shared_ptr<LockCV>>()));//阻塞提交事务队列
-
-        // MOTAdaptor::lock_cv_txn_queues.push_back(std::move(new BlockingMPMCQueue<std::shared_ptr<LockCV>>()));//阻塞本地事务队列
-        // MOTAdaptor::lock_cv_commit_queues.push_back(std::move(new BlockingMPMCQueue<std::shared_ptr<LockCV>>()));//阻塞提交事务队列
-
-        MOTAdaptor::lock_cv_pack_threads.push_back(std::move(new LockCV()));//阻塞打包线程
-        MOTAdaptor::lock_cv_notify_threads.push_back(std::move(new LockCV()));//阻塞唤醒线程
-    
+        MOTAdaptor::lock_cv_pack_threads.push_back(std::move(new LockCV()));//打包线程单个任务内的阻塞唤醒
     }
 
     for(int i = 0; i < (int)kNotifyNum; i++){//阻塞唤醒
@@ -2376,14 +2390,14 @@ void InitEpochTimerManager(uint64_t kPackageNum, uint64_t kNotifyNum){
     MOTAdaptor::SetPhysicalEpoch(1);
     MOTAdaptor::SetLogicalEpoch(1);
 
-    // ChangeLocalChangeSet(kPackageNum);
-    // SwitchLocalChangeSetPtr(kPackageNum);
+    ChangeLocalChangeSet(kPackageNum);
+    SwitchLocalChangeSetPtr(kPackageNum);
 
     // uint64_t kSendMessageThreadNum = (kServerNum - 1) * kPackageNum;
     // for(int i = 0; i < (int)kSendMessageThreadNum; i++){
     //     send_pools.push_back(std::move(new moodycamel::BlockingConcurrentQueue<send_thread_params*>()));//本地发送线程任务队列
     // }
-    init_ok = true;
+    init_ok = true;//防止listen等线程在未完全生成集合前访问 造成越界问题
     //==========同步============
     zmq::message_t message;
     zmq::context_t context(1);
@@ -2412,20 +2426,12 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kS
         while(MOTAdaptor::GetLogicalEpoch() == MOTAdaptor::GetPhysicalEpoch()) ;
         //等待merge线程之间进行同步 同步条件：远端所有message都已接受 && message解压完成 && txn都merge完成 
         while(MOTAdaptor::GetUnpackagedMessageNum() != kReceiveMessageNum || MOTAdaptor::GetUnpackagedTxnNum() != MOTAdaptor::GetMergedTxnNum() || !MOTAdaptor::IsExcCounterEqualZero() || MOTAdaptor::GetExeCounter() != 0);
-        // {
-        //     usleep(500);
-        //     MOT_LOG_INFO("==进行一个Epoch的合并，当前logic epoch：%llu Receive:%d UnpackagedMe:%llu UnpackagedTxn:%llu MergedTxn:%llu IsExcCounterEqualZero %d", 
-        //         MOTAdaptor::GetLogicalEpoch(),
-        //         kReceiveMessageNum, MOTAdaptor::GetUnpackagedMessageNum(),
-        //         MOTAdaptor::GetUnpackagedTxnNum(), MOTAdaptor::GetMergedTxnNum(), MOTAdaptor::IsExcCounterEqualZero());
-        // }
         // ======= Merge结束 开始Commit ============    
         MOTAdaptor::setRemoteExeced(true);
-        // for(uint64_t i = 0; i < kPackageNum; i++){
-        //     notify_pool.enqueue(new notify_thread_params(i, true, MOTAdaptor::GetLogicalEpoch()));//阻塞唤醒线程
-        //     // notify_pool.enqueue(new notify_thread_params(i, true));
-        // }
-    
+        for(uint64_t i = 0; i < kNotifyNum; i++){
+            MOTAdaptor::lock_cv_commit_v[i]->notify_all();
+            // notify_pool.enqueue(new notify_thread_params(i, true, MOTAdaptor::GetLogicalEpoch()));//阻塞唤醒线程
+        }
         while(MOTAdaptor::GetCommittedTxnNum() != MOTAdaptor::GetMergedTxnNum() || !MOTAdaptor::IsComCounterEqualZero() || MOTAdaptor::GetComCounter() != 0 ) ;
         // {
         //     usleep(500);
@@ -2437,23 +2443,21 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kS
         
         // ============= 结束处理 ==================
         
-        // SwitchLocalChangeSetPtr(kPackageNum);
+        SwitchLocalChangeSetPtr(kPackageNum);
         MOTAdaptor::LogicalEndEpochClear();
         MOTAdaptor::AddLogicalEpoch();
-        MOT_LOG_INFO("==完成一个Epoch的合并，到达新的logic epoch：%llu", MOTAdaptor::GetLogicalEpoch());
+        MOT_LOG_INFO("==完成一个Epoch的合并，physical epoch: %llu 到达新的logic epoch：%llu ", MOTAdaptor::GetPhysicalEpoch(), MOTAdaptor::GetLogicalEpoch());
 
         if(MOTAdaptor::GetLogicalEpoch() == MOTAdaptor::GetPhysicalEpoch()){
-            MOT_LOG_INFO("=========到达一致性点 唤醒阻塞事务=======");
-            // for(uint64_t i = 0; i < kPackageNum; i++){
-            //     notify_pool.enqueue(new notify_thread_params(i, false, MOTAdaptor::GetLogicalEpoch()));//阻塞唤醒线程
-            //     // notify_pool.enqueue(new notify_thread_params(i, false));
-            // }
+            // MOT_LOG_INFO("=========到达一致性点 唤醒阻塞事务=======");
+            for(uint64_t i = 0; i < kNotifyNum; i++){
+                MOTAdaptor::lock_cv_txn_v[i]->notify_all();
+                // notify_pool.enqueue(new notify_thread_params(i, false, MOTAdaptor::GetLogicalEpoch()));//阻塞唤醒线程
+            }
         }
 
         // MOTAdaptor::lock_cv_epoch_cache.notify_all();
         MOTAdaptor::lock_cv_epoch_manager.wait([]{ return MOTAdaptor::GetPhysicalEpoch() > MOTAdaptor::GetLogicalEpoch(); });//等待到达新physical epoch点
-            
-        MOT_LOG_INFO("");
     }
 
 }
@@ -2470,7 +2474,7 @@ void EpochPhysicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> k
         
         // GenerateSendTasks(kPackageNum);
         usleep(GetSleeptime(kSleepTime));
-        // ChangeLocalChangeSet(kPackageNum);
+        ChangeLocalChangeSet(kPackageNum);
         MOTAdaptor::AddPhysicalEpoch();
         
         MOTAdaptor::lock_cv_epoch_manager.notify_all();
@@ -2502,3 +2506,30 @@ uint64_t GetSleeptime(uint64_t kSleepTime){
     } 
 }
 
+void GenerateSendTasks(uint64_t kPackageNum){
+    for(uint64_t i = 0; i < kPackageNum; i++){
+        pack_pool.enqueue(new pack_thread_params(i, MOTAdaptor::GetPhysicalEpoch(), (*local_change_set_txn_ptr2)[i], (*MOTAdaptor::local_change_set_txn_num_ptr2)[i]));
+    }
+}
+
+void ChangeLocalChangeSet(uint64_t kPackageNum){
+    lock_change_change_set.lock();
+    local_change_set_txn_ptr2 = std::make_shared<std::vector<std::shared_ptr<moodycamel::BlockingConcurrentQueue<merge::MergeRequest_Transaction*>>>>();
+    local_change_set_txn_ptr2->resize(kPackageNum);
+
+    MOTAdaptor::local_change_set_txn_num_ptr2 = std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
+    MOTAdaptor::local_change_set_txn_num_ptr2->resize(kPackageNum);
+
+    for(int i = 0; i < (int)kPackageNum; i++){
+        (*local_change_set_txn_ptr2)[i] = std::make_shared<moodycamel::BlockingConcurrentQueue<merge::MergeRequest_Transaction*>>();
+        (*MOTAdaptor::local_change_set_txn_num_ptr2)[i] = std::make_shared<std::atomic<uint64_t>>(0);
+    }
+    lock_change_change_set.unlock();
+}
+
+void SwitchLocalChangeSetPtr(uint64_t kPackageNum){
+    lock_switch_change_set.lock();
+    local_change_set_txn_ptr1 = local_change_set_txn_ptr2;
+    MOTAdaptor::local_change_set_txn_num_ptr1 = MOTAdaptor::local_change_set_txn_num_ptr2;
+    lock_switch_change_set.unlock();
+}

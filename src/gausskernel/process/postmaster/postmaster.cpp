@@ -11261,11 +11261,11 @@ void GenerateEpochThreads(){
     }
 
     
-    for (int i = 0 ; i < 1 ; i++){
-        g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i] = initialize_util_thread(EPOCH_MESSAGE_CACHE_MANAGER); 
-        epoch_cache_thread_ids.push_back(g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i]);
-        ereport(LOG, (errmsg("EpochMessageCacheManagerThread第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i])));
-    }
+    // for (int i = 0 ; i < 1 ; i++){
+    //     g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i] = initialize_util_thread(EPOCH_MESSAGE_CACHE_MANAGER); 
+    //     epoch_cache_thread_ids.push_back(g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i]);
+    //     ereport(LOG, (errmsg("EpochMessageCacheManagerThread第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i])));
+    // }
 
     
     // for (int i = 0 ; i < 1 ; i++){
@@ -11355,14 +11355,14 @@ void CkeckEpochThreadsI(){
             }
         }
 
-    if (g_instance.pid_cxt.EpochMessageCacheManagerPIDS != NULL) 
-        for (int i = 0 ; i < 1 ; i++){
-            if (g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i] == 0 && pmState == PM_RUN){
-                g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i] = initialize_util_thread(EPOCH_MESSAGE_CACHE_MANAGER); 
-                epoch_cache_thread_ids[i] = g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i];
-                ereport(LOG, (errmsg("EpochMessageCacheManagerThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i])));
-            }
-        }
+    // if (g_instance.pid_cxt.EpochMessageCacheManagerPIDS != NULL) 
+    //     for (int i = 0 ; i < 1 ; i++){
+    //         if (g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i] == 0 && pmState == PM_RUN){
+    //             g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i] = initialize_util_thread(EPOCH_MESSAGE_CACHE_MANAGER); 
+    //             epoch_cache_thread_ids[i] = g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i];
+    //             ereport(LOG, (errmsg("EpochMessageCacheManagerThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i])));
+    //         }
+    //     }
 
     // if (g_instance.pid_cxt.EpochMessageManagerPIDS != NULL) 
     //     for (int i = 0 ; i < 1 ; i++){
@@ -11524,7 +11524,10 @@ void GetServerInfo(){
     }
     ereport(LOG, (errmsg("kServerNum %d",(int)kServerNum)));
     ereport(LOG, (errmsg("local_ip_index %d",(int)local_ip_index)));
+    ereport(LOG, (errmsg("kPackageNum %d",(int)kPackageNum)));
+    ereport(LOG, (errmsg("kNotifyNum %d",(int)kNotifyNum)));
     ereport(LOG, (errmsg("kPackThreadNum %d",(int)kPackThreadNum)));
+    ereport(LOG, (errmsg("kNotifyThreadNum %d",(int)kNotifyThreadNum)));
     ereport(LOG, (errmsg("kListenThreadNum == kSendThreadNum %d",(int)kListenThreadNum)));
     ereport(LOG, (errmsg("kSleepTime %d",(int)kSleepTime)));
     ereport(LOG, (errmsg("kUnseriThreadNum %d",(int)kUnseriThreadNum)));

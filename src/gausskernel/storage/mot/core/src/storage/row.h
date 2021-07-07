@@ -612,6 +612,13 @@ protected:
     friend Table;
 
     DECLARE_CLASS_LOGGER()
+
+//ADDBY NEU
+public:
+    bool ValidateAndSetWrite(uint64_t m_csn, uint64_t start_epoch, uint64_t commit_epoch) {
+        return this->m_rowHeader.ValidateAndSetWrite(m_csn, start_epoch, commit_epoch);
+    }
+    
 };
 }  // namespace MOT
 
