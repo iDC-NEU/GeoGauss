@@ -10696,7 +10696,7 @@ static ThreadMetaData GaussdbThreadGate[] = {
     //ADDBY NEU
     { GaussDbThreadMain<EPOCH_LOGICAL_TIMER_MANAGER>, EPOCH_LOGICAL_TIMER_MANAGER, "epochlogical", "epoch logical timer manager"},
     { GaussDbThreadMain<EPOCH_PHYSICAL_TIMER_MANAGER>, EPOCH_PHYSICAL_TIMER_MANAGER, "epochphysical", "epoch physical timer manager"},
-    { GaussDbThreadMain<EPOCH_MESSAGE_CACHE_MANAGER>, EPOCH_MESSAGE_CACHE_MANAGER, "epochmcache", "epoch message cache manager"},
+    { GaussDbThreadMain<EPOCH_MESSAGE_CACHE_MANAGER>, EPOCH_MESSAGE_CACHE_MANAGER, "epochcache", "epoch message cache manager"},
     { GaussDbThreadMain<EPOCH_MESSAGE_MANAGER>, EPOCH_MESSAGE_MANAGER, "epochmm", "epoch message manager"},
     { GaussDbThreadMain<EPOCH_NOTIFY>, EPOCH_NOTIFY, "epochnotify", "epoch notify"},
     { GaussDbThreadMain<EPOCH_PACK>, EPOCH_PACK, "epochpack", "epoch package"},
@@ -11261,11 +11261,11 @@ void GenerateEpochThreads(){
     }
 
     
-    // for (int i = 0 ; i < 1 ; i++){
-    //     g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i] = initialize_util_thread(EPOCH_MESSAGE_CACHE_MANAGER); 
-    //     epoch_cache_thread_ids.push_back(g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i]);
-    //     ereport(LOG, (errmsg("EpochMessageCacheManagerThread第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i])));
-    // }
+    for (int i = 0 ; i < 1 ; i++){
+        g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i] = initialize_util_thread(EPOCH_MESSAGE_CACHE_MANAGER); 
+        epoch_cache_thread_ids.push_back(g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i]);
+        ereport(LOG, (errmsg("EpochMessageCacheManagerThread第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i])));
+    }
 
     
     // for (int i = 0 ; i < 1 ; i++){
@@ -11275,11 +11275,11 @@ void GenerateEpochThreads(){
     // }
 
     
-    // for (int i = 0 ; i < (int)kPackThreadNum; i++){
-    //     g_instance.pid_cxt.EpochPackPIDS[i] = initialize_util_thread(EPOCH_PACK); 
-    //     epoch_pack_thread_ids.push_back(g_instance.pid_cxt.EpochPackPIDS[i]);
-    //     ereport(LOG, (errmsg("EpochMessagePackThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochPackPIDS[i])));
-    // }
+    for (int i = 0 ; i < (int)kPackThreadNum; i++){
+        g_instance.pid_cxt.EpochPackPIDS[i] = initialize_util_thread(EPOCH_PACK); 
+        epoch_pack_thread_ids.push_back(g_instance.pid_cxt.EpochPackPIDS[i]);
+        ereport(LOG, (errmsg("EpochMessagePackThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochPackPIDS[i])));
+    }
 
     
     // for (int i = 0 ; i < (int)kNotifyThreadNum; i++){
@@ -11289,48 +11289,48 @@ void GenerateEpochThreads(){
     // }
 
     
-    // for (int i = 0 ; i < (int)kSendThreadNum ; i++){
-    //     g_instance.pid_cxt.EpochSendPIDS[i] = initialize_util_thread(EPOCH_SEND);
-    //     epoch_send_thread_ids.push_back(g_instance.pid_cxt.EpochSendPIDS[i]);
-    //     ereport(LOG, (errmsg("EpochSendThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochSendPIDS[i])));
-    // }
+    for (int i = 0 ; i < (int)kSendThreadNum ; i++){
+        g_instance.pid_cxt.EpochSendPIDS[i] = initialize_util_thread(EPOCH_SEND);
+        epoch_send_thread_ids.push_back(g_instance.pid_cxt.EpochSendPIDS[i]);
+        ereport(LOG, (errmsg("EpochSendThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochSendPIDS[i])));
+    }
 
 
     
-    // for (int i = 0 ; i < (int)kListenThreadNum ; i++){
-    //     g_instance.pid_cxt.EpochListenPIDS[i] = initialize_util_thread(EPOCH_LISTEN); 
-    //     epoch_listen_thread_ids.push_back(g_instance.pid_cxt.EpochListenPIDS[i]);
-    //     ereport(LOG, (errmsg("EpochListenThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochListenPIDS[i])));
-    // }
+    for (int i = 0 ; i < (int)kListenThreadNum ; i++){
+        g_instance.pid_cxt.EpochListenPIDS[i] = initialize_util_thread(EPOCH_LISTEN); 
+        epoch_listen_thread_ids.push_back(g_instance.pid_cxt.EpochListenPIDS[i]);
+        ereport(LOG, (errmsg("EpochListenThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochListenPIDS[i])));
+    }
 
 
     
-    // for (int i = 0 ; i < (int)kUnseriThreadNum ; i++){
-    //     g_instance.pid_cxt.EpochUnseriPIDS[i] = initialize_util_thread(EPOCH_UNSERI); 
-    //     epoch_unseri_thread_ids.push_back(g_instance.pid_cxt.EpochUnseriPIDS[i]);
-    //     ereport(LOG, (errmsg("EpochUnseriThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochUnseriPIDS[i])));
-    // }
+    for (int i = 0 ; i < (int)kUnseriThreadNum ; i++){
+        g_instance.pid_cxt.EpochUnseriPIDS[i] = initialize_util_thread(EPOCH_UNSERI); 
+        epoch_unseri_thread_ids.push_back(g_instance.pid_cxt.EpochUnseriPIDS[i]);
+        ereport(LOG, (errmsg("EpochUnseriThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochUnseriPIDS[i])));
+    }
 
     
-    // for (int i = 0 ; i < (int)kUnpackThreadNum ; i++){
-    //     g_instance.pid_cxt.EpochUnpackPIDS[i] = initialize_util_thread(EPOCH_UNPACK); 
-    //     epoch_unpack_thread_ids.push_back(g_instance.pid_cxt.EpochUnpackPIDS[i]);
-    //     ereport(LOG, (errmsg("EpochUnpackThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochUnpackPIDS[i])));
-    // }
+    for (int i = 0 ; i < (int)kUnpackThreadNum ; i++){
+        g_instance.pid_cxt.EpochUnpackPIDS[i] = initialize_util_thread(EPOCH_UNPACK); 
+        epoch_unpack_thread_ids.push_back(g_instance.pid_cxt.EpochUnpackPIDS[i]);
+        ereport(LOG, (errmsg("EpochUnpackThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochUnpackPIDS[i])));
+    }
 
     
-    // for (int i = 0 ; i < (int)kMergeThreadNum ; i++){
-    //     g_instance.pid_cxt.EpochMergePIDS[i] = initialize_util_thread(EPOCH_MERGE); 
-    //     epoch_merge_thread_ids.push_back(g_instance.pid_cxt.EpochMergePIDS[i]);
-    //     ereport(LOG, (errmsg("EpochMergeThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochMergePIDS[i])));
-    // }
+    for (int i = 0 ; i < (int)kMergeThreadNum ; i++){
+        g_instance.pid_cxt.EpochMergePIDS[i] = initialize_util_thread(EPOCH_MERGE); 
+        epoch_merge_thread_ids.push_back(g_instance.pid_cxt.EpochMergePIDS[i]);
+        ereport(LOG, (errmsg("EpochMergeThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochMergePIDS[i])));
+    }
 
     
-    // for (int i = 0 ; i < (int)kCommitThreadNum ; i++){
-    //     g_instance.pid_cxt.EpochCommitPIDS[i] = initialize_util_thread(EPOCH_COMMIT); 
-    //     epoch_commit_thread_ids.push_back(g_instance.pid_cxt.EpochCommitPIDS[i]);
-    //     ereport(LOG, (errmsg("EpochCommitThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochCommitPIDS[i])));
-    // }
+    for (int i = 0 ; i < (int)kCommitThreadNum ; i++){
+        g_instance.pid_cxt.EpochCommitPIDS[i] = initialize_util_thread(EPOCH_COMMIT); 
+        epoch_commit_thread_ids.push_back(g_instance.pid_cxt.EpochCommitPIDS[i]);
+        ereport(LOG, (errmsg("EpochCommitThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochCommitPIDS[i])));
+    }
 
 
 }
@@ -11355,14 +11355,14 @@ void CkeckEpochThreadsI(){
             }
         }
 
-    // if (g_instance.pid_cxt.EpochMessageCacheManagerPIDS != NULL) 
-    //     for (int i = 0 ; i < 1 ; i++){
-    //         if (g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i] == 0 && pmState == PM_RUN){
-    //             g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i] = initialize_util_thread(EPOCH_MESSAGE_CACHE_MANAGER); 
-    //             epoch_cache_thread_ids[i] = g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i];
-    //             ereport(LOG, (errmsg("EpochMessageCacheManagerThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i])));
-    //         }
-    //     }
+    if (g_instance.pid_cxt.EpochMessageCacheManagerPIDS != NULL) 
+        for (int i = 0 ; i < 1 ; i++){
+            if (g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i] == 0 && pmState == PM_RUN){
+                g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i] = initialize_util_thread(EPOCH_MESSAGE_CACHE_MANAGER); 
+                epoch_cache_thread_ids[i] = g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i];
+                ereport(LOG, (errmsg("EpochMessageCacheManagerThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i])));
+            }
+        }
 
     // if (g_instance.pid_cxt.EpochMessageManagerPIDS != NULL) 
     //     for (int i = 0 ; i < 1 ; i++){
@@ -11373,14 +11373,14 @@ void CkeckEpochThreadsI(){
     //         }
     //     }
 
-    // if (g_instance.pid_cxt.EpochPackPIDS != NULL) 
-    //     for (int i = 0 ; i < (int)kPackThreadNum; i++){
-    //         if (g_instance.pid_cxt.EpochPackPIDS[i] == 0 && pmState == PM_RUN){
-    //             g_instance.pid_cxt.EpochPackPIDS[i] = initialize_util_thread(EPOCH_PACK); 
-    //             epoch_pack_thread_ids[i] = g_instance.pid_cxt.EpochPackPIDS[i];
-    //             ereport(LOG, (errmsg("EpochMessagePackagThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochPackPIDS[i])));
-    //         }
-    //     }
+    if (g_instance.pid_cxt.EpochPackPIDS != NULL) 
+        for (int i = 0 ; i < (int)kPackThreadNum; i++){
+            if (g_instance.pid_cxt.EpochPackPIDS[i] == 0 && pmState == PM_RUN){
+                g_instance.pid_cxt.EpochPackPIDS[i] = initialize_util_thread(EPOCH_PACK); 
+                epoch_pack_thread_ids[i] = g_instance.pid_cxt.EpochPackPIDS[i];
+                ereport(LOG, (errmsg("EpochMessagePackagThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochPackPIDS[i])));
+            }
+        }
     
     // if (g_instance.pid_cxt.EpochNotifyPIDS != NULL) 
     //     for (int i = 0 ; i < (int)kNotifyThreadNum; i++){
@@ -11391,59 +11391,59 @@ void CkeckEpochThreadsI(){
     //         }
     //     }
 
-    // if (g_instance.pid_cxt.EpochSendPIDS != NULL) 
-    //     for (int i = 0 ; i < (int)kSendThreadNum ; i++){
-    //         if (g_instance.pid_cxt.EpochSendPIDS[i] == 0 && pmState == PM_RUN){
-    //             g_instance.pid_cxt.EpochSendPIDS[i] = initialize_util_thread(EPOCH_SEND); 
-    //             epoch_send_thread_ids[i] == g_instance.pid_cxt.EpochSendPIDS[i];
-    //             ereport(LOG, (errmsg("EpochSendThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochSendPIDS[i])));
-    //         }
-    //     }
+    if (g_instance.pid_cxt.EpochSendPIDS != NULL) 
+        for (int i = 0 ; i < (int)kSendThreadNum ; i++){
+            if (g_instance.pid_cxt.EpochSendPIDS[i] == 0 && pmState == PM_RUN){
+                g_instance.pid_cxt.EpochSendPIDS[i] = initialize_util_thread(EPOCH_SEND); 
+                epoch_send_thread_ids[i] == g_instance.pid_cxt.EpochSendPIDS[i];
+                ereport(LOG, (errmsg("EpochSendThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochSendPIDS[i])));
+            }
+        }
 
-    // if (g_instance.pid_cxt.EpochListenPIDS != NULL) 
-    //     for (int i = 0 ; i < (int)kListenThreadNum ; i++){
-    //         if (g_instance.pid_cxt.EpochListenPIDS[i] == 0 && pmState == PM_RUN){
-    //             g_instance.pid_cxt.EpochListenPIDS[i] = initialize_util_thread(EPOCH_LISTEN); 
-    //             epoch_listen_thread_ids[i] = g_instance.pid_cxt.EpochListenPIDS[i];
-    //             ereport(LOG, (errmsg("EpochListenThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochListenPIDS[i])));
-    //         }
-    //     }
+    if (g_instance.pid_cxt.EpochListenPIDS != NULL) 
+        for (int i = 0 ; i < (int)kListenThreadNum ; i++){
+            if (g_instance.pid_cxt.EpochListenPIDS[i] == 0 && pmState == PM_RUN){
+                g_instance.pid_cxt.EpochListenPIDS[i] = initialize_util_thread(EPOCH_LISTEN); 
+                epoch_listen_thread_ids[i] = g_instance.pid_cxt.EpochListenPIDS[i];
+                ereport(LOG, (errmsg("EpochListenThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochListenPIDS[i])));
+            }
+        }
     
-    // if (g_instance.pid_cxt.EpochUnseriPIDS != NULL) 
-    //     for (int i = 0 ; i < (int)kUnseriThreadNum ; i++){
-    //         if (g_instance.pid_cxt.EpochUnseriPIDS[i] == 0 && pmState == PM_RUN){
-    //             g_instance.pid_cxt.EpochUnseriPIDS[i] = initialize_util_thread(EPOCH_UNSERI); 
-    //             epoch_unseri_thread_ids[i] = g_instance.pid_cxt.EpochUnseriPIDS[i];
-    //             ereport(LOG, (errmsg("EpochUnseriThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochUnseriPIDS[i])));
-    //         }
-    //     }
+    if (g_instance.pid_cxt.EpochUnseriPIDS != NULL) 
+        for (int i = 0 ; i < (int)kUnseriThreadNum ; i++){
+            if (g_instance.pid_cxt.EpochUnseriPIDS[i] == 0 && pmState == PM_RUN){
+                g_instance.pid_cxt.EpochUnseriPIDS[i] = initialize_util_thread(EPOCH_UNSERI); 
+                epoch_unseri_thread_ids[i] = g_instance.pid_cxt.EpochUnseriPIDS[i];
+                ereport(LOG, (errmsg("EpochUnseriThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochUnseriPIDS[i])));
+            }
+        }
 
-    // if (g_instance.pid_cxt.EpochUnpackPIDS != NULL) 
-    //     for (int i = 0 ; i < (int)kUnpackThreadNum ; i++){
-    //         if (g_instance.pid_cxt.EpochUnpackPIDS[i] == 0 && pmState == PM_RUN){
-    //             g_instance.pid_cxt.EpochUnpackPIDS[i] = initialize_util_thread(EPOCH_UNPACK); 
-    //             epoch_unpack_thread_ids[i] = g_instance.pid_cxt.EpochUnpackPIDS[i];
-    //             ereport(LOG, (errmsg("EpochUnpackThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochUnpackPIDS[i])));
-    //         }
-    //     }
+    if (g_instance.pid_cxt.EpochUnpackPIDS != NULL) 
+        for (int i = 0 ; i < (int)kUnpackThreadNum ; i++){
+            if (g_instance.pid_cxt.EpochUnpackPIDS[i] == 0 && pmState == PM_RUN){
+                g_instance.pid_cxt.EpochUnpackPIDS[i] = initialize_util_thread(EPOCH_UNPACK); 
+                epoch_unpack_thread_ids[i] = g_instance.pid_cxt.EpochUnpackPIDS[i];
+                ereport(LOG, (errmsg("EpochUnpackThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochUnpackPIDS[i])));
+            }
+        }
 
-    // if (g_instance.pid_cxt.EpochMergePIDS != NULL) 
-    //     for (int i = 0 ; i < (int)kMergeThreadNum ; i++){
-    //         if (g_instance.pid_cxt.EpochMergePIDS[i] == 0 && pmState == PM_RUN){
-    //             g_instance.pid_cxt.EpochMergePIDS[i] = initialize_util_thread(EPOCH_MERGE); 
-    //             epoch_merge_thread_ids[i] = g_instance.pid_cxt.EpochMergePIDS[i];
-    //             ereport(LOG, (errmsg("EpochMergeThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochMergePIDS[i])));
-    //         }
-    //     }
+    if (g_instance.pid_cxt.EpochMergePIDS != NULL) 
+        for (int i = 0 ; i < (int)kMergeThreadNum ; i++){
+            if (g_instance.pid_cxt.EpochMergePIDS[i] == 0 && pmState == PM_RUN){
+                g_instance.pid_cxt.EpochMergePIDS[i] = initialize_util_thread(EPOCH_MERGE); 
+                epoch_merge_thread_ids[i] = g_instance.pid_cxt.EpochMergePIDS[i];
+                ereport(LOG, (errmsg("EpochMergeThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochMergePIDS[i])));
+            }
+        }
 
-    // if (g_instance.pid_cxt.EpochCommitPIDS != NULL) 
-    //     for (int i = 0 ; i < (int)kCommitThreadNum ; i++){
-    //         if (g_instance.pid_cxt.EpochCommitPIDS[i] == 0 && pmState == PM_RUN){
-    //             g_instance.pid_cxt.EpochCommitPIDS[i] = initialize_util_thread(EPOCH_COMMIT); 
-    //             epoch_commit_thread_ids[i] = g_instance.pid_cxt.EpochCommitPIDS[i];
-    //             ereport(LOG, (errmsg("EpochCommitThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochCommitPIDS[i])));
-    //         }
-    //     }
+    if (g_instance.pid_cxt.EpochCommitPIDS != NULL) 
+        for (int i = 0 ; i < (int)kCommitThreadNum ; i++){
+            if (g_instance.pid_cxt.EpochCommitPIDS[i] == 0 && pmState == PM_RUN){
+                g_instance.pid_cxt.EpochCommitPIDS[i] = initialize_util_thread(EPOCH_COMMIT); 
+                epoch_commit_thread_ids[i] = g_instance.pid_cxt.EpochCommitPIDS[i];
+                ereport(LOG, (errmsg("EpochCommitThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochCommitPIDS[i])));
+            }
+        }
 
 
 }

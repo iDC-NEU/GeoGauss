@@ -618,6 +618,8 @@ public:
     bool ValidateAndSetWrite(uint64_t m_csn, uint64_t start_epoch, uint64_t commit_epoch) {
         return this->m_rowHeader.ValidateAndSetWrite(m_csn, start_epoch, commit_epoch);
     }
+
+    void SetValueVariable_1(int id, const void* ptr, uint32_t size);
     
 };
 }  // namespace MOT

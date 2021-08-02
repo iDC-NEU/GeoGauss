@@ -23,13 +23,17 @@ syntax = "proto3";
 package merge;
 
 message MergeRequest {
-
-  message Transaction{
+  message Transaction{  
     message Row{
+      message Column {
+        uint64 id = 1; // column id
+        bytes value = 2; // column value/data
+      }
       string tableName = 1;        
       bytes key = 2;
-      bytes data= 3;
-      uint32 type = 4; /// 0-update, 1-insert, 2-delete
+      uint32 type = 3; /// 0-update, 1-insert, 2-delete
+      repeated Column column = 4;
+      bytes data = 5;
     }
     uint64 TxnID = 1;
     repeated Row row = 2;
@@ -40,4 +44,5 @@ message MergeRequest {
   repeated Transaction Txn = 1;
   string request_address = 2;
   uint64 epoch = 3;
+  uint64 pack_id = 4;
 }

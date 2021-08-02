@@ -87,7 +87,7 @@ void EpochPackMain(void)
      * Create a resource owner to keep track of our resources (not clear that
      * we need this, but may as well have one).
      */
-    t_thrd.utils_cxt.CurrentResourceOwner = ResourceOwnerCreate(NULL, "epoch message package", MEMORY_CONTEXT_STORAGE);
+    t_thrd.utils_cxt.CurrentResourceOwner = ResourceOwnerCreate(NULL, "epoch package", MEMORY_CONTEXT_STORAGE);
 
     /*
      * Create a memory context that we will do all our work in.  We do this so
@@ -96,7 +96,7 @@ void EpochPackMain(void)
      * t_thrd.top_mem_cxt, but resetting that would be a really bad idea.
      */
     epochpack_context = AllocSetContextCreate(t_thrd.top_mem_cxt,
-        "epoch message package",
+        "epoch package",
         ALLOCSET_DEFAULT_MINSIZE,
         ALLOCSET_DEFAULT_INITSIZE,
         ALLOCSET_DEFAULT_MAXSIZE);
@@ -193,7 +193,7 @@ void EpochPackMain(void)
      */
     // g_instance.proc_base->epochpackLatch = &t_thrd.proc->procLatch;
 
-    pgstat_report_appname("epoch message package");
+    pgstat_report_appname("epoch package");
     pgstat_report_activity(STATE_IDLE, NULL);
 
     /*

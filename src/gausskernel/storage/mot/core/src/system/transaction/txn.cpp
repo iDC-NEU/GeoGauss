@@ -24,6 +24,7 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <algorithm>
 #include <unordered_map>
 
@@ -38,6 +39,8 @@
 #include "utilities.h"
 #include "mm_api.h"
 #include "../../../../fdw_adapter/src/mot_internal.h"//ADDBY NEU
+#include <cpuid.h>
+#include <sstream>
 namespace MOT {
 DECLARE_LOGGER(TxnManager, System);
 
@@ -164,6 +167,7 @@ RC TxnManager::StartTransaction(uint64_t transactionId, int isolationLevel)
     m_isolationLevel = isolationLevel;
     m_state = TxnState::TXN_START;
     GcSessionStart();
+    SetStartEpoch(MOTAdaptor::GetPhysicalEpoch());//ADDBY NEU
     return RC_OK;
 }
 
@@ -1309,6 +1313,8 @@ uint64_t GetThreadID(){
     // thread_id_stream << std::this_thread::get_id();
     // return std::stoull(thread_id_stream.str());
 }
+
+
 //txn.cpp
 //ADDBY NEU
 /**
@@ -1331,88 +1337,62 @@ RC TxnManager::Commit()
     if (this->m_accessMgr->m_rowCnt > 0 && !result)
     {
         uint64_t thread_id = GetThreadID();//随机分布
-        // uint64_t thread_id = MOTAdaptor::IncLocalTxnIndex();//均匀分布
+        // uint64_t index_unique = MOTAdaptor::IncLocalTxnIndex();
         uint64_t index_pack = thread_id % MOTAdaptor::kPackageNum;
         uint64_t index_notify = thread_id % MOTAdaptor::kNotifyNum;
+        
+        void* txn = MOTAdaptor::InsertRowToMergeRequestTxn(this);
         begin:
-        // while(MOTAdaptor::GetPhysicalEpoch() != MOTAdaptor::GetLogicalEpoch()) usleep(500);
 
         if(MOTAdaptor::GetPhysicalEpoch() != MOTAdaptor::GetLogicalEpoch()){//到达一个新physical epoch 新来线程被阻塞
-            wait_count += 1;
-            // MOT_LOG_INFO("等待阻塞 等待事务数量：%d", wait_count.load());
             MOTAdaptor::lock_cv_txn_v[index_notify]->wait([]{ return MOTAdaptor::GetPhysicalEpoch() == MOTAdaptor::GetLogicalEpoch();});
-            wait_count -= 1;
-            // MOT_LOG_INFO("恢复阻塞 等待事务还剩数量：%d", wait_count.load());
         }
-        // auto firstWait = now_to_us();
-        // MOT_LOG_INFO("time for first wait = %lu", (firstWait - startCommit));
-        
-        MOTAdaptor::IncLocalTxnCounter();
-        // MOTAdaptor::IncLocalTxnCounter(index_pack);
+        // MOTAdaptor::IncLocalTxnCounter();
+        MOTAdaptor::IncLocalTxnCounter(index_pack);
 
         SetCommitSequenceNumber(now_to_us());
         SetCommitEpoch(MOTAdaptor::GetPhysicalEpoch());
 
-
         if( (MOTAdaptor::GetPhysicalEpoch() != MOTAdaptor::GetLogicalEpoch() && MOTAdaptor::GetLocalChangeSetNum(index_pack) == 0) || MOTAdaptor::isRemoteExeced() ){
             //写集可能已经被发送出去或merge已进行到提交阶段,当前事务停止继续运行，阻塞到下一个epoch
             //如果此时isRemoteExeced 为true 表明先前IncLocalTxnCounter无效 事务不应该继续运行  （单机问题，多主情况下由于网络延迟，不会产生此类问题）
-            MOTAdaptor::DecLocalTxnCounter();
+            // MOTAdaptor::DecLocalTxnCounter();
+            MOTAdaptor::DecLocalTxnCounter(index_pack);
             MOT_LOG_INFO("事务跳转 goto begin");
             goto begin;
         }
         MOTAdaptor::IncLocalChangeSetNum(index_pack);
 
         if(!m_occManager.ValidateReadInMerge(this)){
-            MOTAdaptor::DecLocalChangeSetNum(index_pack);
-            // MOTAdaptor::DecLocalTxnCounter(index_pack);
-            MOTAdaptor::DecLocalTxnCounter();
+            MOTAdaptor::LocalTxnSafeExit(index_pack, txn);
             return RC_ABORT;
         }
 
         uint64_t currentEpoch = MOTAdaptor::GetPhysicalEpoch();
         RC rc = m_occManager.ExecutionPhase(this);
-
-        // auto exec = now_to_us();
-        // MOT_LOG_INFO("time for execution = %lu", (exec - firstWait));
         if (rc != RC_OK)
         {
-            MOTAdaptor::DecLocalChangeSetNum(index_pack);
-            // MOTAdaptor::DecLocalTxnCounter(index_pack);
-            MOTAdaptor::DecLocalTxnCounter();
+            MOTAdaptor::LocalTxnSafeExit(index_pack, txn);  
             return rc;
         }
-        else
-            MOTAdaptor::InsertRowToSet(this, index_pack);
-        // MOTAdaptor::DecExeCounter(index_pack);
-        MOTAdaptor::DecExeCounter();
-
-        // auto insert = now_to_us();
-        // MOT_LOG_INFO("time for insert to queue = %lu", (insert - exec));
-
-        // MOT_LOG_INFO("commit阶段 被阻塞等待事务数量：%d", wait_count_commit.load());
+        else{
+            if(MOTAdaptor::InsertRowToSet(this, txn, index_pack, MOTAdaptor::IncLocalTxnIndex(index_pack)) == false){
+                MOTAdaptor::LocalTxnSafeExit(index_pack, txn);  
+                return RC_ABORT;
+            }
+        }
+        MOTAdaptor::DecExeCounter(index_pack);
+        // MOTAdaptor::DecExeCounter();
 
         if(!MOTAdaptor::isRemoteExeced()){
-            wait_count_commit += 1;
-            // MOT_LOG_INFO("commit阶段 等待阻塞 等待事务数量：%d %llu", wait_count_commit.load());
             MOTAdaptor::lock_cv_commit_v[index_notify]->wait([]{ return MOTAdaptor::isRemoteExeced(); });
-            wait_count_commit -= 1;
-            // MOT_LOG_INFO("commit阶段 恢复阻塞 等待事务还剩数量：%d %llu", wait_count_commit.load(), MOTAdaptor::GetComCounter());
-        }
 
-        // auto secondWait = now_to_us();
-        // MOT_LOG_INFO("time for second waits = %lu", (secondWait - insert));
+            // auto index = lock_cv_commit_wait_counter.fetch_add(1);
+            // MOTAdaptor::lock_cv_commit_l[index]->wait_with_mark([]{ return MOTAdaptor::isRemoteExeced();}); 
+        }
         rc = m_occManager.CommitPhase(this);
-        //在record commit中写这个
-        // if (rc == RC_OK)
-        // {
-        //     MOT::DbSessionStatisticsProvider::GetInstance().AddCommitTxn();
-        // }
-        MOTAdaptor::DecComCounter();
-        // MOTAdaptor::DecComCounter(index_pack);
-        // auto comm = now_to_us();
-        // MOT_LOG_INFO("time for commit waits = %lu", (comm - secondWait));
-        // MOT_LOG_INFO("本地提交事务还剩数量：%llu", MOTAdaptor::GetComCounter(index));
+        // MOTAdaptor::DecComCounter();
+        MOTAdaptor::DecComCounter(index_pack);
         return rc;
     }
     else

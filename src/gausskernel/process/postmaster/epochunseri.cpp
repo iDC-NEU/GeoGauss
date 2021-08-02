@@ -87,7 +87,7 @@ void EpochUnseriMain(void)
      * Create a resource owner to keep track of our resources (not clear that
      * we need this, but may as well have one).
      */
-    t_thrd.utils_cxt.CurrentResourceOwner = ResourceOwnerCreate(NULL, "epoch message unserialize", MEMORY_CONTEXT_STORAGE);
+    t_thrd.utils_cxt.CurrentResourceOwner = ResourceOwnerCreate(NULL, "epoch unserialize", MEMORY_CONTEXT_STORAGE);
 
     /*
      * Create a memory context that we will do all our work in.  We do this so
@@ -96,7 +96,7 @@ void EpochUnseriMain(void)
      * t_thrd.top_mem_cxt, but resetting that would be a really bad idea.
      */
     epochunseri_context = AllocSetContextCreate(t_thrd.top_mem_cxt,
-        "epoch message unserialize",
+        "epoch unserialize",
         ALLOCSET_DEFAULT_MINSIZE,
         ALLOCSET_DEFAULT_INITSIZE,
         ALLOCSET_DEFAULT_MAXSIZE);
@@ -193,7 +193,7 @@ void EpochUnseriMain(void)
      */
     // g_instance.proc_base->epochunseriLatch = &t_thrd.proc->procLatch;
 
-    pgstat_report_appname("epoch message unserialize");
+    pgstat_report_appname("epoch unserialize");
     pgstat_report_activity(STATE_IDLE, NULL);
 
     /*

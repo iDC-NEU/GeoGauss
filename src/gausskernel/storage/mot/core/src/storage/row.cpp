@@ -77,4 +77,12 @@ Row* Row::CreateCopy()
     }
     return row;
 }
+
+void Row::SetValueVariable_1(int id, const void* ptr, uint32_t size) { 
+    const uint64_t fieldSize = m_table->GetFieldSize(id); 
+    MOT_ASSERT(size < fieldSize); 
+    errno_t erc = memcpy_s(&m_data[m_table->GetFieldOffset(id)], fieldSize, ptr, size);
+    securec_check(erc, "\0", "\0"); 
+}
+
 }  // namespace MOT

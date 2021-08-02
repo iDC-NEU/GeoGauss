@@ -47,7 +47,7 @@ struct TableStruct_message_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[3]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[4]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -64,15 +64,165 @@ extern MergeRequest_TransactionDefaultTypeInternal _MergeRequest_Transaction_def
 class MergeRequest_Transaction_Row;
 class MergeRequest_Transaction_RowDefaultTypeInternal;
 extern MergeRequest_Transaction_RowDefaultTypeInternal _MergeRequest_Transaction_Row_default_instance_;
+class MergeRequest_Transaction_Row_Column;
+class MergeRequest_Transaction_Row_ColumnDefaultTypeInternal;
+extern MergeRequest_Transaction_Row_ColumnDefaultTypeInternal _MergeRequest_Transaction_Row_Column_default_instance_;
 }  // namespace merge
 PROTOBUF_NAMESPACE_OPEN
 template<> ::merge::MergeRequest* Arena::CreateMaybeMessage<::merge::MergeRequest>(Arena*);
 template<> ::merge::MergeRequest_Transaction* Arena::CreateMaybeMessage<::merge::MergeRequest_Transaction>(Arena*);
 template<> ::merge::MergeRequest_Transaction_Row* Arena::CreateMaybeMessage<::merge::MergeRequest_Transaction_Row>(Arena*);
+template<> ::merge::MergeRequest_Transaction_Row_Column* Arena::CreateMaybeMessage<::merge::MergeRequest_Transaction_Row_Column>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 namespace merge {
 
 // ===================================================================
+
+class MergeRequest_Transaction_Row_Column :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.MergeRequest.Transaction.Row.Column) */ {
+ public:
+  MergeRequest_Transaction_Row_Column();
+  virtual ~MergeRequest_Transaction_Row_Column();
+
+  MergeRequest_Transaction_Row_Column(const MergeRequest_Transaction_Row_Column& from);
+  MergeRequest_Transaction_Row_Column(MergeRequest_Transaction_Row_Column&& from) noexcept
+    : MergeRequest_Transaction_Row_Column() {
+    *this = ::std::move(from);
+  }
+
+  inline MergeRequest_Transaction_Row_Column& operator=(const MergeRequest_Transaction_Row_Column& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline MergeRequest_Transaction_Row_Column& operator=(MergeRequest_Transaction_Row_Column&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const MergeRequest_Transaction_Row_Column& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const MergeRequest_Transaction_Row_Column* internal_default_instance() {
+    return reinterpret_cast<const MergeRequest_Transaction_Row_Column*>(
+               &_MergeRequest_Transaction_Row_Column_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    0;
+
+  friend void swap(MergeRequest_Transaction_Row_Column& a, MergeRequest_Transaction_Row_Column& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(MergeRequest_Transaction_Row_Column* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline MergeRequest_Transaction_Row_Column* New() const final {
+    return CreateMaybeMessage<MergeRequest_Transaction_Row_Column>(nullptr);
+  }
+
+  MergeRequest_Transaction_Row_Column* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<MergeRequest_Transaction_Row_Column>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const MergeRequest_Transaction_Row_Column& from);
+  void MergeFrom(const MergeRequest_Transaction_Row_Column& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(MergeRequest_Transaction_Row_Column* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "merge.MergeRequest.Transaction.Row.Column";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kValueFieldNumber = 2,
+    kIdFieldNumber = 1,
+  };
+  // bytes value = 2;
+  void clear_value();
+  const std::string& value() const;
+  void set_value(const std::string& value);
+  void set_value(std::string&& value);
+  void set_value(const char* value);
+  void set_value(const void* value, size_t size);
+  std::string* mutable_value();
+  std::string* release_value();
+  void set_allocated_value(std::string* value);
+  private:
+  const std::string& _internal_value() const;
+  void _internal_set_value(const std::string& value);
+  std::string* _internal_mutable_value();
+  public:
+
+  // uint64 id = 1;
+  void clear_id();
+  ::PROTOBUF_NAMESPACE_ID::uint64 id() const;
+  void set_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_id() const;
+  void _internal_set_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:merge.MergeRequest.Transaction.Row.Column)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr value_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 id_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
 
 class MergeRequest_Transaction_Row :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.MergeRequest.Transaction.Row) */ {
@@ -116,7 +266,7 @@ class MergeRequest_Transaction_Row :
                &_MergeRequest_Transaction_Row_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    0;
+    1;
 
   friend void swap(MergeRequest_Transaction_Row& a, MergeRequest_Transaction_Row& b) {
     a.Swap(&b);
@@ -177,14 +327,35 @@ class MergeRequest_Transaction_Row :
 
   // nested types ----------------------------------------------------
 
+  typedef MergeRequest_Transaction_Row_Column Column;
+
   // accessors -------------------------------------------------------
 
   enum : int {
+    kColumnFieldNumber = 4,
     kTableNameFieldNumber = 1,
     kKeyFieldNumber = 2,
-    kDataFieldNumber = 3,
-    kTypeFieldNumber = 4,
+    kDataFieldNumber = 5,
+    kTypeFieldNumber = 3,
   };
+  // repeated .merge.MergeRequest.Transaction.Row.Column column = 4;
+  int column_size() const;
+  private:
+  int _internal_column_size() const;
+  public:
+  void clear_column();
+  ::merge::MergeRequest_Transaction_Row_Column* mutable_column(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction_Row_Column >*
+      mutable_column();
+  private:
+  const ::merge::MergeRequest_Transaction_Row_Column& _internal_column(int index) const;
+  ::merge::MergeRequest_Transaction_Row_Column* _internal_add_column();
+  public:
+  const ::merge::MergeRequest_Transaction_Row_Column& column(int index) const;
+  ::merge::MergeRequest_Transaction_Row_Column* add_column();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction_Row_Column >&
+      column() const;
+
   // string tableName = 1;
   void clear_tablename();
   const std::string& tablename() const;
@@ -217,7 +388,7 @@ class MergeRequest_Transaction_Row :
   std::string* _internal_mutable_key();
   public:
 
-  // bytes data = 3;
+  // bytes data = 5;
   void clear_data();
   const std::string& data() const;
   void set_data(const std::string& value);
@@ -233,7 +404,7 @@ class MergeRequest_Transaction_Row :
   std::string* _internal_mutable_data();
   public:
 
-  // uint32 type = 4;
+  // uint32 type = 3;
   void clear_type();
   ::PROTOBUF_NAMESPACE_ID::uint32 type() const;
   void set_type(::PROTOBUF_NAMESPACE_ID::uint32 value);
@@ -247,6 +418,7 @@ class MergeRequest_Transaction_Row :
   class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction_Row_Column > column_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr tablename_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr key_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr data_;
@@ -298,7 +470,7 @@ class MergeRequest_Transaction :
                &_MergeRequest_Transaction_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    1;
+    2;
 
   friend void swap(MergeRequest_Transaction& a, MergeRequest_Transaction& b) {
     a.Swap(&b);
@@ -481,7 +653,7 @@ class MergeRequest :
                &_MergeRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    2;
+    3;
 
   friend void swap(MergeRequest& a, MergeRequest& b) {
     a.Swap(&b);
@@ -550,6 +722,7 @@ class MergeRequest :
     kTxnFieldNumber = 1,
     kRequestAddressFieldNumber = 2,
     kEpochFieldNumber = 3,
+    kPackIdFieldNumber = 4,
   };
   // repeated .merge.MergeRequest.Transaction Txn = 1;
   int txn_size() const;
@@ -594,6 +767,15 @@ class MergeRequest :
   void _internal_set_epoch(::PROTOBUF_NAMESPACE_ID::uint64 value);
   public:
 
+  // uint64 pack_id = 4;
+  void clear_pack_id();
+  ::PROTOBUF_NAMESPACE_ID::uint64 pack_id() const;
+  void set_pack_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_pack_id() const;
+  void _internal_set_pack_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
   // @@protoc_insertion_point(class_scope:merge.MergeRequest)
  private:
   class _Internal;
@@ -602,6 +784,7 @@ class MergeRequest :
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction > txn_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr request_address_;
   ::PROTOBUF_NAMESPACE_ID::uint64 epoch_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 pack_id_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_message_2eproto;
 };
@@ -614,6 +797,90 @@ class MergeRequest :
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
+// MergeRequest_Transaction_Row_Column
+
+// uint64 id = 1;
+inline void MergeRequest_Transaction_Row_Column::clear_id() {
+  id_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest_Transaction_Row_Column::_internal_id() const {
+  return id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest_Transaction_Row_Column::id() const {
+  // @@protoc_insertion_point(field_get:merge.MergeRequest.Transaction.Row.Column.id)
+  return _internal_id();
+}
+inline void MergeRequest_Transaction_Row_Column::_internal_set_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  id_ = value;
+}
+inline void MergeRequest_Transaction_Row_Column::set_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_id(value);
+  // @@protoc_insertion_point(field_set:merge.MergeRequest.Transaction.Row.Column.id)
+}
+
+// bytes value = 2;
+inline void MergeRequest_Transaction_Row_Column::clear_value() {
+  value_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline const std::string& MergeRequest_Transaction_Row_Column::value() const {
+  // @@protoc_insertion_point(field_get:merge.MergeRequest.Transaction.Row.Column.value)
+  return _internal_value();
+}
+inline void MergeRequest_Transaction_Row_Column::set_value(const std::string& value) {
+  _internal_set_value(value);
+  // @@protoc_insertion_point(field_set:merge.MergeRequest.Transaction.Row.Column.value)
+}
+inline std::string* MergeRequest_Transaction_Row_Column::mutable_value() {
+  // @@protoc_insertion_point(field_mutable:merge.MergeRequest.Transaction.Row.Column.value)
+  return _internal_mutable_value();
+}
+inline const std::string& MergeRequest_Transaction_Row_Column::_internal_value() const {
+  return value_.GetNoArena();
+}
+inline void MergeRequest_Transaction_Row_Column::_internal_set_value(const std::string& value) {
+  
+  value_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+}
+inline void MergeRequest_Transaction_Row_Column::set_value(std::string&& value) {
+  
+  value_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:merge.MergeRequest.Transaction.Row.Column.value)
+}
+inline void MergeRequest_Transaction_Row_Column::set_value(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  value_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:merge.MergeRequest.Transaction.Row.Column.value)
+}
+inline void MergeRequest_Transaction_Row_Column::set_value(const void* value, size_t size) {
+  
+  value_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:merge.MergeRequest.Transaction.Row.Column.value)
+}
+inline std::string* MergeRequest_Transaction_Row_Column::_internal_mutable_value() {
+  
+  return value_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* MergeRequest_Transaction_Row_Column::release_value() {
+  // @@protoc_insertion_point(field_release:merge.MergeRequest.Transaction.Row.Column.value)
+  
+  return value_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void MergeRequest_Transaction_Row_Column::set_allocated_value(std::string* value) {
+  if (value != nullptr) {
+    
+  } else {
+    
+  }
+  value_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set_allocated:merge.MergeRequest.Transaction.Row.Column.value)
+}
+
+// -------------------------------------------------------------------
+
 // MergeRequest_Transaction_Row
 
 // string tableName = 1;
@@ -736,7 +1003,66 @@ inline void MergeRequest_Transaction_Row::set_allocated_key(std::string* key) {
   // @@protoc_insertion_point(field_set_allocated:merge.MergeRequest.Transaction.Row.key)
 }
 
-// bytes data = 3;
+// uint32 type = 3;
+inline void MergeRequest_Transaction_Row::clear_type() {
+  type_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 MergeRequest_Transaction_Row::_internal_type() const {
+  return type_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 MergeRequest_Transaction_Row::type() const {
+  // @@protoc_insertion_point(field_get:merge.MergeRequest.Transaction.Row.type)
+  return _internal_type();
+}
+inline void MergeRequest_Transaction_Row::_internal_set_type(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  type_ = value;
+}
+inline void MergeRequest_Transaction_Row::set_type(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_type(value);
+  // @@protoc_insertion_point(field_set:merge.MergeRequest.Transaction.Row.type)
+}
+
+// repeated .merge.MergeRequest.Transaction.Row.Column column = 4;
+inline int MergeRequest_Transaction_Row::_internal_column_size() const {
+  return column_.size();
+}
+inline int MergeRequest_Transaction_Row::column_size() const {
+  return _internal_column_size();
+}
+inline void MergeRequest_Transaction_Row::clear_column() {
+  column_.Clear();
+}
+inline ::merge::MergeRequest_Transaction_Row_Column* MergeRequest_Transaction_Row::mutable_column(int index) {
+  // @@protoc_insertion_point(field_mutable:merge.MergeRequest.Transaction.Row.column)
+  return column_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction_Row_Column >*
+MergeRequest_Transaction_Row::mutable_column() {
+  // @@protoc_insertion_point(field_mutable_list:merge.MergeRequest.Transaction.Row.column)
+  return &column_;
+}
+inline const ::merge::MergeRequest_Transaction_Row_Column& MergeRequest_Transaction_Row::_internal_column(int index) const {
+  return column_.Get(index);
+}
+inline const ::merge::MergeRequest_Transaction_Row_Column& MergeRequest_Transaction_Row::column(int index) const {
+  // @@protoc_insertion_point(field_get:merge.MergeRequest.Transaction.Row.column)
+  return _internal_column(index);
+}
+inline ::merge::MergeRequest_Transaction_Row_Column* MergeRequest_Transaction_Row::_internal_add_column() {
+  return column_.Add();
+}
+inline ::merge::MergeRequest_Transaction_Row_Column* MergeRequest_Transaction_Row::add_column() {
+  // @@protoc_insertion_point(field_add:merge.MergeRequest.Transaction.Row.column)
+  return _internal_add_column();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction_Row_Column >&
+MergeRequest_Transaction_Row::column() const {
+  // @@protoc_insertion_point(field_list:merge.MergeRequest.Transaction.Row.column)
+  return column_;
+}
+
+// bytes data = 5;
 inline void MergeRequest_Transaction_Row::clear_data() {
   data_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
@@ -794,26 +1120,6 @@ inline void MergeRequest_Transaction_Row::set_allocated_data(std::string* data) 
   }
   data_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), data);
   // @@protoc_insertion_point(field_set_allocated:merge.MergeRequest.Transaction.Row.data)
-}
-
-// uint32 type = 4;
-inline void MergeRequest_Transaction_Row::clear_type() {
-  type_ = 0u;
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint32 MergeRequest_Transaction_Row::_internal_type() const {
-  return type_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint32 MergeRequest_Transaction_Row::type() const {
-  // @@protoc_insertion_point(field_get:merge.MergeRequest.Transaction.Row.type)
-  return _internal_type();
-}
-inline void MergeRequest_Transaction_Row::_internal_set_type(::PROTOBUF_NAMESPACE_ID::uint32 value) {
-  
-  type_ = value;
-}
-inline void MergeRequest_Transaction_Row::set_type(::PROTOBUF_NAMESPACE_ID::uint32 value) {
-  _internal_set_type(value);
-  // @@protoc_insertion_point(field_set:merge.MergeRequest.Transaction.Row.type)
 }
 
 // -------------------------------------------------------------------
@@ -1062,9 +1368,31 @@ inline void MergeRequest::set_epoch(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   // @@protoc_insertion_point(field_set:merge.MergeRequest.epoch)
 }
 
+// uint64 pack_id = 4;
+inline void MergeRequest::clear_pack_id() {
+  pack_id_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest::_internal_pack_id() const {
+  return pack_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest::pack_id() const {
+  // @@protoc_insertion_point(field_get:merge.MergeRequest.pack_id)
+  return _internal_pack_id();
+}
+inline void MergeRequest::_internal_set_pack_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  pack_id_ = value;
+}
+inline void MergeRequest::set_pack_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_pack_id(value);
+  // @@protoc_insertion_point(field_set:merge.MergeRequest.pack_id)
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

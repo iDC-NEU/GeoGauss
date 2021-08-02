@@ -612,20 +612,19 @@ bool OccTransactionManager::ValidateAndSetWriteSet(TxnManager *txMan)
         {
             continue;
         }
-        if (!ac->GetRowFromHeader()->m_rowHeader.ValidateAndSetWrite(txMan->GetCommitSequenceNumber(), txMan->GetStartEpoch(), txMan->GetCommitEpoch()))
+        else if(ac->m_type == INS) 
         {
-            result = false;
-        }
-        if(ac->m_type == INS){
             std::string table_name = ac->m_localInsertRow->GetTable()->GetLongTableName();
             std::string key = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan)->GetKeyStr();
             uint64_t currentCSN = txMan->GetCommitSequenceNumber();
-            MOTAdaptor::insertSet.insert(table_name + key, currentCSN, result);
-            // MOT_LOG_INFO("****************************************************");
-            // MOT_LOG_INFO("local execution, key = %s, csn = %lu, result = %d", (table_name  key).c_str(), currentCSN, result);
-            // MOT_LOG_INFO("****************************************************");
+            if(!MOTAdaptor::insertSet.insert(table_name + key, currentCSN))
+                result = false;
         }
-        
+        else // update or delete
+        {
+            if(!ac->GetRowFromHeader()->m_rowHeader.ValidateAndSetWrite(txMan->GetCommitSequenceNumber(), txMan->GetStartEpoch(), txMan->GetCommitEpoch()))
+                result = false;
+        }
     }
     return result;
 }
@@ -673,19 +672,12 @@ bool OccTransactionManager::ValidateWriteSetII(TxnManager *txMan)
         {
             continue;
         }
-
-        if (!ac->GetRowFromHeader()->m_rowHeader.ValidateWrite(txMan->GetCommitSequenceNumber()))
+        else if(ac->m_type == INS)
         {
-            return false;
-        }
-        if(ac->m_type == INS){
             std::string table_name = ac->m_localInsertRow->GetTable()->GetLongTableName();
             std::string key = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan)->GetKeyStr();
             /// 由于该阶段一般为只读操作，所以暂时没有加锁
             auto search = MOTAdaptor::insertSet.unsafe_find(table_name + key);
-            // MOT_LOG_INFO("****************************************************");
-            // MOT_LOG_INFO("local commit, key = %s, old_csn = %lu, my csn = %lu", (table_name  key).c_str(), search->second, txMan->GetCommitSequenceNumber());
-            // MOT_LOG_INFO("****************************************************");
             if (search != MOTAdaptor::insertSet.unsafe_end()) {
                 uint64_t csn = search->second;
                 // compare insert csn
@@ -695,6 +687,11 @@ bool OccTransactionManager::ValidateWriteSetII(TxnManager *txMan)
             } else {
                 return false;
             }
+        }
+        else
+        {
+            if(!ac->GetRowFromHeader()->m_rowHeader.ValidateWrite(txMan->GetCommitSequenceNumber()))
+                return false;
         }
     }
     return true;

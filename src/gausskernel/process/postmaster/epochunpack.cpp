@@ -124,7 +124,7 @@ void EpochUnpackMain(void)
      * Create a resource owner to keep track of our resources (not clear that
      * we need this, but may as well have one).
      */
-    t_thrd.utils_cxt.CurrentResourceOwner = ResourceOwnerCreate(NULL, "epoch message unpackage", MEMORY_CONTEXT_STORAGE);
+    t_thrd.utils_cxt.CurrentResourceOwner = ResourceOwnerCreate(NULL, "epoch unpackage", MEMORY_CONTEXT_STORAGE);
 
     /*
      * Create a memory context that we will do all our work in.  We do this so
@@ -133,7 +133,7 @@ void EpochUnpackMain(void)
      * t_thrd.top_mem_cxt, but resetting that would be a really bad idea.
      */
     epochunpack_context = AllocSetContextCreate(t_thrd.top_mem_cxt,
-        "epoch message unpackage",
+        "epoch unpackage",
         ALLOCSET_DEFAULT_MINSIZE,
         ALLOCSET_DEFAULT_INITSIZE,
         ALLOCSET_DEFAULT_MAXSIZE);
@@ -230,7 +230,7 @@ void EpochUnpackMain(void)
      */
     // g_instance.proc_base->epochunpackLatch = &t_thrd.proc->procLatch;
 
-    pgstat_report_appname("epoch message unpackage");
+    pgstat_report_appname("epoch unpackage");
     pgstat_report_activity(STATE_IDLE, NULL);
 
     /*
@@ -263,7 +263,7 @@ void EpochUnpackMain(void)
             /* Normal exit from the epochunpack is here */
             proc_exit(0); /* done */
         }
-        FDWEpochUnpackThreadMain(id);
+        FDWEpochUnpackThreadMain(id, kServerIp);
         // LWLockAcquire(WALWriteLock, LW_EXCLUSIVE);
         // wrote_something = XLogBackgroundFlush();
         // LWLockRelease(WALWriteLock);

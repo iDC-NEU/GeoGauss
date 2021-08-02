@@ -87,7 +87,7 @@ void EpochMergeMain(void)
      * Create a resource owner to keep track of our resources (not clear that
      * we need this, but may as well have one).
      */
-    t_thrd.utils_cxt.CurrentResourceOwner = ResourceOwnerCreate(NULL, "epoch txn merge", MEMORY_CONTEXT_STORAGE);
+    t_thrd.utils_cxt.CurrentResourceOwner = ResourceOwnerCreate(NULL, "epoch merge", MEMORY_CONTEXT_STORAGE);
 
     /*
      * Create a memory context that we will do all our work in.  We do this so
@@ -96,7 +96,7 @@ void EpochMergeMain(void)
      * t_thrd.top_mem_cxt, but resetting that would be a really bad idea.
      */
     epochmerge_context = AllocSetContextCreate(t_thrd.top_mem_cxt,
-        "epoch txn merge",
+        "epoch merge",
         ALLOCSET_DEFAULT_MINSIZE,
         ALLOCSET_DEFAULT_INITSIZE,
         ALLOCSET_DEFAULT_MAXSIZE);
@@ -193,14 +193,14 @@ void EpochMergeMain(void)
      */
     // g_instance.proc_base->epochmergeLatch = &t_thrd.proc->procLatch;
 
-    pgstat_report_appname("epoch txn merge");
+    pgstat_report_appname("epoch merge");
     pgstat_report_activity(STATE_IDLE, NULL);
 
     /*
      * Loop forever
      */
 
-    // ereport(LOG, (errmsg("epoch txn merge pid %llu %llu %llu", t_thrd.epochmerge_cxt.epochmerge_id, epoch_merge_thread_ids[0], std::this_thread::get_id())));
+    // ereport(LOG, (errmsg("epoch merge pid %llu %llu %llu", t_thrd.epochmerge_cxt.epochmerge_id, epoch_merge_thread_ids[0], std::this_thread::get_id())));
     uint64_t id = 0;
     std::stringstream thread_id_stream;
     thread_id_stream << std::this_thread::get_id();

@@ -87,7 +87,7 @@ void EpochCommitMain(void)
      * Create a resource owner to keep track of our resources (not clear that
      * we need this, but may as well have one).
      */
-    t_thrd.utils_cxt.CurrentResourceOwner = ResourceOwnerCreate(NULL, "epoch  commit", MEMORY_CONTEXT_STORAGE);
+    t_thrd.utils_cxt.CurrentResourceOwner = ResourceOwnerCreate(NULL, "epoch commit", MEMORY_CONTEXT_STORAGE);
 
     /*
      * Create a memory context that we will do all our work in.  We do this so
@@ -96,7 +96,7 @@ void EpochCommitMain(void)
      * t_thrd.top_mem_cxt, but resetting that would be a really bad idea.
      */
     epochcommit_context = AllocSetContextCreate(t_thrd.top_mem_cxt,
-        "epoch  commit",
+        "epoch commit",
         ALLOCSET_DEFAULT_MINSIZE,
         ALLOCSET_DEFAULT_INITSIZE,
         ALLOCSET_DEFAULT_MAXSIZE);
@@ -193,7 +193,7 @@ void EpochCommitMain(void)
      */
     // g_instance.proc_base->epochcommitLatch = &t_thrd.proc->procLatch;
 
-    pgstat_report_appname("epoch  commit");
+    pgstat_report_appname("epoch commit");
     pgstat_report_activity(STATE_IDLE, NULL);
 
     /*

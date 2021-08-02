@@ -53,30 +53,7 @@ void EpochPhysicalTimerManagerMain(void)
     sigjmp_buf local_sigjmp_buf;
     MemoryContext epochphysicaltimermanager_context;
     sigset_t old_sig_mask;
-    // bool wrote_something = true;
-    // long times_wrote_nothing = 0;
-    // struct timespec time_to_wait;
-    // int sleep_times_counter = 0;
-    // int time_out_counter = 0;
-
-    // load_server_mode();
-    // if (t_thrd.xlog_cxt.server_mode == PRIMARY_MODE ||
-    //     t_thrd.xlog_cxt.server_mode == NORMAL_MODE) {
-    //     /*
-    //      * Different from WalWriterPID, isWalWriterUp is used to signal that
-    //      * the WAL writer thread is not only created, it is also created to
-    //      * write WAL from the WAL buffer to disks. 
-    //      *
-    //      * We need isWalWriterUp instead of WalWriterPID in places where threads
-    //      * to see whether there is a WAL writer running and flushing WAL buffer.
-    //      * In standbys where we don't write WAL from the WAL buffer during redo, 
-    //      * the WAL writer can be potentially re-purposed, in which case
-    //      * WalWriterPID check is insufficient
-    //      */
-    //     g_instance.wal_cxt.isWalWriterUp = true;
-    // }
-
-    // ereport(LOG, (errmsg("epochphysicaltimermanager started")));
+    
 
     // if (g_instance.attr.attr_storage.wal_writer_cpu >= 0) {
     //     cpu_set_t walWriterSet;

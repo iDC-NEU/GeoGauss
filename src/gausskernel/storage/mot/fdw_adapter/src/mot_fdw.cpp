@@ -2386,7 +2386,7 @@ void FDWEpochPhysicalTimerManagerThreadMain(uint64_t id, std::vector<std::string
     EpochPhysicalTimerManagerThreadMain(id, kServerIp, kServerNum, kPackageNum, kNotifyNum, kPackThreadNum, kNotifyThreadNum, local_ip_index, kSleepTime);
 }
 void FDWEpochMessageCacheManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index){
-    // EpochMessageCacheManagerThreadMain(id, kServerIp, kServerNum, kPackageNum, kNotifyNum, kPackThreadNum, kNotifyThreadNum, local_ip_index);
+    EpochMessageCacheManagerThreadMain(id, kServerIp, kServerNum, kPackageNum, kNotifyNum, kPackThreadNum, kNotifyThreadNum, local_ip_index);
 }
 void FDWEpochMessageManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index){
     
@@ -2396,24 +2396,24 @@ void FDWEpochNotifyThreadMain(uint64_t id){
     // EpochNotifyThreadMain(id);
 }
 void FDWEpochPackThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index){
-    // EpochPackThreadMain(id, kServerIp, kServerNum, kPackageNum, kNotifyNum, kPackThreadNum, kNotifyThreadNum, local_ip_index);
+    EpochPackThreadMain(id, kServerIp, kServerNum, kPackageNum, kNotifyNum, kPackThreadNum, kNotifyThreadNum, local_ip_index);
 }
 void FDWEpochSendThreadMain(uint64_t id, std::string kServerIp, uint64_t port){
-    // EpochSendThreadMain(id, kServerIp, port);
+    EpochSendThreadMain(id, kServerIp, port);
 }
 
 void FDWEpochListenThreadMain(uint64_t id, uint64_t port){
-    // EpochListenThreadMain(id, port);
+    EpochListenThreadMain(id, port);
 }
 void FDWEpochUnseriThreadMain(uint64_t id){
-    // EpochUnseriThreadMain(id);
+    EpochUnseriThreadMain(id);
 }
-void FDWEpochUnpackThreadMain(uint64_t id){
-    // EpochUnpackThreadMain(id);
+void FDWEpochUnpackThreadMain(uint64_t id, std::vector<std::string> kServerIp){
+    EpochUnpackThreadMain(id, kServerIp);
 }
 void FDWEpochMergeThreadMain(uint64_t id){
-    // EpochMergeThreadMain(id);
+    EpochMergeThreadMain(id);
 }
 void FDWEpochCommitThreadMain(uint64_t id){
-    // EpochCommitThreadMain(id);
+    EpochCommitThreadMain(id);
 }

@@ -95,7 +95,7 @@ extern void FDWEpochPackThreadMain(uint64_t id, std::vector<std::string> kServer
 extern void FDWEpochSendThreadMain(uint64_t id, std::string kServerIp, uint64_t port);
 extern void FDWEpochListenThreadMain(uint64_t id, uint64_t port);
 extern void FDWEpochUnseriThreadMain(uint64_t id);
-extern void FDWEpochUnpackThreadMain(uint64_t id);
+extern void FDWEpochUnpackThreadMain(uint64_t id, std::vector<std::string> kServerIp);
 extern void FDWEpochMergeThreadMain(uint64_t id);
 extern void FDWEpochCommitThreadMain(uint64_t id);
 

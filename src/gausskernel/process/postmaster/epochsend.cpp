@@ -124,7 +124,7 @@ void EpochSendMain(void)
      * Create a resource owner to keep track of our resources (not clear that
      * we need this, but may as well have one).
      */
-    t_thrd.utils_cxt.CurrentResourceOwner = ResourceOwnerCreate(NULL, "epoch message send", MEMORY_CONTEXT_STORAGE);
+    t_thrd.utils_cxt.CurrentResourceOwner = ResourceOwnerCreate(NULL, "epoch send", MEMORY_CONTEXT_STORAGE);
 
     /*
      * Create a memory context that we will do all our work in.  We do this so
@@ -133,7 +133,7 @@ void EpochSendMain(void)
      * t_thrd.top_mem_cxt, but resetting that would be a really bad idea.
      */
     epochsend_context = AllocSetContextCreate(t_thrd.top_mem_cxt,
-        "epoch message send",
+        "epoch send",
         ALLOCSET_DEFAULT_MINSIZE,
         ALLOCSET_DEFAULT_INITSIZE,
         ALLOCSET_DEFAULT_MAXSIZE);
@@ -230,7 +230,7 @@ void EpochSendMain(void)
      */
     // g_instance.proc_base->epochsendLatch = &t_thrd.proc->procLatch;
 
-    pgstat_report_appname("epoch message send");
+    pgstat_report_appname("epoch send");
     pgstat_report_activity(STATE_IDLE, NULL);
 
     /*

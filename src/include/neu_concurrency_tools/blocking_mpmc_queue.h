@@ -22,25 +22,17 @@ public:
         return false;
     }
 
-    template <typename P, typename = typename std::enable_if<std::is_nothrow_constructible<T, P &&>::value>::type>
-    inline bool try_dequeue(P &&v) noexcept {
+    inline bool try_dequeue(T &v) noexcept {
         if (sema.tryWait()) {
-            while (!queue.try_pop(std::forward<P>(v)));
+            while (!queue.try_pop(v));
             return true;
         }
         return false;
     }
 
-    template <typename P, typename = typename std::enable_if<std::is_nothrow_constructible<T, P &&>::value>::type>
-    inline void pop(P &&v) noexcept {
+    inline void wait_dequeue(T &v) noexcept {
         while (!sema.wait());
-        queue.pop(std::forward<P>(v));
-    }
-
-    template <typename P, typename = typename std::enable_if<std::is_nothrow_constructible<T, P &&>::value>::type>
-    inline void wait_dequeue(P &&v) noexcept {
-        while (!sema.wait());
-        queue.pop(std::forward<P>(v));
+        queue.pop(v);
     }
 
     template <typename P, typename = typename std::enable_if<std::is_nothrow_constructible<T, P &&>::value>::type>
@@ -50,9 +42,10 @@ public:
     }
 
     template <typename P, typename = typename std::enable_if<std::is_nothrow_constructible<T, P &&>::value>::type>
-    inline void enqueue(P &&v) noexcept {
+    inline bool enqueue(P &&v) noexcept {
         queue.push(std::forward<P>(v));
         sema.signal();
+        return true;
     }
 
     std::size_t size_approx() noexcept{

@@ -25,6 +25,7 @@
 #ifndef MOT_INTERNAL_H
 #define MOT_INTERNAL_H
 
+// #include "message.pb.h"
 #include <map>
 #include <string>
 #include "catalog_column_types.h"
@@ -55,9 +56,12 @@
 #include "neu_concurrency_tools/ThreadPool.h"
 #include <vector>
 #include <typeinfo>
+// #include <semaphore.h>
 
 using std::map;
 using std::string;
+
+#define MAX_TXN_NUM 100000
 
 extern void EpochLogicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index);
 extern void EpochPhysicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index, uint64_t kSleepTime);
@@ -70,16 +74,16 @@ extern void EpochSendThreadMain(uint64_t id, std::string kServerIp, uint64_t por
 
 extern void EpochListenThreadMain(uint64_t id, uint64_t port);
 extern void EpochUnseriThreadMain(uint64_t id);
-extern void EpochUnpackThreadMain(uint64_t id);
+extern void EpochUnpackThreadMain(uint64_t id, std::vector<std::string> kServerIp);
 extern void EpochMergeThreadMain(uint64_t id);
 extern void EpochCommitThreadMain(uint64_t id);
-
 
 class LockCV{//只能提供给两个线程同时访问，多个线程同时访问同一个mutex需要多个创建多个unique对这个mutex进行上锁set_lock()，不能使用同一个unique_lock，否则会出现死锁(同一unique的多次调用)
 private:
 public:
     std::mutex _mutex;
     std::condition_variable _cv;
+    bool _is_notified = false;
 
     template <class _Predicate>
     void wait(std::unique_lock<std::mutex>& _lock, _Predicate _Pred) {
@@ -130,6 +134,14 @@ public:
             _cv.wait( lock);
         }
     }
+    template <class _Predicate>
+    void wait_with_mark(_Predicate _Pred){
+        std::unique_lock<std::mutex> lock(_mutex);
+        while(!_Pred() && _is_notified == false){
+            _cv.wait( lock);
+        }
+        _is_notified = false;
+    }
 
     void wait() {
         std::unique_lock<std::mutex> lock(_mutex);
@@ -144,10 +156,10 @@ public:
     void notify_one(){
         std::unique_lock<std::mutex> lock(_mutex);
         _cv.notify_one();
+        _is_notified = true;
     }
 
 };
-
 
 namespace aum {
     class SpinLock {
@@ -176,9 +188,9 @@ namespace aum {
         typedef typename std::unordered_map<key, value>::size_type size_type;
     public:
 
-        void insert(key k, value v, bool &result, 
-                        std::function<bool(const value &, const value &)> cmp = [](const value& o, const value& n){return n < o;}) 
+        bool insert(key k, value v, std::function<bool(const value &, const value &)> cmp = [](const value& o, const value& n){return n < o;}) 
         {
+            bool result = true;
             lock.lock();
             map_iterator iter = map.find(k);
             if (iter == map.end()) {
@@ -195,6 +207,7 @@ namespace aum {
                 }
             }
             lock.unlock();
+            return result;
         }
 
 
@@ -568,6 +581,7 @@ private:
     static std::atomic<uint64_t> unpackaged_message_num;
     static std::atomic<uint64_t> unpackaged_txn_num;
     static std::atomic<uint64_t> merged_txn_num;
+    static std::atomic<uint64_t> commit_txn_num;
     static std::atomic<uint64_t> committed_txn_num;
     
 
@@ -580,18 +594,29 @@ public:
     static std::vector<LockCV*> lock_cv_txn_v;
     static std::vector<LockCV*> lock_cv_commit_v;
 
-    static std::vector<std::atomic<uint64_t>*> local_txn_counters;//本地事务执行阶段计数器
+    static std::vector<LockCV*> lock_cv_commit_l;//本地阻塞线程条件变量数组   
+    static std::atomic<uint64_t> lock_cv_commit_wait_counter;//本地阻塞线程数量  
+    static std::atomic<uint64_t> lock_cv_commit_notify_counter;//本地阻塞线程唤醒数量  
 
-    static std::atomic<uint64_t> local_txn_counter;
-    static std::atomic<uint64_t> local_txn_index;
+    // static sem_t sem_commit;
+
+    static std::vector<std::atomic<uint64_t>*> local_txn_counters;//本地事务执行阶段计数器 多个
+    static std::vector<std::atomic<uint64_t>*> local_txn_execed_counters;//本地事务执行阶段完成计数器 多个 为了防止频繁访问，将加和减才分成两个(如果一个影响性能的话)
+    static std::vector<std::atomic<uint64_t>*> local_txn_index;//本地事务pack_index
+
+    static std::atomic<uint64_t> local_txn_counter;//本地事务执行阶段计数器 单个
+    static std::atomic<uint64_t> local_txn_execed_counter;//本地事务执行阶段完成计数器 单个 为了防止频繁访问，将加和减才分成两个(如果一个影响性能的话) 目前还是将加和减合并为对一个变量的操作
+
 
     static std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>> local_change_set_txn_num_ptr1;
     static std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>> local_change_set_txn_num_ptr2;
-    
+    static std::shared_ptr<std::atomic<uint64_t>> local_change_set_num_ptr1;
+    static std::shared_ptr<std::atomic<uint64_t>> local_change_set_num_ptr2;
+
 
     static aum::atomic_unordered_map<std::string, uint64_t> insertSet;
 
-    static uint64_t kPackageNum, kNotifyNum, kPackThreadNum, kNotifyThreadNum;
+    static uint64_t kPackageNum, kNotifyNum, kPackThreadNum, kNotifyThreadNum, local_ip_index;
 
     static void setTimerStop(bool value) {timerStop = value;}
 
@@ -614,13 +639,45 @@ public:
     
     static void DecLocalTxnCounter(uint64_t index){ local_txn_counters[index]->fetch_sub(10000000001);}
 
+    static void IncLocalTxnEcxCounter(uint64_t index){ local_txn_execed_counters[index]->fetch_add(10000000001);}
+
     static void DecExeCounter(uint64_t index){ local_txn_counters[index]->fetch_sub(1);}
+    
+    static void IncExeCounter(uint64_t index){ local_txn_execed_counters[index]->fetch_add(1);}
 
     static uint64_t GetExeCounter(uint64_t index) { return local_txn_counters[index]->load() % static_cast<uint64_t>(1e10);}
 
     static void DecComCounter(uint64_t index){ local_txn_counters[index]->fetch_sub(10000000000);}
+    
+    static void IncComCounter(uint64_t index){ local_txn_execed_counters[index]->fetch_add(10000000000);}
 
     static uint64_t GetComCounter(uint64_t index) {return local_txn_counters[index]->load();}
+
+    static uint64_t GetAllComCounter(){
+        uint64_t res = 0;
+        for(auto &i : local_txn_counters){
+            res += (i->load() / static_cast<uint64_t>(1e10) );
+        }
+        return res;
+    }
+
+    static bool IsExeced(){
+        for(int i = 0; i < (int)local_txn_counters.size(); i++){
+            if(local_txn_counters[i]->load() % static_cast<uint64_t>(1e10) != local_txn_execed_counters[i]->load() % static_cast<uint64_t>(1e10)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static bool IsCommited(){
+        for(int i = 0; i < (int)local_txn_counters.size(); i++){
+            if(local_txn_counters[i]->load() != local_txn_execed_counters[i]->load()){
+                return false;
+            }
+        }
+        return true;
+    }
 
     static bool IsExcCounterEqualZero(){
         for(auto &i : local_txn_counters){
@@ -636,20 +693,27 @@ public:
         return true;
     }
 
+    static uint64_t IncLocalTxnIndex(uint64_t index){ return local_txn_index[index]->fetch_add(1);}
+    
     static void IncLocalTxnCounter(){ local_txn_counter.fetch_add(10000000001);}// 10 000 000 000 + 1
     
     static void DecLocalTxnCounter(){ local_txn_counter.fetch_sub(10000000001);}
+    static void IncLocalTxnExcCounter(){ local_txn_execed_counter.fetch_add(10000000001);}
 
     static void DecExeCounter(){ local_txn_counter.fetch_sub(1);}
 
-    static uint64_t GetExeCounter() {return  local_txn_counter.load() - ((local_txn_counter.load() / 1e10) * 1e10);}
+    static void IncExeCounter(){ local_txn_execed_counter.fetch_add(1);}
+
+    static uint64_t GetExeCounter() { return  local_txn_counter.load() % static_cast<uint64_t>(1e10);}
+    static bool IsExeCounterEqual(){ return ((local_txn_counter.load() == local_txn_execed_counter.load()) && (local_txn_counter.load() % static_cast<uint64_t>(1e10) == 0)); }
 
     static void DecComCounter(){ local_txn_counter.fetch_sub(10000000000);}
+    static void IncComCounter(){ local_txn_execed_counter.fetch_add(10000000000);}
 
-    static uint64_t GetComCounter() {return local_txn_counter.load();}
+    static uint64_t GetComCounter() { return local_txn_counter.load();}
 
+    static bool IsComCounterEqual(){ return local_txn_counter.load() == local_txn_execed_counter.load(); }
 
-    static uint64_t IncLocalTxnIndex(){ return local_txn_index.fetch_add(1);}
 
 
 
@@ -663,7 +727,13 @@ public:
 
     static void AddMergedTxnNum(){merged_txn_num.fetch_add(1);}
 
+    static void SubMergedTxnNum(){merged_txn_num.fetch_sub(1);}
+
     static uint64_t GetMergedTxnNum(){return merged_txn_num.load();}
+
+    static void AddCommitTxnNum(){commit_txn_num.fetch_add(1);}
+
+    static uint64_t GetCommitTxnNum(){return commit_txn_num.load();}
 
     static void AddCommittedTxnNum(){committed_txn_num.fetch_add(1);}
 
@@ -703,13 +773,37 @@ public:
         unpackaged_message_num = 0;
         unpackaged_txn_num = 0;
         merged_txn_num = 0;
+        commit_txn_num = 0;
         committed_txn_num = 0;
-        local_txn_index = 0;
+        lock_cv_commit_wait_counter = 0;
+        lock_cv_commit_notify_counter = 0;
+        for(int i = 0; i < (int)local_txn_counters.size(); i++){
+            local_txn_counters[i]->store(0);
+            local_txn_execed_counters[i]->store(0);
+            local_txn_index[i]->store(0);
+        }
+        // for(auto &i : local_txn_execed_counters) i = 0;
+        local_txn_counter = local_txn_execed_counter = 0;
         insertSet.clear();
         remoteExeced = false;
     }
 
-    static void InsertRowToSet(MOT::TxnManager* txnMa, uint64_t index);
+    static bool InsertRowToSet(MOT::TxnManager* txMan, void* txn_void, const uint64_t& index_pack, const uint64_t& index_unique);
+    
+    static void LocalTxnSafeExit(const uint64_t& index_pack, void* txn_void);
+
+    static void* InsertRowToMergeRequestTxn(MOT::TxnManager* txMan);
+
+    // static void Notify_Commit_Txn(){
+    //     uint64_t index = lock_cv_commit_notify_counter.fetch_add(1);
+    //     if(index >= lock_cv_commit_wait_counter){
+    //         lock_cv_commit_notify_counter.fetch_sub(1);
+    //         return ;
+    //     }
+    //     else{
+    //         lock_cv_commit_l[index]->notify_one();
+    //     }
+    // }
 
 
 };
