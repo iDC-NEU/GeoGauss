@@ -1341,7 +1341,17 @@ RC TxnManager::Commit()
         uint64_t index_pack = thread_id % MOTAdaptor::kPackageNum;
         uint64_t index_notify = thread_id % MOTAdaptor::kNotifyNum;
         
+        int cnt = 0;
+        alloc:
         void* txn = MOTAdaptor::InsertRowToMergeRequestTxn(this);
+        if(txn == nullptr){
+            if(cnt == 0){ 
+                cnt = 1;
+                goto alloc;
+            }
+            MOT_LOG_INFO("*=*=*=*=*= InsertRowToMergeRequestTxn txn内存分配失败");
+            return RC_ABORT;
+        }
         begin:
 
         if(MOTAdaptor::GetPhysicalEpoch() != MOTAdaptor::GetLogicalEpoch()){//到达一个新physical epoch 新来线程被阻塞

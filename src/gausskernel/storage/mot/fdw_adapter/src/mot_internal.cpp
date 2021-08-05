@@ -2517,7 +2517,7 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kS
         MOTAdaptor::LogicalEndEpochClear();
         MOTAdaptor::AddLogicalEpoch();
         auto comm = now_to_us();
-        MOT_LOG_INFO("time for commit = %lu           time for epoch merge", (comm - startCommit), comm - start_merge);
+        MOT_LOG_INFO("time for commit = %lu           time for epoch merge %lu", (comm - startCommit), comm - start_merge);
         MOT_LOG_INFO("=================================完成一个Epoch的合并，physical epoch: %llu 到达新的logic epoch：%llu local %llu, remote merge %llu   remote commit %llu", 
             MOTAdaptor::GetPhysicalEpoch(), MOTAdaptor::GetLogicalEpoch(), current_local_txn_num, current_remote_txn_merge_num, current_remote_txn_num);
 
@@ -2708,7 +2708,11 @@ void* MOTAdaptor::InsertRowToMergeRequestTxn(MOT::TxnManager* txMan){
             local_row = access->m_localRow;
         }
         key = local_row->GetTable()->BuildKeyByRow(local_row, txMan);
+        if(key == nullptr) {
+            return nullptr;
+        }
         row->set_key(std::move(std::string(key->GetKeyBuf(), key->GetKeyBuf() + key->GetKeyLength() )));
+        MOT::MemSessionFree((void*)key);
         row->set_tablename(local_row->GetTable()->GetLongTableName());
         if(op_type == 0){
             row->set_data(local_row->GetData(), local_row->GetTable()->GetTupleSize());

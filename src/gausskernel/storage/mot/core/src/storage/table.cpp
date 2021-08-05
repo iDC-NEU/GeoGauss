@@ -1279,6 +1279,9 @@ Key* Table::BuildKeyByRow(Row* row, TxnManager* txn)
     // MOT_LOG_INFO("构造自己的key");
     MOT::Index* ix = GetPrimaryIndex();
     key = txn->GetTxnKey(ix);
+    if(key == nullptr){
+        return key;
+    }
     ix->BuildKey(this, row, key);
     // std::string key_str = key.GetKeyStr();
     // MOT_LOG_INFO(("build_key:" + key_str).c_str());
