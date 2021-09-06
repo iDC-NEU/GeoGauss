@@ -541,6 +541,7 @@ class MergeRequest_Transaction :
     kStartEpochFieldNumber = 3,
     kCommitEpochFieldNumber = 4,
     kCSNFieldNumber = 5,
+    kServerIdFieldNumber = 6,
   };
   // repeated .merge.MergeRequest.Transaction.Row row = 2;
   int row_size() const;
@@ -596,6 +597,15 @@ class MergeRequest_Transaction :
   void _internal_set_csn(::PROTOBUF_NAMESPACE_ID::uint64 value);
   public:
 
+  // uint64 server_id = 6;
+  void clear_server_id();
+  ::PROTOBUF_NAMESPACE_ID::uint64 server_id() const;
+  void set_server_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_server_id() const;
+  void _internal_set_server_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
   // @@protoc_insertion_point(class_scope:merge.MergeRequest.Transaction)
  private:
   class _Internal;
@@ -606,6 +616,7 @@ class MergeRequest_Transaction :
   ::PROTOBUF_NAMESPACE_ID::uint64 startepoch_;
   ::PROTOBUF_NAMESPACE_ID::uint64 commitepoch_;
   ::PROTOBUF_NAMESPACE_ID::uint64 csn_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 server_id_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_message_2eproto;
 };
@@ -720,7 +731,7 @@ class MergeRequest :
 
   enum : int {
     kTxnFieldNumber = 1,
-    kRequestAddressFieldNumber = 2,
+    kServerIdFieldNumber = 2,
     kEpochFieldNumber = 3,
     kPackIdFieldNumber = 4,
   };
@@ -742,20 +753,13 @@ class MergeRequest :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction >&
       txn() const;
 
-  // string request_address = 2;
-  void clear_request_address();
-  const std::string& request_address() const;
-  void set_request_address(const std::string& value);
-  void set_request_address(std::string&& value);
-  void set_request_address(const char* value);
-  void set_request_address(const char* value, size_t size);
-  std::string* mutable_request_address();
-  std::string* release_request_address();
-  void set_allocated_request_address(std::string* request_address);
+  // uint64 server_id = 2;
+  void clear_server_id();
+  ::PROTOBUF_NAMESPACE_ID::uint64 server_id() const;
+  void set_server_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
   private:
-  const std::string& _internal_request_address() const;
-  void _internal_set_request_address(const std::string& value);
-  std::string* _internal_mutable_request_address();
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_server_id() const;
+  void _internal_set_server_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
   public:
 
   // uint64 epoch = 3;
@@ -782,7 +786,7 @@ class MergeRequest :
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction > txn_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr request_address_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 server_id_;
   ::PROTOBUF_NAMESPACE_ID::uint64 epoch_;
   ::PROTOBUF_NAMESPACE_ID::uint64 pack_id_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
@@ -1245,6 +1249,26 @@ inline void MergeRequest_Transaction::set_csn(::PROTOBUF_NAMESPACE_ID::uint64 va
   // @@protoc_insertion_point(field_set:merge.MergeRequest.Transaction.CSN)
 }
 
+// uint64 server_id = 6;
+inline void MergeRequest_Transaction::clear_server_id() {
+  server_id_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest_Transaction::_internal_server_id() const {
+  return server_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest_Transaction::server_id() const {
+  // @@protoc_insertion_point(field_get:merge.MergeRequest.Transaction.server_id)
+  return _internal_server_id();
+}
+inline void MergeRequest_Transaction::_internal_set_server_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  server_id_ = value;
+}
+inline void MergeRequest_Transaction::set_server_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_server_id(value);
+  // @@protoc_insertion_point(field_set:merge.MergeRequest.Transaction.server_id)
+}
+
 // -------------------------------------------------------------------
 
 // MergeRequest
@@ -1288,64 +1312,24 @@ MergeRequest::txn() const {
   return txn_;
 }
 
-// string request_address = 2;
-inline void MergeRequest::clear_request_address() {
-  request_address_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+// uint64 server_id = 2;
+inline void MergeRequest::clear_server_id() {
+  server_id_ = PROTOBUF_ULONGLONG(0);
 }
-inline const std::string& MergeRequest::request_address() const {
-  // @@protoc_insertion_point(field_get:merge.MergeRequest.request_address)
-  return _internal_request_address();
+inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest::_internal_server_id() const {
+  return server_id_;
 }
-inline void MergeRequest::set_request_address(const std::string& value) {
-  _internal_set_request_address(value);
-  // @@protoc_insertion_point(field_set:merge.MergeRequest.request_address)
+inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest::server_id() const {
+  // @@protoc_insertion_point(field_get:merge.MergeRequest.server_id)
+  return _internal_server_id();
 }
-inline std::string* MergeRequest::mutable_request_address() {
-  // @@protoc_insertion_point(field_mutable:merge.MergeRequest.request_address)
-  return _internal_mutable_request_address();
-}
-inline const std::string& MergeRequest::_internal_request_address() const {
-  return request_address_.GetNoArena();
-}
-inline void MergeRequest::_internal_set_request_address(const std::string& value) {
+inline void MergeRequest::_internal_set_server_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   
-  request_address_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+  server_id_ = value;
 }
-inline void MergeRequest::set_request_address(std::string&& value) {
-  
-  request_address_.SetNoArena(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:merge.MergeRequest.request_address)
-}
-inline void MergeRequest::set_request_address(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  
-  request_address_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:merge.MergeRequest.request_address)
-}
-inline void MergeRequest::set_request_address(const char* value, size_t size) {
-  
-  request_address_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:merge.MergeRequest.request_address)
-}
-inline std::string* MergeRequest::_internal_mutable_request_address() {
-  
-  return request_address_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline std::string* MergeRequest::release_request_address() {
-  // @@protoc_insertion_point(field_release:merge.MergeRequest.request_address)
-  
-  return request_address_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline void MergeRequest::set_allocated_request_address(std::string* request_address) {
-  if (request_address != nullptr) {
-    
-  } else {
-    
-  }
-  request_address_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), request_address);
-  // @@protoc_insertion_point(field_set_allocated:merge.MergeRequest.request_address)
+inline void MergeRequest::set_server_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_server_id(value);
+  // @@protoc_insertion_point(field_set:merge.MergeRequest.server_id)
 }
 
 // uint64 epoch = 3;

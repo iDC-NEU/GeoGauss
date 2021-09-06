@@ -332,6 +332,7 @@ Access* TxnAccess::GetNewRowAccess(const Row* row, AccessType type, RC& rc)
     ac->m_tid = last_tid;
     //ADDBY NEU
     ac->m_cts = row->m_rowHeader.GetCSN();
+    ac->m_server_id = row->m_rowHeader.GetServerId();
     MOT_LOG_DEBUG("Row Count = %d, access_set_size = %d", m_rowCnt, m_accessSetSize);
     m_rowCnt++;
     return ac;

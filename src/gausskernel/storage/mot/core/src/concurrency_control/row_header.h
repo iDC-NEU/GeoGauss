@@ -71,12 +71,12 @@ public:
      * @brief Constructor.
      * @param row The row manage.
      */
-    explicit inline RowHeader() : m_csnWord(0)
+    explicit inline RowHeader() : m_csnWord(0), stable_csnWord(0)
     {}
 
     inline RowHeader(const RowHeader& src)
     {
-        m_csnWord = src.m_csnWord;
+        stable_csnWord = m_csnWord = src.m_csnWord;
     }
 
     // class non-copy-able, non-assignable, non-movable
@@ -244,7 +244,42 @@ private:
 
 public:
 ///ADDBY NEU
-    bool ValidateAndSetWrite(uint64_t m_csn, uint64_t start_epoch, uint64_t commit_epoch);
+    bool ValidateAndSetWrite(uint64_t m_csn, uint64_t start_epoch, uint64_t commit_epoch, uint32_t server_id);
+    bool ValidateAndSetWriteForCommit(uint64_t m_csn, uint64_t start_epoch, uint64_t commit_epoch, uint32_t server_id);
+
+    bool IsStableLocked() const
+    {
+        return (stable_csnWord & LOCK_BIT) == LOCK_BIT;
+    }
+
+    void LockStable();
+
+    void ReleaseStable(){
+        MOT_ASSERT(stable_csnWord & LOCK_BIT);
+#if defined(__GNUC__) && (defined(__x86_64__) || defined(__i386__))
+        stable_csnWord = stable_csnWord & (~LOCK_BIT);
+#else
+        uint64_t v = stable_csnWord;
+        while (!__sync_bool_compare_and_swap(&stable_csnWord, v, (v & ~LOCK_BIT))) {
+            PAUSE
+            v = stable_csnWord;
+        }
+#endif
+    }
+
+//         void Release()
+//     {
+//         MOT_ASSERT(m_csnWord & LOCK_BIT);
+// #if defined(__GNUC__) && (defined(__x86_64__) || defined(__i386__))
+//         m_csnWord = m_csnWord & (~LOCK_BIT);
+// #else
+//         uint64_t v = m_csnWord;
+//         while (!__sync_bool_compare_and_swap(&m_csnWord, v, (v & ~LOCK_BIT))) {
+//             PAUSE
+//             v = m_csnWord;
+//         }
+// #endif
+//     }
 
     uint64_t GetStableCSN() const
     {
@@ -275,7 +310,7 @@ public:
         stable_startEpoch = start_epoch;
     }
 
-        uint64_t GetCommitEpoch() const
+    uint64_t GetCommitEpoch() const
     {
         return commitEpoch;
     }
@@ -290,31 +325,52 @@ public:
         return startEpoch;
     }
 
-    void setStartEpoch(uint64_t start_epoch) {
+    void SetStartEpoch(uint64_t start_epoch) {
         startEpoch = start_epoch;
     }
 
-    void recoverToStable(){
+    void RecoverToStable(){
         Lock();
         startEpoch = stable_startEpoch;
         commitEpoch = stable_commitEpoch;
         m_csnWord = stable_csnWord;
+        server_id = stable_server_id;
         Release();
     }
 
-    void keepStable(){
+    void KeepStable(){
         stable_startEpoch = startEpoch;
         stable_commitEpoch = commitEpoch;
         stable_csnWord = m_csnWord;
+        stable_server_id = server_id;
     }
 
+    void SetServerId(uint32_t id){
+        server_id = id;
+    }
+
+    uint32_t GetServerId() const{
+        return server_id;
+    }
+
+    void SetStableServerId(uint32_t id){
+        stable_server_id = id;
+    }
+
+    uint32_t GetStableServerId() const{
+        return stable_server_id;
+    }
+
+    bool ValidateReadI(TransactionId tid, uint32_t server_id) const;
 private:
     volatile uint64_t commitEpoch = 0;//ADDBY NEU
     volatile uint64_t startEpoch = 0;
+    volatile uint32_t server_id = 0;
 
     volatile uint64_t stable_csnWord;
-    volatile uint64_t stable_commitEpoch;
-    volatile uint64_t stable_startEpoch;
+    volatile uint64_t stable_commitEpoch = 0;
+    volatile uint64_t stable_startEpoch = 0;
+    volatile uint32_t stable_server_id = 0;
 
     friend TxnAccess;//ADDBY NEU
 };

@@ -31,6 +31,7 @@
 #include "cycles.h"
 #include "debug_utils.h"
 #include "mot_engine.h"
+#include "../../../fdw_adapter/src/mot_internal.h"
 
 namespace MOT {
 DECLARE_LOGGER(RowHeader, ConcurrenyControl);
@@ -99,6 +100,15 @@ bool RowHeader::ValidateRead(TransactionId tid) const
     return true;
 }
 
+//ADDBY NEU
+bool RowHeader::ValidateReadI(TransactionId tid, uint32_t server_id) const
+{
+    if (IsStableLocked() or (tid != GetStableCSN()) or (server_id != GetStableServerId())) {
+        return false;
+    }
+    return true;
+}
+
 void RowHeader::WriteChangesToRow(const Access* access, uint64_t csn)
 {
     Row* row = access->GetRowFromHeader();
@@ -129,7 +139,8 @@ void RowHeader::WriteChangesToRow(const Access* access, uint64_t csn)
         case DEL:
             MOT_ASSERT(access->m_origSentinel->IsCommited() == true);
             if (access->m_params.IsPrimarySentinel()) {
-                m_csnWord = (csn | LOCK_BIT | ABSENT_BIT | LATEST_VER_BIT);
+                m_csnWord = (csn | ABSENT_BIT | LATEST_VER_BIT);
+                // m_csnWord = (csn | LOCK_BIT | ABSENT_BIT | LATEST_VER_BIT);
                 // and allow reuse of the original row
             }
             // Invalidate sentinel  - row is still locked!
@@ -169,22 +180,19 @@ void RowHeader::Lock()
 
 
 ///ADDBY NEU
-bool RowHeader::ValidateAndSetWrite(uint64_t m_csn, uint64_t start_epoch, uint64_t commit_epoch) {
+bool RowHeader::ValidateAndSetWrite(uint64_t m_csn, uint64_t start_epoch, uint64_t commit_epoch, uint32_t server_id) {//只有本地事务，server id相同
     /// get the lock first
     Lock();
     bool result = true;
     if(commit_epoch > GetCommitEpoch()) { // the first transaction in current epoch, direct write is ok
-
-        //When first modify the RowHeader, keep current meta-info as the stable RowHeader state
-        keepStable();
-
         SetCSN(m_csn);
-        setStartEpoch(start_epoch);
+        SetStartEpoch(start_epoch);
         SetCommitEpoch(commit_epoch);
-    } else {
+    } 
+    else if(commit_epoch == GetCommitEpoch()){
         if(GetStartEpoch() < start_epoch) { // current transaction is the shorter transaction, win
             SetCSN(m_csn);
-            setStartEpoch(start_epoch);
+            SetStartEpoch(start_epoch);
         } else if(GetStartEpoch() > start_epoch){ // current transaction is the longer transaction, failed
             result = false;
         } else {
@@ -192,14 +200,76 @@ bool RowHeader::ValidateAndSetWrite(uint64_t m_csn, uint64_t start_epoch, uint64
                 result = false;
             } else if(GetCSN() > m_csn) { // current transaction commit earlier, commit
                 SetCSN(m_csn);
-                setStartEpoch(start_epoch);
-            } else {// csn equals, will?
-                // now do nothing
+            } else {// csn equals, startEpoch equal, endEpoch equal, 
             }
         }
     }
+    else result = false;
     /// release the lock
     Release();
+    return result;
+}
+
+void RowHeader::LockStable()
+{
+    uint64_t v = stable_csnWord;
+    while ((v & LOCK_BIT) || !__sync_bool_compare_and_swap(&stable_csnWord, v, v | LOCK_BIT)) {
+        PAUSE
+        v = stable_csnWord;
+    }
+}
+
+bool RowHeader::ValidateAndSetWriteForCommit(uint64_t m_csn, uint64_t start_epoch, uint64_t commit_epoch, uint32_t server_id) {
+    /// get the lock first
+    LockStable();
+    bool result = true;
+    if(commit_epoch > GetStableCommitEpoch()) { // the first transaction in current epoch, direct write is okP
+        SetStableCSN(m_csn);
+        SetStableStartEpoch(start_epoch);
+        SetStableCommitEpoch(commit_epoch);
+        SetStableServerId(server_id);
+    } 
+    else if(commit_epoch == GetStableCommitEpoch()){
+        if( start_epoch > GetStableStartEpoch()) { // current transaction is the shorter transaction, win
+            std::string str = std::to_string(GetStableCSN()) + ":" + std::to_string(GetStableServerId());
+            MOTAdaptor::abort_transcation_csn_set.insert(str, str);
+            SetStableCSN(m_csn);
+            SetStableStartEpoch(start_epoch);
+            SetStableServerId(server_id);
+        } 
+        else if(start_epoch == GetStableStartEpoch()){ // current transaction is the longer transaction, failed
+            if(m_csn > GetStableCSN()) { // current transaction commit later, abort
+                result = false;
+            }
+            else if(m_csn == GetStableCSN()) {
+                if(server_id > GetStableServerId()){
+                    result = false;
+                }
+                else if(server_id == GetStableServerId() ){
+                    //do nothing
+                }
+                else{
+                    std::string str = std::to_string(GetStableCSN()) + ":" + std::to_string(GetStableServerId());
+                    MOTAdaptor::abort_transcation_csn_set.insert(str, str);
+                    SetStableServerId(server_id);
+                }
+            } 
+            else { // current transaction commit earlier, commit
+                std::string str = std::to_string(GetStableCSN()) + ":" + std::to_string(GetStableServerId());
+                MOTAdaptor::abort_transcation_csn_set.insert(str, str);
+                SetStableCSN(m_csn);
+                SetStableServerId(server_id);
+            } 
+        } 
+        else {
+            result = false;
+        }
+    }
+    else{
+        result = false;
+    }
+    /// release the lock
+    ReleaseStable();
     return result;
 }
 ///

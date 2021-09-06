@@ -206,16 +206,20 @@ private:
 
 ///ADDBY NEU
 public:
- 
+    
+    bool IsReadOnly(TxnManager * txMan);
+    bool ValidateReadInMerge(TxnManager * txMan, uint32_t server_id);
+    void recoverRowHeader(TxnManager * txMax, uint32_t server_id);
+    bool ValidateAndSetWriteSet(TxnManager *txMan, uint32_t server_id);
+    bool ValidateAndSetWriteSetII(TxnManager *txMan, uint32_t server_id);
+    bool ValidateWriteSetII(TxnManager *txMan, uint32_t server_id);
+    bool ValidateWriteSetIIForCommit(TxnManager *txMan, uint32_t server_id);
     void updateInsertSetSize(TxnManager * txMan);
-    void recoverRowHeader(TxnManager * txMax);
-    bool ValidateAndSetWriteSet(TxnManager *txMan);
-    bool ValidateReadInMerge(TxnManager * txMan);
-    bool ValidateWriteSetII(TxnManager *txMan);
 
-    RC ExecutionPhase(TxnManager *txMan);
-    RC CommitPhase(TxnManager *txMan);
-    RC PreCommitPhase(TxnManager* tx);
+    RC ExecutionPhase(TxnManager *txMan, uint32_t server_id);
+    RC CommitPhase(TxnManager *txMan, uint32_t server_id);
+    RC CommitCheck(TxnManager *txMan, uint32_t server_id);
+    // RC PreCommitPhase(TxnManager* tx);
 
     ///
 

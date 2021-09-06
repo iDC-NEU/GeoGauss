@@ -1602,9 +1602,9 @@ static void MOTXactCallback(XactEvent event, void* arg)
             elog(DEBUG2, "commit failed");
             elog(DEBUG2, "Abort parent transaction from MOT commit, tid %lu", tid);
             MemoryEreportError();
-            abortParentTransactionParamsNoDetail(ERRCODE_T_R_SERIALIZATION_FAILURE,
-                "Commit: could not serialize access due to concurrent update(%d)",
-                txnState);
+            // abortParentTransactionParamsNoDetail(ERRCODE_T_R_SERIALIZATION_FAILURE,
+            //     "Commit: could not serialize access due to concurrent update(%d)",
+            //     txnState);
         }
         txn->SetTxnState(MOT::TxnState::TXN_COMMIT);
     } else if (event == XACT_EVENT_RECORD_COMMIT) {
@@ -2380,6 +2380,7 @@ uint16_t MOTDateToStr(uintptr_t src, char* destBuf, size_t len)
 
 //ADDBY NEU
 void FDWEpochLogicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index){
+    MOT_LOG_INFO("NotifyThreadNum %llu, local_ip_index %llu", kNotifyThreadNum, local_ip_index);
     EpochLogicalTimerManagerThreadMain(id, kServerIp, kServerNum, kPackageNum, kNotifyNum, kPackThreadNum, kNotifyThreadNum, local_ip_index);
 }
 void FDWEpochPhysicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index, uint64_t kSleepTime){

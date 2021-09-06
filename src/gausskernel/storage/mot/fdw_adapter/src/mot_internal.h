@@ -181,28 +181,38 @@ namespace aum {
         std::atomic_flag lock_ = ATOMIC_FLAG_INIT;
     };
 
-    template<typename key, typename value>
+    template<typename key, typename value, typename pointer>
     class atomic_unordered_map {
     public:
         typedef typename std::unordered_map<key, value>::iterator map_iterator;
         typedef typename std::unordered_map<key, value>::size_type size_type;
+        // typedef typename std::map<key, value>::iterator map_iterator;
+        // typedef typename std::map<key, value>::size_type size_type;
     public:
 
-        bool insert(key k, value v, std::function<bool(const value &, const value &)> cmp = [](const value& o, const value& n){return n < o;}) 
+        bool insert(key &k, value &v, pointer *ptr, std::function<bool(const value &, const value &)> cmp = [](const value& o, const value& n){return n < o;}) //为insert服务
         {
             bool result = true;
             lock.lock();
             map_iterator iter = map.find(k);
             if (iter == map.end()) {
                 map[k] = v;
+                *ptr = "0";
                 result = true;
             } else {
                 // cmp(oldCsn, newCsn) -> bool
                 // if true: 新的事务覆盖旧的事务
-                if (cmp(iter->second, v)) {
+                if (iter->second > v) {
+                    *ptr = map[k];
                     map[k] = v;
                     result = true;
-                } else {
+                } 
+                else if(iter->second == v){//相同则为同一事务执行的插入，不能将map[k]返回abort掉
+                    *ptr = "0";
+                    result = true;
+                }
+                else{
+                    *ptr = v;
                     result = false;
                 }
             }
@@ -210,15 +220,19 @@ namespace aum {
             return result;
         }
 
+        void insert(key &k, value &v){//为update服务
+            lock.lock();
+            map[k] = v;
+            lock.unlock();
+        }
 
-        void remove(key k, value v) 
+
+        void remove(key &k, value &v) 
         {
             lock.lock();
             map_iterator iter = map.find(k);
-            if (iter != map.end()) {
-                if (iter->second == v) {//if the abort txn has insert row and has not been modifid by ohters then remove it from map;or keep it 
-                    map.erase(iter);
-                } 
+            if (iter != map.end() && iter->second == v) {//if the abort txn has insert row and has not been modifid by ohters then remove it from map;or keep it 
+                map.erase(iter);
             }
             lock.unlock();
         }
@@ -239,15 +253,144 @@ namespace aum {
             return map.end();
         }
 
-        map_iterator unsafe_find(key k) {
+        map_iterator unsafe_find(key &k) {
             return map.find(k);
+        }
+
+        bool contain(key &k, value &v){
+            map_iterator iter = map.find(k);
+            if(iter != map.end() && iter->second == v){
+                return true;
+            }
+            return false;
         }
 
         size_type size() { return map.size(); }
 
-    private:
+    public:
         std::unordered_map<key, value> map;
+        // std::map<key, value> map;
         aum::SpinLock lock;
+    };
+
+    template<typename key, typename value, typename pointer>
+    class concurrent_unordered_map {
+    public:
+        typedef typename std::unordered_map<key, value>::iterator map_iterator;
+        typedef typename std::unordered_map<key, value>::size_type size_type;
+
+        bool insert(key &k, value &v, pointer *ptr, std::function<bool(const value &, const value &)> cmp = [](const value& o, const value& n){return n < o;}) //为insert服务
+        {
+            std::mutex& _mutex_temp = GetMutexRef(k);
+            std::unordered_map<key, value>& _map_temp = GetMapRef(k);
+            bool result = true;
+            std::unique_lock<std::mutex> lock(_mutex_temp);
+            map_iterator iter = _map_temp.find(k);
+            if (iter == _map_temp.end()) {
+                _map_temp[k] = v;
+                *ptr = "0";
+                result = true;
+            } else {
+                // cmp(oldCsn, newCsn) -> bool
+                // if true: 新的事务覆盖旧的事务
+                if (iter->second > v) {
+                    *ptr = _map_temp[k];
+                    _map_temp[k] = v;
+                    result = true;
+                } 
+                else if(iter->second == v){//相同则为同一事务执行的插入，不能将map[k]返回abort掉
+                    *ptr = "0"; //暂且只支持string
+                    result = true;
+                }
+                else{
+                    *ptr = v;
+                    result = false;
+                }
+            }
+            lock.unlock();
+            return result;
+        }
+
+        void insert(key &k, value &v){
+            std::mutex& _mutex_temp = GetMutexRef(k);
+            std::unordered_map<key, value>& _map_temp = GetMapRef(k);
+            std::unique_lock<std::mutex> lock(_mutex_temp);
+            _map_temp[k] = v;
+        }
+
+
+        void remove(key &k, value &v) 
+        {
+            std::mutex& _mutex_temp = GetMutexRef(k);
+            std::unordered_map<key, value>& _map_temp = GetMapRef(k);
+            std::unique_lock<std::mutex> lock(_mutex_temp);
+            map_iterator iter = _map_temp.find(k);
+            if (iter != _map_temp.end()) {
+                if (iter->second == v) {//if the abort txn has insert row and has not been modifid by ohters then remove it from map;or keep it 
+                    _map_temp.erase(iter);
+                } 
+            }
+            lock.unlock();
+        }
+
+        void clear() {
+            for(uint64_t i = 0; i < _N; i ++){
+                std::unique_lock<std::mutex> lock(_mutex[i]);
+                _map[i].clear();
+            }
+        }
+
+        void unsafe_clear() { 
+            for(uint64_t i = 0; i < _N; i ++){
+                _map[i].clear();
+            }
+        }
+
+        bool contain(key &k, value &v){
+            std::unordered_map<key, value>& _map_temp = GetMapRef(k);
+            // const std::mutex& _mutex_temp = GetMutexRef(k);
+            // std::unique_lock<std::mutex> lock(_mutex_temp);
+            map_iterator iter = _map_temp.find(k);
+            if(iter != _map_temp.end()){
+                if(iter->second == v){
+                    return true;
+                }
+                else return false;
+            }
+            return false;
+        }
+
+        bool unsafe_contain(key &k, value &v){
+            std::unordered_map<key, value>& _map_temp = GetMapRef(k);
+            map_iterator iter = _map_temp.find(k);
+            if(iter != _map_temp.end()){
+                if(iter->second == v){
+                    return true;
+                }
+                else return false;
+            }
+            return false;
+        }
+
+        size_type size() {
+            size_type ans = 0;
+            for(uint64_t i = 0; i < _N; i ++){
+                std::unique_lock<std::mutex> lock(_mutex[i]);
+                ans += _map[i].size();
+            }
+            return ans;
+        }
+
+        std::unordered_map<key, value>& GetMapRef(key k){ return _map[(_hash(k) % _N)]; }
+        std::unordered_map<key, value>& GetMapRef(key k) const { return _map[(_hash(k) % _N)]; }
+        std::mutex& GetMutexRef(key k) { return _mutex[(_hash(k) % _N)]; }
+        std::mutex& GetMutexRef(key k) const {return _mutex[(_hash(k) % _N)]; }
+
+    private:
+        const static uint64_t _N = 12281;//1217 12281 122777 prime
+        std::hash<key> _hash;
+        std::unordered_map<key, value> _map[_N];
+        std::mutex _mutex[_N];
     };
 }; // NAMESPACE AUM
 
@@ -614,9 +757,18 @@ public:
     static std::shared_ptr<std::atomic<uint64_t>> local_change_set_num_ptr2;
 
 
-    static aum::atomic_unordered_map<std::string, uint64_t> insertSet;
+    // static aum::atomic_unordered_map<std::string, std::string, std::string> insertSet;
+    // static aum::atomic_unordered_map<std::string, std::string, std::string> insertSetForCommit;
+    // static aum::atomic_unordered_map<std::string, std::string, std::string> abort_transcation_csn_set;
+
+    static aum::concurrent_unordered_map<std::string, std::string, std::string> insertSet;
+    static aum::concurrent_unordered_map<std::string, std::string, std::string> insertSetForCommit;
+    static aum::concurrent_unordered_map<std::string, std::string, std::string> abort_transcation_csn_set;
 
     static uint64_t kPackageNum, kNotifyNum, kPackThreadNum, kNotifyThreadNum, local_ip_index;
+    static uint32_t kServerId;
+
+    static std::atomic<uint64_t> local_commit_count1, local_commit_count2;
 
     static void setTimerStop(bool value) {timerStop = value;}
 
@@ -756,11 +908,6 @@ public:
     static uint64_t GetLocalChangeSetNum(uint64_t index){ return (*local_change_set_txn_num_ptr1)[index]->load(); }
 
     static void IncLocalChangeSetNum(uint64_t index){ 
-        // Assert(index < kPackageMessageThreadNum); 
-        // Assert(local_change_set_txn_num_ptr1 != nullptr);
-        // Assert((*local_change_set_txn_num_ptr1).size() > index);
-        // Assert((*local_change_set_txn_num_ptr1)[index] != nullptr);
-        // Assert(typeid(*((*local_change_set_txn_num_ptr1)[index])) == typeid(std::atomic<uint64_t>));//使用typeid 开启了 RTTI 后续需关闭
         (*((*local_change_set_txn_num_ptr1)[index])) ++; 
     }
 
@@ -785,6 +932,8 @@ public:
         // for(auto &i : local_txn_execed_counters) i = 0;
         local_txn_counter = local_txn_execed_counter = 0;
         insertSet.clear();
+        insertSetForCommit.clear();
+        abort_transcation_csn_set.clear();
         remoteExeced = false;
     }
 

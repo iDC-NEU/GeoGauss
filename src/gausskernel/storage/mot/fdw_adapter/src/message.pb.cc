@@ -126,13 +126,14 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_message_2eproto::offsets[] PRO
   PROTOBUF_FIELD_OFFSET(::merge::MergeRequest_Transaction, startepoch_),
   PROTOBUF_FIELD_OFFSET(::merge::MergeRequest_Transaction, commitepoch_),
   PROTOBUF_FIELD_OFFSET(::merge::MergeRequest_Transaction, csn_),
+  PROTOBUF_FIELD_OFFSET(::merge::MergeRequest_Transaction, server_id_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::merge::MergeRequest, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   PROTOBUF_FIELD_OFFSET(::merge::MergeRequest, txn_),
-  PROTOBUF_FIELD_OFFSET(::merge::MergeRequest, request_address_),
+  PROTOBUF_FIELD_OFFSET(::merge::MergeRequest, server_id_),
   PROTOBUF_FIELD_OFFSET(::merge::MergeRequest, epoch_),
   PROTOBUF_FIELD_OFFSET(::merge::MergeRequest, pack_id_),
 };
@@ -140,7 +141,7 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 0, -1, sizeof(::merge::MergeRequest_Transaction_Row_Column)},
   { 7, -1, sizeof(::merge::MergeRequest_Transaction_Row)},
   { 17, -1, sizeof(::merge::MergeRequest_Transaction)},
-  { 27, -1, sizeof(::merge::MergeRequest)},
+  { 28, -1, sizeof(::merge::MergeRequest)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -151,18 +152,18 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
 };
 
 const char descriptor_table_protodef_message_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\rmessage.proto\022\005merge\"\241\003\n\014MergeRequest\022"
+  "\n\rmessage.proto\022\005merge\"\256\003\n\014MergeRequest\022"
   ",\n\003Txn\030\001 \003(\0132\037.merge.MergeRequest.Transa"
-  "ction\022\027\n\017request_address\030\002 \001(\t\022\r\n\005epoch\030"
-  "\003 \001(\004\022\017\n\007pack_id\030\004 \001(\004\032\251\002\n\013Transaction\022\r"
-  "\n\005TxnID\030\001 \001(\004\0220\n\003row\030\002 \003(\0132#.merge.Merge"
-  "Request.Transaction.Row\022\022\n\nStartEpoch\030\003 "
-  "\001(\004\022\023\n\013CommitEpoch\030\004 \001(\004\022\013\n\003CSN\030\005 \001(\004\032\242\001"
-  "\n\003Row\022\021\n\ttableName\030\001 \001(\t\022\013\n\003key\030\002 \001(\014\022\014\n"
-  "\004type\030\003 \001(\r\022:\n\006column\030\004 \003(\0132*.merge.Merg"
-  "eRequest.Transaction.Row.Column\022\014\n\004data\030"
-  "\005 \001(\014\032#\n\006Column\022\n\n\002id\030\001 \001(\004\022\r\n\005value\030\002 \001"
-  "(\014b\006proto3"
+  "ction\022\021\n\tserver_id\030\002 \001(\004\022\r\n\005epoch\030\003 \001(\004\022"
+  "\017\n\007pack_id\030\004 \001(\004\032\274\002\n\013Transaction\022\r\n\005TxnI"
+  "D\030\001 \001(\004\0220\n\003row\030\002 \003(\0132#.merge.MergeReques"
+  "t.Transaction.Row\022\022\n\nStartEpoch\030\003 \001(\004\022\023\n"
+  "\013CommitEpoch\030\004 \001(\004\022\013\n\003CSN\030\005 \001(\004\022\021\n\tserve"
+  "r_id\030\006 \001(\004\032\242\001\n\003Row\022\021\n\ttableName\030\001 \001(\t\022\013\n"
+  "\003key\030\002 \001(\014\022\014\n\004type\030\003 \001(\r\022:\n\006column\030\004 \003(\013"
+  "2*.merge.MergeRequest.Transaction.Row.Co"
+  "lumn\022\014\n\004data\030\005 \001(\014\032#\n\006Column\022\n\n\002id\030\001 \001(\004"
+  "\022\r\n\005value\030\002 \001(\014b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_message_2eproto_deps[1] = {
 };
@@ -175,7 +176,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_mes
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_message_2eproto_once;
 static bool descriptor_table_message_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_message_2eproto = {
-  &descriptor_table_message_2eproto_initialized, descriptor_table_protodef_message_2eproto, "message.proto", 450,
+  &descriptor_table_message_2eproto_initialized, descriptor_table_protodef_message_2eproto, "message.proto", 463,
   &descriptor_table_message_2eproto_once, descriptor_table_message_2eproto_sccs, descriptor_table_message_2eproto_deps, 4, 0,
   schemas, file_default_instances, TableStruct_message_2eproto::offsets,
   file_level_metadata_message_2eproto, 4, file_level_enum_descriptors_message_2eproto, file_level_service_descriptors_message_2eproto,
@@ -750,16 +751,16 @@ MergeRequest_Transaction::MergeRequest_Transaction(const MergeRequest_Transactio
       row_(from.row_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::memcpy(&txnid_, &from.txnid_,
-    static_cast<size_t>(reinterpret_cast<char*>(&csn_) -
-    reinterpret_cast<char*>(&txnid_)) + sizeof(csn_));
+    static_cast<size_t>(reinterpret_cast<char*>(&server_id_) -
+    reinterpret_cast<char*>(&txnid_)) + sizeof(server_id_));
   // @@protoc_insertion_point(copy_constructor:merge.MergeRequest.Transaction)
 }
 
 void MergeRequest_Transaction::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_MergeRequest_Transaction_message_2eproto.base);
   ::memset(&txnid_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&csn_) -
-      reinterpret_cast<char*>(&txnid_)) + sizeof(csn_));
+      reinterpret_cast<char*>(&server_id_) -
+      reinterpret_cast<char*>(&txnid_)) + sizeof(server_id_));
 }
 
 MergeRequest_Transaction::~MergeRequest_Transaction() {
@@ -787,8 +788,8 @@ void MergeRequest_Transaction::Clear() {
 
   row_.Clear();
   ::memset(&txnid_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&csn_) -
-      reinterpret_cast<char*>(&txnid_)) + sizeof(csn_));
+      reinterpret_cast<char*>(&server_id_) -
+      reinterpret_cast<char*>(&txnid_)) + sizeof(server_id_));
   _internal_metadata_.Clear();
 }
 
@@ -836,6 +837,13 @@ const char* MergeRequest_Transaction::_InternalParse(const char* ptr, ::PROTOBUF
       case 5:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
           csn_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // uint64 server_id = 6;
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 48)) {
+          server_id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -897,6 +905,12 @@ failure:
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(5, this->_internal_csn(), target);
   }
 
+  // uint64 server_id = 6;
+  if (this->server_id() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(6, this->_internal_server_id(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target, stream);
@@ -948,6 +962,13 @@ size_t MergeRequest_Transaction::ByteSizeLong() const {
         this->_internal_csn());
   }
 
+  // uint64 server_id = 6;
+  if (this->server_id() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
+        this->_internal_server_id());
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
         _internal_metadata_, total_size, &_cached_size_);
@@ -992,6 +1013,9 @@ void MergeRequest_Transaction::MergeFrom(const MergeRequest_Transaction& from) {
   if (from.csn() != 0) {
     _internal_set_csn(from._internal_csn());
   }
+  if (from.server_id() != 0) {
+    _internal_set_server_id(from._internal_server_id());
+  }
 }
 
 void MergeRequest_Transaction::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
@@ -1020,6 +1044,7 @@ void MergeRequest_Transaction::InternalSwap(MergeRequest_Transaction* other) {
   swap(startepoch_, other->startepoch_);
   swap(commitepoch_, other->commitepoch_);
   swap(csn_, other->csn_);
+  swap(server_id_, other->server_id_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata MergeRequest_Transaction::GetMetadata() const {
@@ -1045,22 +1070,17 @@ MergeRequest::MergeRequest(const MergeRequest& from)
       _internal_metadata_(nullptr),
       txn_(from.txn_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  request_address_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (!from._internal_request_address().empty()) {
-    request_address_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.request_address_);
-  }
-  ::memcpy(&epoch_, &from.epoch_,
+  ::memcpy(&server_id_, &from.server_id_,
     static_cast<size_t>(reinterpret_cast<char*>(&pack_id_) -
-    reinterpret_cast<char*>(&epoch_)) + sizeof(pack_id_));
+    reinterpret_cast<char*>(&server_id_)) + sizeof(pack_id_));
   // @@protoc_insertion_point(copy_constructor:merge.MergeRequest)
 }
 
 void MergeRequest::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_MergeRequest_message_2eproto.base);
-  request_address_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  ::memset(&epoch_, 0, static_cast<size_t>(
+  ::memset(&server_id_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&pack_id_) -
-      reinterpret_cast<char*>(&epoch_)) + sizeof(pack_id_));
+      reinterpret_cast<char*>(&server_id_)) + sizeof(pack_id_));
 }
 
 MergeRequest::~MergeRequest() {
@@ -1069,7 +1089,6 @@ MergeRequest::~MergeRequest() {
 }
 
 void MergeRequest::SharedDtor() {
-  request_address_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 void MergeRequest::SetCachedSize(int size) const {
@@ -1088,10 +1107,9 @@ void MergeRequest::Clear() {
   (void) cached_has_bits;
 
   txn_.Clear();
-  request_address_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  ::memset(&epoch_, 0, static_cast<size_t>(
+  ::memset(&server_id_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&pack_id_) -
-      reinterpret_cast<char*>(&epoch_)) + sizeof(pack_id_));
+      reinterpret_cast<char*>(&server_id_)) + sizeof(pack_id_));
   _internal_metadata_.Clear();
 }
 
@@ -1114,12 +1132,10 @@ const char* MergeRequest::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<10>(ptr));
         } else goto handle_unusual;
         continue;
-      // string request_address = 2;
+      // uint64 server_id = 2;
       case 2:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
-          auto str = _internal_mutable_request_address();
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "merge.MergeRequest.request_address"));
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
+          server_id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -1171,14 +1187,10 @@ failure:
       InternalWriteMessage(1, this->_internal_txn(i), target, stream);
   }
 
-  // string request_address = 2;
-  if (this->request_address().size() > 0) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_request_address().data(), static_cast<int>(this->_internal_request_address().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "merge.MergeRequest.request_address");
-    target = stream->WriteStringMaybeAliased(
-        2, this->_internal_request_address(), target);
+  // uint64 server_id = 2;
+  if (this->server_id() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(2, this->_internal_server_id(), target);
   }
 
   // uint64 epoch = 3;
@@ -1216,11 +1228,11 @@ size_t MergeRequest::ByteSizeLong() const {
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
-  // string request_address = 2;
-  if (this->request_address().size() > 0) {
+  // uint64 server_id = 2;
+  if (this->server_id() != 0) {
     total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-        this->_internal_request_address());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
+        this->_internal_server_id());
   }
 
   // uint64 epoch = 3;
@@ -1269,9 +1281,8 @@ void MergeRequest::MergeFrom(const MergeRequest& from) {
   (void) cached_has_bits;
 
   txn_.MergeFrom(from.txn_);
-  if (from.request_address().size() > 0) {
-
-    request_address_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.request_address_);
+  if (from.server_id() != 0) {
+    _internal_set_server_id(from._internal_server_id());
   }
   if (from.epoch() != 0) {
     _internal_set_epoch(from._internal_epoch());
@@ -1303,8 +1314,7 @@ void MergeRequest::InternalSwap(MergeRequest* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
   txn_.InternalSwap(&other->txn_);
-  request_address_.Swap(&other->request_address_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-    GetArenaNoVirtual());
+  swap(server_id_, other->server_id_);
   swap(epoch_, other->epoch_);
   swap(pack_id_, other->pack_id_);
 }

@@ -256,6 +256,7 @@ public:
     inline void SetCommitSequenceNumber(uint64_t csn)
     {
         m_rowHeader.SetCSN(csn);
+        m_rowHeader.SetStableCSN(csn);
     }
 
     /**
@@ -615,8 +616,25 @@ protected:
 
 //ADDBY NEU
 public:
-    bool ValidateAndSetWrite(uint64_t m_csn, uint64_t start_epoch, uint64_t commit_epoch) {
-        return this->m_rowHeader.ValidateAndSetWrite(m_csn, start_epoch, commit_epoch);
+    bool ValidateAndSetWriteForRemote(uint64_t m_csn, uint64_t start_epoch, uint64_t commit_epoch, uint32_t server_id) {
+        // return this->m_rowHeader.ValidateAndSetWrite(m_csn, start_epoch, commit_epoch, server_id);
+        return this->m_rowHeader.ValidateAndSetWriteForCommit(m_csn, start_epoch, commit_epoch, server_id);
+    }
+
+    uint32_t GetServerId(){
+        return this->m_rowHeader.GetServerId();
+    }
+
+    uint64_t GetStableCSN(){
+        return this->m_rowHeader.GetStableCSN();
+    }
+
+    uint32_t GetStableServerId(){
+        return this->m_rowHeader.GetStableServerId();
+    }
+
+    void RecoverToStable(){
+        this->m_rowHeader.RecoverToStable();
     }
 
     void SetValueVariable_1(int id, const void* ptr, uint32_t size);

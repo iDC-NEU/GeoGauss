@@ -1280,7 +1280,7 @@ Key* Table::BuildKeyByRow(Row* row, TxnManager* txn)
     MOT::Index* ix = GetPrimaryIndex();
     key = txn->GetTxnKey(ix);
     if(key == nullptr){
-        return key;
+        Assert(false);
     }
     ix->BuildKey(this, row, key);
     // std::string key_str = key.GetKeyStr();
