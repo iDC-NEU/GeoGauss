@@ -1354,9 +1354,7 @@ RC TxnManager::Commit()
         }
         begin:
 
-        if(MOTAdaptor::GetPhysicalEpoch() != MOTAdaptor::GetLogicalEpoch()){//到达一个新physical epoch 新来线程被阻塞
-            MOTAdaptor::lock_cv_txn_v[index_notify]->wait([]{ return MOTAdaptor::GetPhysicalEpoch() == MOTAdaptor::GetLogicalEpoch();});
-        }
+        while(MOTAdaptor::GetPhysicalEpoch() != MOTAdaptor::GetLogicalEpoch()) usleep(100);
         // MOTAdaptor::IncLocalTxnCounter();
         MOTAdaptor::IncLocalTxnCounter(index_pack);
         SetCommitSequenceNumber(now_to_us());
@@ -1400,45 +1398,24 @@ RC TxnManager::Commit()
         MOTAdaptor::DecExeCounter(index_pack);
         // MOTAdaptor::DecExeCounter();
 
-
-        if(!MOTAdaptor::isRemoteExeced()){
-            MOTAdaptor::lock_cv_commit_v[index_notify]->wait([]{ return MOTAdaptor::isRemoteExeced(); });
-            // auto index = lock_cv_commit_wait_counter.fetch_add(1);
-            // MOTAdaptor::lock_cv_commit_l[index]->wait_with_mark([]{ return MOTAdaptor::isRemoteExeced();}); 
-        }
+        while(!MOTAdaptor::isRemoteExeced()) usleep(100);
         // MOT_LOG_INFO("CommitCkeck %lu", rc);
         auto csn_temp = std::to_string(GetCommitSequenceNumber()) + ":" + std::to_string(MOTAdaptor::kServerId);
         // auto search = MOTAdaptor::abort_transcation_csn_set.unsafe_find(csn_temp);
         // if(search != MOTAdaptor::abort_transcation_csn_set.unsafe_end()){
-        bool res1, res2;
-        res1 = res2 = false;
         if(MOTAdaptor::abort_transcation_csn_set.contain(csn_temp, csn_temp)){
             rc = RC_ABORT;
-            res1 = true;
-            MOTAdaptor::local_commit_count1.fetch_add(1);
+            // MOTAdaptor::local_commit_count1.fetch_add(1);
             // MOT_LOG_INFO("abort_transcation_csn_set %llu %s", MOTAdaptor::local_commit_count1.load(), csn_temp.c_str());
         }
 
         // MOT_LOG_INFO("CommitCkeck ");
         // rc = m_occManager.CommitCheck(this, MOTAdaptor::kServerId);
-        if(m_occManager.CommitCheck(this, MOTAdaptor::kServerId) == RC_ABORT) {
-            res2 == true;
-            MOTAdaptor::local_commit_count2.fetch_add(1);
-            // MOT_LOG_INFO("CommitCkeck %llu %s", MOTAdaptor::local_commit_count2.load(), csn_temp.c_str());
-        }
-
-        // if(res1 && !res2){
-        //     MOT_LOG_INFO("CommitCkeck map %llu %llu %s", MOTAdaptor::local_commit_count1.load(), MOTAdaptor::local_commit_count2.load(), csn_temp.c_str());
+        // if(m_occManager.CommitCheck(this, MOTAdaptor::kServerId) == RC_ABORT) {
+        //     MOTAdaptor::local_commit_count2.fetch_add(1);
+        //     // MOT_LOG_INFO("CommitCkeck %llu %s", MOTAdaptor::local_commit_count2.load(), csn_temp.c_str());
         // }
 
-        // if(!res1 && res2){
-        //     MOT_LOG_INFO("CommitCkeck for %llu %llu %s", MOTAdaptor::local_commit_count1.load(), MOTAdaptor::local_commit_count2.load(), csn_temp.c_str());
-        // }
-
-        // if(res1 && res2){
-        //     MOT_LOG_INFO("CommitCkeck3 mf%llu %llu %s", MOTAdaptor::local_commit_count1.load(), MOTAdaptor::local_commit_count2.load(), csn_temp.c_str());
-        // }
-        // MOT_LOG_INFO("remote CommitCkeck map %d %d %s", res1, res2, csn_temp.c_str());
         // MOTAdaptor::DecComCounter();
         MOTAdaptor::DecComCounter(index_pack);
         return rc;

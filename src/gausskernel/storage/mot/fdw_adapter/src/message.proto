@@ -21,6 +21,7 @@ message MergeRequest {
     uint64 CommitEpoch = 4;
     uint64 CSN = 5;
     uint64 server_id = 6;
+    bool type = 7;
   }
   repeated Transaction Txn = 1;
   uint64 server_id = 2;

@@ -53,7 +53,7 @@
 #include "row.h"
 #include "neu_concurrency_tools/blockingconcurrentqueue.h"
 #include "neu_concurrency_tools/blocking_mpmc_queue.h"
-#include "neu_concurrency_tools/ThreadPool.h"
+#include "neu_concurrency_tools/readerwriterqueue.h"
 #include <vector>
 #include <typeinfo>
 // #include <semaphore.h>
@@ -77,89 +77,6 @@ extern void EpochUnseriThreadMain(uint64_t id);
 extern void EpochUnpackThreadMain(uint64_t id, std::vector<std::string> kServerIp);
 extern void EpochMergeThreadMain(uint64_t id);
 extern void EpochCommitThreadMain(uint64_t id);
-
-class LockCV{//只能提供给两个线程同时访问，多个线程同时访问同一个mutex需要多个创建多个unique对这个mutex进行上锁set_lock()，不能使用同一个unique_lock，否则会出现死锁(同一unique的多次调用)
-private:
-public:
-    std::mutex _mutex;
-    std::condition_variable _cv;
-    bool _is_notified = false;
-
-    template <class _Predicate>
-    void wait(std::unique_lock<std::mutex>& _lock, _Predicate _Pred) {
-        _lock.lock();
-        while(!_Pred()){
-            _cv.wait( _lock);
-        }
-        _lock.unlock();
-    }
-
-    void wait(std::unique_lock<std::mutex>& _lock) { 
-        _lock.lock();
-        _cv.wait( _lock);
-        _lock.unlock();
-    }
-
-    void notify_all(std::unique_lock<std::mutex>& _lock){
-        _lock.lock();
-        _cv.notify_all();
-        _lock.unlock();
-    }
-
-    void notify_one(std::unique_lock<std::mutex>& _lock){
-        _lock.lock();
-        _cv.notify_one();
-        _lock.unlock();
-    }
-
-    void notify_all_without_lock(){
-        _cv.notify_all();
-    }
-
-    void notify_one_without_lock(){
-        _cv.notify_one();
-    }
-    
-    void set_lock(std::unique_lock<std::mutex>& _lock){
-        std::unique_lock<std::mutex> lock_tmp(_mutex);
-        _lock = std::move(lock_tmp);
-        _lock.unlock();
-    }
-
-
-    template <class _Predicate>
-    void wait(_Predicate _Pred) {
-        std::unique_lock<std::mutex> lock(_mutex);
-        while(!_Pred()){
-            _cv.wait( lock);
-        }
-    }
-    template <class _Predicate>
-    void wait_with_mark(_Predicate _Pred){
-        std::unique_lock<std::mutex> lock(_mutex);
-        while(!_Pred() && _is_notified == false){
-            _cv.wait( lock);
-        }
-        _is_notified = false;
-    }
-
-    void wait() {
-        std::unique_lock<std::mutex> lock(_mutex);
-        _cv.wait( lock);
-    }
-
-    void notify_all(){
-        std::unique_lock<std::mutex> lock(_mutex);
-        _cv.notify_all();
-    }
-
-    void notify_one(){
-        std::unique_lock<std::mutex> lock(_mutex);
-        _cv.notify_one();
-        _is_notified = true;
-    }
-
-};
 
 namespace aum {
     class SpinLock {
@@ -387,7 +304,7 @@ namespace aum {
         std::mutex& GetMutexRef(key k) const {return _mutex[(_hash(k) % _N)]; }
 
     private:
-        const static uint64_t _N = 12281;//1217 12281 122777 prime
+        const static uint64_t _N = 1;//1217 12281 122777 prime
         std::hash<key> _hash;
         std::unordered_map<key, value> _map[_N];
         std::mutex _mutex[_N];
@@ -729,19 +646,6 @@ private:
     
 
 public:
-    static LockCV lock_cv_epoch_cache;
-    static LockCV lock_cv_epoch_manager;
-    static std::vector<LockCV*> lock_cv_pack_threads;
-    static std::vector<LockCV*> lock_cv_notify_threads;
-
-    static std::vector<LockCV*> lock_cv_txn_v;
-    static std::vector<LockCV*> lock_cv_commit_v;
-
-    static std::vector<LockCV*> lock_cv_commit_l;//本地阻塞线程条件变量数组   
-    static std::atomic<uint64_t> lock_cv_commit_wait_counter;//本地阻塞线程数量  
-    static std::atomic<uint64_t> lock_cv_commit_notify_counter;//本地阻塞线程唤醒数量  
-
-    // static sem_t sem_commit;
 
     static std::vector<std::atomic<uint64_t>*> local_txn_counters;//本地事务执行阶段计数器 多个
     static std::vector<std::atomic<uint64_t>*> local_txn_execed_counters;//本地事务执行阶段完成计数器 多个 为了防止频繁访问，将加和减才分成两个(如果一个影响性能的话)
@@ -757,13 +661,13 @@ public:
     static std::shared_ptr<std::atomic<uint64_t>> local_change_set_num_ptr2;
 
 
-    // static aum::atomic_unordered_map<std::string, std::string, std::string> insertSet;
-    // static aum::atomic_unordered_map<std::string, std::string, std::string> insertSetForCommit;
-    // static aum::atomic_unordered_map<std::string, std::string, std::string> abort_transcation_csn_set;
+    static aum::atomic_unordered_map<std::string, std::string, std::string> insertSet;
+    static aum::atomic_unordered_map<std::string, std::string, std::string> insertSetForCommit;
+    static aum::atomic_unordered_map<std::string, std::string, std::string> abort_transcation_csn_set;
 
-    static aum::concurrent_unordered_map<std::string, std::string, std::string> insertSet;
-    static aum::concurrent_unordered_map<std::string, std::string, std::string> insertSetForCommit;
-    static aum::concurrent_unordered_map<std::string, std::string, std::string> abort_transcation_csn_set;
+    // static aum::concurrent_unordered_map<std::string, std::string, std::string> insertSet;
+    // static aum::concurrent_unordered_map<std::string, std::string, std::string> insertSetForCommit;
+    // static aum::concurrent_unordered_map<std::string, std::string, std::string> abort_transcation_csn_set;
 
     static uint64_t kPackageNum, kNotifyNum, kPackThreadNum, kNotifyThreadNum, local_ip_index;
     static uint32_t kServerId;
@@ -870,10 +774,15 @@ public:
 
 
     static void AddUnpackagedMessageNum(){unpackaged_message_num.fetch_add(1);}
+    static void AddUnpackagedMessageNum(uint64_t value){unpackaged_message_num.fetch_add(value);}
+    static void SetUnpackagedMessageNum(uint64_t value){unpackaged_message_num = value;}
 
     static uint64_t GetUnpackagedMessageNum(){return unpackaged_message_num.load();}
 
     static void AddUnpackagedTxnNum(){unpackaged_txn_num.fetch_add(1);}
+    static void AddUnpackagedTxnNum(uint64_t value){unpackaged_txn_num.fetch_add(value);}
+    static void SetUnpackagedTxnNum(uint64_t value){unpackaged_txn_num = value;}
+
 
     static uint64_t GetUnpackagedTxnNum(){return unpackaged_txn_num.load();}
 
@@ -922,12 +831,10 @@ public:
         merged_txn_num = 0;
         commit_txn_num = 0;
         committed_txn_num = 0;
-        lock_cv_commit_wait_counter = 0;
-        lock_cv_commit_notify_counter = 0;
         for(int i = 0; i < (int)local_txn_counters.size(); i++){
             local_txn_counters[i]->store(0);
             local_txn_execed_counters[i]->store(0);
-            local_txn_index[i]->store(0);
+            local_txn_index[i]->store(1);
         }
         // for(auto &i : local_txn_execed_counters) i = 0;
         local_txn_counter = local_txn_execed_counter = 0;
@@ -942,18 +849,6 @@ public:
     static void LocalTxnSafeExit(const uint64_t& index_pack, void* txn_void);
 
     static void* InsertRowToMergeRequestTxn(MOT::TxnManager* txMan);
-
-    // static void Notify_Commit_Txn(){
-    //     uint64_t index = lock_cv_commit_notify_counter.fetch_add(1);
-    //     if(index >= lock_cv_commit_wait_counter){
-    //         lock_cv_commit_notify_counter.fetch_sub(1);
-    //         return ;
-    //     }
-    //     else{
-    //         lock_cv_commit_l[index]->notify_one();
-    //     }
-    // }
-
 
 };
 
