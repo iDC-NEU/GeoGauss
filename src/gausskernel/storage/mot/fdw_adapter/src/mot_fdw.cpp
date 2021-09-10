@@ -2403,8 +2403,8 @@ void FDWEpochSendThreadMain(uint64_t id, std::string kServerIp, uint64_t port){
     EpochSendThreadMain(id, kServerIp, port);
 }
 
-void FDWEpochListenThreadMain(uint64_t id, uint64_t port){
-    EpochListenThreadMain(id, port);
+void FDWEpochListenThreadMain(uint64_t id, std::string kServerIp, uint64_t port){
+    EpochListenThreadMain(id, kServerIp, port);
 }
 void FDWEpochUnseriThreadMain(uint64_t id){
     EpochUnseriThreadMain(id);

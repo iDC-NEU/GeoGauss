@@ -2481,7 +2481,9 @@ void EpochPackThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64
     shared_ptr<std::atomic<uint64_t>> local_change_set_txn_num_ptr_temp;
     pack_thread_params * params;
     uint64_t tot = 0;
+    uint64_t batch = 0;
     merge::MergeRequest_Transaction* txn;
+    shared_ptr<merge::MergeRequest> merge_request_ptr;
     while(true){
 
         
@@ -2496,16 +2498,20 @@ void EpochPackThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64
             while(true){
 
                 while(local_change_set_txn_ptr_temp->try_dequeue(txn)){
-                    shared_ptr<std::string> serialized_req_ptr = std::make_shared<std::string>();
-                    txn->SerializeToString(&(*serialized_req_ptr));
-                    for (int ip_cnt = 0; ip_cnt < (int)kServerNum - 1; ip_cnt ++ ){
-                        if(!send_pools[(int)(ip_cnt * kPackageNum + index)]->enqueue(new send_thread_params(current_epoch, 0, serialized_req_ptr))) Assert(false);//内存不够
-                    }
+                    shared_ptr<std::string> serialized_txn_ptr = std::make_shared<std::string>();
+                    txn->SerializeToString(&(*serialized_txn_ptr));
+                    // for (int ip_cnt = 0; ip_cnt < (int)kServerNum - 1; ip_cnt ++ ){
+                    //     if(!send_pools[(int)(ip_cnt * kPackageNum + index)]->enqueue(new send_thread_params(current_epoch, 0, serialized_txn_ptr))) Assert(false);//内存不够
+                    // }
+                    if(!send_pools[0]->enqueue(new send_thread_params(current_epoch, 0, serialized_txn_ptr))) Assert(false);//内存不够
                     (*local_change_set_txn_num_ptr_temp) --;
+                    batch ++;
                     tot++;
                     delete txn;
+
                 }
                 if(current_epoch < MOTAdaptor::GetPhysicalEpoch() && local_change_set_txn_num_ptr_temp->load() == 0) {
+                    merge_request_ptr = 
                     auto end_pack = now_to_us();
                     MOT_LOG_INFO("MergeRequest 到达发送时间，开始发送 第%llu个Pack线程, 第%llu个package, epoch:%llu 共%d个事务 time %lu", id, index, current_epoch, tot, end_pack - start_pack);
                     break;
@@ -2514,16 +2520,17 @@ void EpochPackThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64
             }
 
             std::unique_ptr<merge::MergeRequest_Transaction> txn_end = std::make_unique<merge::MergeRequest_Transaction>();
-            shared_ptr<std::string> serialized_req_ptr = std::make_shared<std::string>();
+            shared_ptr<std::string> serialized_txn_ptr = std::make_shared<std::string>();
             txn_end->set_startepoch(0);
             txn_end->set_commitepoch(current_epoch);
             txn_end->set_csn(tot);
             txn_end->set_server_id(local_ip_index);
             txn_end->set_txnid(0);
-            txn_end->SerializeToString(&(*serialized_req_ptr));
-            for (int ip_cnt = 0; ip_cnt < (int)kServerNum - 1; ip_cnt ++ ){
-                if(!send_pools[(int)(ip_cnt * kPackageNum + index)]->enqueue(new send_thread_params(current_epoch, tot + 1, serialized_req_ptr))) Assert(false);//内存不够
-            }
+            txn_end->SerializeToString(&(*serialized_txn_ptr));
+            // for (int ip_cnt = 0; ip_cnt < (int)kServerNum - 1; ip_cnt ++ ){
+            //     if(!send_pools[(int)(ip_cnt * kPackageNum + index)]->enqueue(new send_thread_params(current_epoch, tot + 1, serialized_txn_ptr))) Assert(false);//内存不够
+            // }
+            if(!send_pools[0]->enqueue(new send_thread_params(current_epoch, 0, serialized_txn_ptr))) Assert(false);//内存不够
             delete params;
         }
         usleep(50);
@@ -2534,8 +2541,12 @@ void EpochSendThreadMain(uint64_t id, std::string kServerIp, uint64_t port){
     SetCPU();
     zmq::context_t context(1);
     zmq::message_t reply(5);
-    zmq::socket_t socket_send(context, ZMQ_REQ);
-    socket_send.connect("tcp://" + kServerIp + ":" + std::to_string(port));
+    // zmq::socket_t socket_send(context, ZMQ_REQ);
+    // socket_send.connect("tcp://" + kServerIp + ":" + std::to_string(port));
+    int queue_length = 0;
+    zmq::socket_t socket_send(context, ZMQ_PUB);
+    socket_send.setsockopt(ZMQ_SNDHWM, &queue_length, sizeof(queue_length));
+    socket_send.bind("tcp://*:" + std::to_string(port));
 
     std::vector<uint64_t> message_tot_txn_num;
     std::vector<uint64_t> message_send_txn_num;
@@ -2562,7 +2573,8 @@ void EpochSendThreadMain(uint64_t id, std::string kServerIp, uint64_t port){
             zmq::message_t msg(params->serialized_req_ptr->size());
             memcpy(msg.data(), params->serialized_req_ptr->c_str(), params->serialized_req_ptr->size());
             socket_send.send(msg);
-            socket_send.recv(&reply);
+            
+            // socket_send.recv(&reply);
             if(message_tot_txn_num[0] != 100000000 && message_tot_txn_num[0] == message_send_txn_num[0] && message_tot_txn_num.size() > 0){
                 MOT_LOG_INFO("send epoch:%llu, %llu个事务发送完成", current_epoch, message_tot_txn_num[0]);
                 message_send_txn_num.erase(message_send_txn_num.begin());
@@ -2720,17 +2732,24 @@ moodycamel::BlockingConcurrentQueue<std::unique_ptr<MergeRequest>> unpack_txn_qu
 moodycamel::BlockingConcurrentQueue<std::unique_ptr<merge::MergeRequest_Transaction>> txn_queue;
 moodycamel::BlockingConcurrentQueue<std::unique_ptr<merge::MergeRequest_Transaction>> commit_txn_queue;
 
-void EpochListenThreadMain(uint64_t id, uint64_t port) {
+void EpochListenThreadMain(uint64_t id, std::string kServerIp, uint64_t port){
     SetCPU();
     MOT_LOG_INFO("线程开始工作 ListenThread %llu", port);
 	zmq::context_t context(1);
     zmq::message_t reply(5);
-	zmq::socket_t socket_listen(context, ZMQ_REP);
-    socket_listen.bind("tcp://*:" + std::to_string(port));
+	// zmq::socket_t socket_listen(context, ZMQ_REP);
+    // socket_listen.bind("tcp://*:" + std::to_string(port));
+
+    int queue_length = 0;
+    zmq::socket_t socket_listen(context, ZMQ_SUB);
+    socket_listen.setsockopt(ZMQ_SUBSCRIBE, "", 0);
+    socket_listen.setsockopt(ZMQ_RCVHWM, &queue_length, sizeof(queue_length));
+    socket_listen.connect("tcp://" +kServerIp + ":" + std::to_string(port));
+    // socket_listen.setsockopt(ZMQ_SUBSCRIBE, "", 0);
     for (;;) {
         zmq::message_t message;
         socket_listen.recv(&message);//防止上次遗留消息造成message cache出现问题
-        socket_listen.send(reply);
+        // socket_listen.send(reply);
         if(init_ok == true){
             listen_message_queue.enqueue(std::make_unique<std::string>(static_cast<const char*>(message.data()), message.size()));
             break;
@@ -2739,7 +2758,7 @@ void EpochListenThreadMain(uint64_t id, uint64_t port) {
     for (;;) {
         zmq::message_t message;
         socket_listen.recv(&message);
-        socket_listen.send(reply);
+        // socket_listen.send(reply);
         listen_message_queue.enqueue(std::make_unique<std::string>(static_cast<const char*>(message.data()), message.size()));
         // MOT_LOG_INFO("ListenThread %llu 收到一条消息", port);
     }

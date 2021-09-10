@@ -93,7 +93,7 @@ extern void FDWEpochMessageManagerThreadMain(uint64_t id, std::vector<std::strin
 extern void FDWEpochNotifyThreadMain(uint64_t id);
 extern void FDWEpochPackThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index);
 extern void FDWEpochSendThreadMain(uint64_t id, std::string kServerIp, uint64_t port);
-extern void FDWEpochListenThreadMain(uint64_t id, uint64_t port);
+extern void FDWEpochListenThreadMain(uint64_t id, std::string kServerIp, uint64_t port);
 extern void FDWEpochUnseriThreadMain(uint64_t id);
 extern void FDWEpochUnpackThreadMain(uint64_t id, std::vector<std::string> kServerIp);
 extern void FDWEpochMergeThreadMain(uint64_t id);

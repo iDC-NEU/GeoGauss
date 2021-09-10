@@ -72,7 +72,7 @@ extern void EpochNotifyThreadMain(uint64_t id);
 extern void EpochPackThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index);
 extern void EpochSendThreadMain(uint64_t id, std::string kServerIp, uint64_t port);
 
-extern void EpochListenThreadMain(uint64_t id, uint64_t port);
+extern void EpochListenThreadMain(uint64_t id, std::string kServerIp, uint64_t port);
 extern void EpochUnseriThreadMain(uint64_t id);
 extern void EpochUnpackThreadMain(uint64_t id, std::vector<std::string> kServerIp);
 extern void EpochMergeThreadMain(uint64_t id);

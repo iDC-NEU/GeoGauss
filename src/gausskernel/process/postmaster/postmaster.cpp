@@ -11490,7 +11490,8 @@ void GetServerInfo(){
     tinyxml2::XMLElement* pack_thread_num = root->FirstChildElement("pack_thread_num");
     kPackThreadNum = std::stoull(pack_thread_num->GetText());
 
-    kSendThreadNum = kListenThreadNum = (kServerNum - 1) * kPackageNum;
+    kSendThreadNum = 1;
+    kListenThreadNum = (kServerNum - 1) * kPackageNum;
 
 
     tinyxml2::XMLElement* sleep_time = root->FirstChildElement("sleep_time");
@@ -11517,7 +11518,7 @@ void GetServerInfo(){
         ereport(LOG, (errmsg("ip: %s",kServerIp[i].c_str())));
         if(i == (int)local_ip_index) continue;
         for(int j = 0; j < (int)kPackThreadNum; j++){
-            port.push_back(20000 + i * 100 + j);//第i个服务器给我发送的第j个message
+            port.push_back(20000 + i * 100 + j);//第i个服务器发送过来的第j个message
             send_ips.push_back(kServerIp[i]);//send线程向第i个发送 发送IP
             send_ports.push_back(20000 + local_ip_index * 100 + j);//send线程向第i个发送 端口是 我发送给它的第j个message
         }
