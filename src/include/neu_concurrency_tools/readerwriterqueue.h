@@ -102,7 +102,7 @@ public:
 	// allocations. If more than MAX_BLOCK_SIZE elements are requested,
 	// then several blocks of MAX_BLOCK_SIZE each are reserved (including
 	// at least one extra buffer block).
-	AE_NO_TSAN explicit ReaderWriterQueue(size_t size = 100000)
+	AE_NO_TSAN explicit ReaderWriterQueue(size_t size = 1000000)
 #ifndef NDEBUG
 		: enqueuing(false)
 		,dequeuing(false)

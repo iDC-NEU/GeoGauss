@@ -22,6 +22,7 @@ message MergeRequest {
     uint64 CSN = 5;
     uint64 server_id = 6;
     bool type = 7;
+    uint64_t pack_epoch = 8;
   }
   repeated Transaction Txn = 1;
   uint64 server_id = 2;

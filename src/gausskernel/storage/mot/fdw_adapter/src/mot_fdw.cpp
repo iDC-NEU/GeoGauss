@@ -1604,7 +1604,7 @@ static void MOTXactCallback(XactEvent event, void* arg)
             MemoryEreportError();
             // abortParentTransactionParamsNoDetail(ERRCODE_T_R_SERIALIZATION_FAILURE,
             //     "Commit: could not serialize access due to concurrent update(%d)",
-            //     txnState);
+            //     txnState);//ADDBY NEU
         }
         txn->SetTxnState(MOT::TxnState::TXN_COMMIT);
     } else if (event == XACT_EVENT_RECORD_COMMIT) {
@@ -1622,6 +1622,7 @@ static void MOTXactCallback(XactEvent event, void* arg)
             MOTAdaptor::CommitPrepared(csn);
         } else {
             MOTAdaptor::RecordCommit(csn);
+            //while(MOTAdaptor::GetCommittedTxnNum() != MOTAdaptor::GetCommitTxnNum()) usleep(100); //远端事务提交未完成，本地事务写完后等待。//ADDBY NEU
         }
     } else if (event == XACT_EVENT_END_TRANSACTION) {
         if (txnState == MOT::TxnState::TXN_END_TRANSACTION) {
@@ -1631,6 +1632,7 @@ static void MOTXactCallback(XactEvent event, void* arg)
         elog(DEBUG2, "XACT_EVENT_END_TRANSACTION, tid %lu", tid);
         MOTAdaptor::EndTransaction();
         txn->SetTxnState(MOT::TxnState::TXN_END_TRANSACTION);
+        //while(MOTAdaptor::GetCommittedTxnNum() != MOTAdaptor::GetCommitTxnNum()) usleep(100); //远端事务提交未完成，本地事务写完后等待。 //ADDBY NEU
     } else if (event == XACT_EVENT_PREPARE) {
         elog(DEBUG2, "XACT_EVENT_PREPARE, tid %lu", tid);
         rc = MOTAdaptor::Prepare();
@@ -2396,8 +2398,8 @@ void FDWEpochMessageManagerThreadMain(uint64_t id, std::vector<std::string> kSer
 void FDWEpochNotifyThreadMain(uint64_t id){
     // EpochNotifyThreadMain(id);
 }
-void FDWEpochPackThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index){
-    EpochPackThreadMain(id, kServerIp, kServerNum, kPackageNum, kNotifyNum, kPackThreadNum, kNotifyThreadNum, local_ip_index);
+void FDWEpochPackThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kBatchNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index){
+    EpochPackThreadMain(id, kServerIp, kServerNum, kPackageNum, kNotifyNum, kBatchNum, kPackThreadNum, kNotifyThreadNum, local_ip_index);
 }
 void FDWEpochSendThreadMain(uint64_t id, std::string kServerIp, uint64_t port){
     EpochSendThreadMain(id, kServerIp, port);

@@ -69,7 +69,7 @@ extern void EpochMessageManagerThreadMain(uint64_t id, std::vector<std::string> 
 extern void EpochMessageCacheManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index);
 
 extern void EpochNotifyThreadMain(uint64_t id);
-extern void EpochPackThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index);
+extern void EpochPackThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kBatchNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index);
 extern void EpochSendThreadMain(uint64_t id, std::string kServerIp, uint64_t port);
 
 extern void EpochListenThreadMain(uint64_t id, std::string kServerIp, uint64_t port);
@@ -265,14 +265,11 @@ namespace aum {
 
         bool contain(key &k, value &v){
             std::unordered_map<key, value>& _map_temp = GetMapRef(k);
-            // const std::mutex& _mutex_temp = GetMutexRef(k);
-            // std::unique_lock<std::mutex> lock(_mutex_temp);
             map_iterator iter = _map_temp.find(k);
             if(iter != _map_temp.end()){
                 if(iter->second == v){
                     return true;
                 }
-                else return false;
             }
             return false;
         }
@@ -284,7 +281,6 @@ namespace aum {
                 if(iter->second == v){
                     return true;
                 }
-                else return false;
             }
             return false;
         }
@@ -298,13 +294,14 @@ namespace aum {
             return ans;
         }
 
-        std::unordered_map<key, value>& GetMapRef(key k){ return _map[(_hash(k) % _N)]; }
-        std::unordered_map<key, value>& GetMapRef(key k) const { return _map[(_hash(k) % _N)]; }
-        std::mutex& GetMutexRef(key k) { return _mutex[(_hash(k) % _N)]; }
-        std::mutex& GetMutexRef(key k) const {return _mutex[(_hash(k) % _N)]; }
+protected:
+        inline std::unordered_map<key, value>& GetMapRef(const key k){ return _map[(_hash(k) % _N)]; }
+        inline std::unordered_map<key, value>& GetMapRef(const key k) const { return _map[(_hash(k) % _N)]; }
+        inline std::mutex& GetMutexRef(const key k) { return _mutex[(_hash(k) % _N)]; }
+        inline std::mutex& GetMutexRef(const key k) const {return _mutex[(_hash(k) % _N)]; }
 
     private:
-        const static uint64_t _N = 1;//1217 12281 122777 prime
+        const static uint64_t _N = 997;//1217 12281 122777 prime
         std::hash<key> _hash;
         std::unordered_map<key, value> _map[_N];
         std::mutex _mutex[_N];
@@ -647,6 +644,8 @@ private:
 
 public:
 
+    static std::mutex logical_cache_mutex;//cache和logical线程 更新unpackageNum时 加锁用
+
     static std::vector<std::atomic<uint64_t>*> local_txn_counters;//本地事务执行阶段计数器 多个
     static std::vector<std::atomic<uint64_t>*> local_txn_execed_counters;//本地事务执行阶段完成计数器 多个 为了防止频繁访问，将加和减才分成两个(如果一个影响性能的话)
     static std::vector<std::atomic<uint64_t>*> local_txn_index;//本地事务pack_index
@@ -659,15 +658,17 @@ public:
     static std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>> local_change_set_txn_num_ptr2;
     static std::shared_ptr<std::atomic<uint64_t>> local_change_set_num_ptr1;
     static std::shared_ptr<std::atomic<uint64_t>> local_change_set_num_ptr2;
+    static uint64_t local_change_set_ptr1_current_epoch;
+    static uint64_t local_change_set_ptr2_current_epoch;
 
 
-    static aum::atomic_unordered_map<std::string, std::string, std::string> insertSet;
-    static aum::atomic_unordered_map<std::string, std::string, std::string> insertSetForCommit;
-    static aum::atomic_unordered_map<std::string, std::string, std::string> abort_transcation_csn_set;
+    // static aum::atomic_unordered_map<std::string, std::string, std::string> insertSet;
+    // static aum::atomic_unordered_map<std::string, std::string, std::string> insertSetForCommit;
+    // static aum::atomic_unordered_map<std::string, std::string, std::string> abort_transcation_csn_set;
 
-    // static aum::concurrent_unordered_map<std::string, std::string, std::string> insertSet;
-    // static aum::concurrent_unordered_map<std::string, std::string, std::string> insertSetForCommit;
-    // static aum::concurrent_unordered_map<std::string, std::string, std::string> abort_transcation_csn_set;
+    static aum::concurrent_unordered_map<std::string, std::string, std::string> insertSet;
+    static aum::concurrent_unordered_map<std::string, std::string, std::string> insertSetForCommit;
+    static aum::concurrent_unordered_map<std::string, std::string, std::string> abort_transcation_csn_set;
 
     static uint64_t kPackageNum, kNotifyNum, kPackThreadNum, kNotifyThreadNum, local_ip_index;
     static uint32_t kServerId;
@@ -825,7 +826,8 @@ public:
     }
 
 
-    static void LogicalEndEpochClear(){
+    static void LogicalEndEpoch(){
+        std::unique_lock<std::mutex> lock(logical_cache_mutex);
         unpackaged_message_num = 0;
         unpackaged_txn_num = 0;
         merged_txn_num = 0;
@@ -842,6 +844,7 @@ public:
         insertSetForCommit.clear();
         abort_transcation_csn_set.clear();
         remoteExeced = false;
+        logical_epoch++;
     }
 
     static bool InsertRowToSet(MOT::TxnManager* txMan, void* txn_void, const uint64_t& index_pack, const uint64_t& index_unique);

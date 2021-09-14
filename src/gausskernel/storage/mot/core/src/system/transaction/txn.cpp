@@ -1357,18 +1357,18 @@ RC TxnManager::Commit()
         while(MOTAdaptor::GetPhysicalEpoch() != MOTAdaptor::GetLogicalEpoch()) usleep(100);
         // MOTAdaptor::IncLocalTxnCounter();
         MOTAdaptor::IncLocalTxnCounter(index_pack);
-        SetCommitSequenceNumber(now_to_us());
-        SetCommitEpoch(MOTAdaptor::GetPhysicalEpoch());
-
-        if( (MOTAdaptor::GetPhysicalEpoch() != MOTAdaptor::GetLogicalEpoch() && MOTAdaptor::GetLocalChangeSetNum(index_pack) == 0) || MOTAdaptor::isRemoteExeced() ){
+        if((MOTAdaptor::GetPhysicalEpoch() != MOTAdaptor::GetLogicalEpoch() && MOTAdaptor::GetLocalChangeSetNum(index_pack) == 0) || MOTAdaptor::isRemoteExeced() ){
             //写集可能已经被发送出去或merge已进行到提交阶段,当前事务停止继续运行，阻塞到下一个epoch
             //如果此时isRemoteExeced 为true 表明先前IncLocalTxnCounter无效 事务不应该继续运行  （单机问题，多主情况下由于网络延迟，不会产生此类问题）
             // MOTAdaptor::DecLocalTxnCounter();
             MOTAdaptor::DecLocalTxnCounter(index_pack);
-            MOT_LOG_INFO("事务跳转 goto begin");
+            MOT_LOG_INFO("事务跳转 goto begin %llu %llu", MOTAdaptor::GetLogicalEpoch(), MOTAdaptor::local_change_set_ptr1_current_epoch);
             goto begin;
         }
         MOTAdaptor::IncLocalChangeSetNum(index_pack);
+
+        SetCommitEpoch(MOTAdaptor::local_change_set_ptr1_current_epoch);
+        SetCommitSequenceNumber(now_to_us());
 
         // MOT_LOG_INFO("ValidateReadInMerge");
         if(!m_occManager.ValidateReadInMerge(this, MOTAdaptor::kServerId)){
