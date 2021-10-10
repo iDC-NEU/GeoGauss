@@ -183,6 +183,7 @@ typedef struct knl_g_pid_context {
     ThreadId* EpochUnpackPIDS;
     ThreadId* EpochMergePIDS;
     ThreadId* EpochCommitPIDS;
+    ThreadId* EpochRecordCommitPIDS;
 
 } knl_g_pid_context;
 

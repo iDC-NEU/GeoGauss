@@ -17,6 +17,7 @@ extern std::vector<uint64_t> epoch_unseri_thread_ids;
 extern std::vector<uint64_t> epoch_unpack_thread_ids;
 extern std::vector<uint64_t> epoch_merge_thread_ids;
 extern std::vector<uint64_t> epoch_commit_thread_ids;
+extern std::vector<uint64_t> epoch_record_commit_thread_ids;
 
 extern void EpochLogicalTimerManagerMain(void);
 extern void EpochPhysicalTimerManagerMain(void);
@@ -32,5 +33,5 @@ extern void EpochUnseriMain(void);
 extern void EpochUnpackMain(void);
 extern void EpochMergeMain(void);
 extern void EpochCommitMain(void);
-
+extern void EpochRecordCommitMain(void);
 #endif

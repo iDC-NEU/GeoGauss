@@ -240,7 +240,7 @@ void EpochPhysicalTimerManagerMain(void)
             proc_exit(0); /* done */
         }
 
-        FDWEpochPhysicalTimerManagerThreadMain(id, kServerIp, kServerNum, kPackageNum, kNotifyNum, kPackThreadNum, kNotifyThreadNum, local_ip_index, (uint64_t)kSleepTime);
+        FDWEpochPhysicalTimerManagerThreadMain(id);
 
         // LWLockAcquire(WALWriteLock, LW_EXCLUSIVE);
         // wrote_something = XLogBackgroundFlush();

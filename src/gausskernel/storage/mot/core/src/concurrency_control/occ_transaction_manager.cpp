@@ -631,7 +631,7 @@ void OccTransactionManager::recoverRowHeader(TxnManager * txMan, uint32_t server
     }
 }
 
-bool OccTransactionManager::ValidateAndSetWriteSet(TxnManager *txMan, uint32_t server_id)//Execution Phasesx
+bool OccTransactionManager::ValidateAndSetWriteSet(TxnManager *txMan, uint32_t server_id)//Execution Phases
 {
     TxnOrderedSet_t &orderedSet = txMan->m_accessMgr->GetOrderedRowSet();
     bool result = true;

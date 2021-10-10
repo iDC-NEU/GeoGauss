@@ -2870,6 +2870,12 @@ typedef struct knl_t_epochcommit_context {
     int epochcommit_id;
 } knl_t_epochcommit_context;
 
+typedef struct knl_t_epochrecordcommit_context {
+    volatile sig_atomic_t got_SIGHUP;
+    volatile sig_atomic_t shutdown_requested;
+    int epochrecordcommit_id;
+} knl_t_epochrecordcommit_context;
+
 /* thread context. */
 typedef struct knl_thrd_context {
     knl_thread_role role;
@@ -2993,7 +2999,7 @@ typedef struct knl_thrd_context {
     knl_t_epochunpack_context epochunpack_cxt;
     knl_t_epochmerge_context epochmerge_cxt;
     knl_t_epochcommit_context epochcommit_cxt;
-
+    knl_t_epochrecordcommit_context epochrecordcommit_cxt;
 } knl_thrd_context;
 
 #ifdef ENABLE_MOT

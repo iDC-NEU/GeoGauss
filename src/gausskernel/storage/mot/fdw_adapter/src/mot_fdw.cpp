@@ -72,6 +72,8 @@
 #include "storage/ipc.h"
 
 #include "mot_internal.h"
+#include "epochmessage.h"
+#include "postmaster/postmaster.h"
 #include "storage/mot/jit_exec.h"
 #include "mot_engine.h"
 #include "table.h"
@@ -1532,6 +1534,10 @@ static void MOTEndForeignModify(EState* estate, ResultRelInfo* resultRelInfo)
         resultRelInfo->ri_FdwState = NULL;
     }
 }
+//ADDBY NEU
+uint64_t GetThreadID(){
+    return (uint64_t) std::hash<std::thread::id>{}(std::this_thread::get_id());
+}
 
 static void MOTXactCallback(XactEvent event, void* arg)
 {
@@ -1597,7 +1603,7 @@ static void MOTXactCallback(XactEvent event, void* arg)
 
         elog(DEBUG2, "XACT_EVENT_COMMIT, tid %lu", tid);
 
-        rc = MOTAdaptor::ValidateCommit();
+        rc = MOTAdaptor::ValidateCommit();//Commit();
         if (rc != MOT::RC_OK) {
             elog(DEBUG2, "commit failed");
             elog(DEBUG2, "Abort parent transaction from MOT commit, tid %lu", tid);
@@ -1621,8 +1627,12 @@ static void MOTXactCallback(XactEvent event, void* arg)
         if (txnState == MOT::TxnState::TXN_PREPARE) {
             MOTAdaptor::CommitPrepared(csn);
         } else {
-            MOTAdaptor::RecordCommit(csn);
-            //while(MOTAdaptor::GetCommittedTxnNum() != MOTAdaptor::GetCommitTxnNum()) usleep(100); //远端事务提交未完成，本地事务写完后等待。//ADDBY NEU
+            MOTAdaptor::RecordCommit(csn);//CommitInternalII();
+            // auto epoch = txn->GetCommitEpoch();
+            // if(!txn->isOnlyRead()){
+            //     while(!epoch < MOTAdaptor::local_change_set_ptr1_current_epoch) usleep(100); 
+                //远端事务提交未完成，本地事务写完后等待。//ADDBY NEU
+            // }
         }
     } else if (event == XACT_EVENT_END_TRANSACTION) {
         if (txnState == MOT::TxnState::TXN_END_TRANSACTION) {
@@ -1632,7 +1642,14 @@ static void MOTXactCallback(XactEvent event, void* arg)
         elog(DEBUG2, "XACT_EVENT_END_TRANSACTION, tid %lu", tid);
         MOTAdaptor::EndTransaction();
         txn->SetTxnState(MOT::TxnState::TXN_END_TRANSACTION);
-        //while(MOTAdaptor::GetCommittedTxnNum() != MOTAdaptor::GetCommitTxnNum()) usleep(100); //远端事务提交未完成，本地事务写完后等待。 //ADDBY NEU
+        // auto epoch = txn->GetCommitEpoch();
+        // if(!txn->isOnlyRead()){
+        //     uint64_t thread_id = GetThreadID();//随机分布
+        //     uint64_t index_pack = thread_id % kPackageNum;
+        //     // MOTAdaptor::DecComCounter(index_pack);
+        //     // while(!epoch < MOTAdaptor::local_change_set_ptr1_current_epoch) usleep(100); 
+        //     //远端事务提交未完成，本地事务写完后等待。//ADDBY NEU
+        // }
     } else if (event == XACT_EVENT_PREPARE) {
         elog(DEBUG2, "XACT_EVENT_PREPARE, tid %lu", tid);
         rc = MOTAdaptor::Prepare();
@@ -2381,42 +2398,51 @@ uint16_t MOTDateToStr(uintptr_t src, char* destBuf, size_t len)
 }
 
 //ADDBY NEU
-void FDWEpochLogicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index){
+void FDWEpochLogicalTimerManagerThreadMain(uint64_t id){
     MOT_LOG_INFO("NotifyThreadNum %llu, local_ip_index %llu", kNotifyThreadNum, local_ip_index);
-    EpochLogicalTimerManagerThreadMain(id, kServerIp, kServerNum, kPackageNum, kNotifyNum, kPackThreadNum, kNotifyThreadNum, local_ip_index);
+    EpochLogicalTimerManagerThreadMain(id);
 }
-void FDWEpochPhysicalTimerManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index, uint64_t kSleepTime){
-    EpochPhysicalTimerManagerThreadMain(id, kServerIp, kServerNum, kPackageNum, kNotifyNum, kPackThreadNum, kNotifyThreadNum, local_ip_index, kSleepTime);
+void FDWEpochPhysicalTimerManagerThreadMain(uint64_t id){
+    EpochPhysicalTimerManagerThreadMain(id);
 }
-void FDWEpochMessageCacheManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index){
-    EpochMessageCacheManagerThreadMain(id, kServerIp, kServerNum, kPackageNum, kNotifyNum, kPackThreadNum, kNotifyThreadNum, local_ip_index);
+void FDWEpochMessageCacheManagerThreadMain(uint64_t id){
+    EpochMessageCacheManagerThreadMain(id);
 }
-void FDWEpochMessageManagerThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index){
+void FDWEpochMessageManagerThreadMain(uint64_t id){
     
 }
 
 void FDWEpochNotifyThreadMain(uint64_t id){
     // EpochNotifyThreadMain(id);
 }
-void FDWEpochPackThreadMain(uint64_t id, std::vector<std::string> kServerIp, uint64_t kServerNum, uint64_t kPackageNum, uint64_t kNotifyNum, uint64_t kBatchNum, uint64_t kPackThreadNum, uint64_t kNotifyThreadNum, uint64_t local_ip_index){
-    EpochPackThreadMain(id, kServerIp, kServerNum, kPackageNum, kNotifyNum, kBatchNum, kPackThreadNum, kNotifyThreadNum, local_ip_index);
+void FDWEpochPackThreadMain(uint64_t id){
+    EpochPackThreadMain(id);
 }
-void FDWEpochSendThreadMain(uint64_t id, std::string kServerIp, uint64_t port){
-    EpochSendThreadMain(id, kServerIp, port);
+void FDWEpochSendThreadMain(uint64_t id){
+    EpochSendThreadMain(id);
 }
-
-void FDWEpochListenThreadMain(uint64_t id, std::string kServerIp, uint64_t port){
-    EpochListenThreadMain(id, kServerIp, port);
+void FDWEpochMessageSendThreadMain(uint64_t id){
+    EpochMessageSendThreadMain(id);
+}
+void FDWEpochListenThreadMain(uint64_t id){
+    EpochListenThreadMain(id);
+}
+void FDWEpochMessageListenThreadMain(uint64_t id){
+    EpochMessageListenThreadMain(id);
 }
 void FDWEpochUnseriThreadMain(uint64_t id){
     EpochUnseriThreadMain(id);
 }
-void FDWEpochUnpackThreadMain(uint64_t id, std::vector<std::string> kServerIp){
-    EpochUnpackThreadMain(id, kServerIp);
+void FDWEpochUnpackThreadMain(uint64_t id){
+    EpochUnpackThreadMain(id);
 }
 void FDWEpochMergeThreadMain(uint64_t id){
     EpochMergeThreadMain(id);
 }
 void FDWEpochCommitThreadMain(uint64_t id){
     EpochCommitThreadMain(id);
+}
+
+void FDWEpochRecordCommitThreadMain(uint64_t id){
+    EpochRecordCommitThreadMain(id);
 }

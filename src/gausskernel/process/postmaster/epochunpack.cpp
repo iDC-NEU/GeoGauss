@@ -263,7 +263,7 @@ void EpochUnpackMain(void)
             /* Normal exit from the epochunpack is here */
             proc_exit(0); /* done */
         }
-        FDWEpochUnpackThreadMain(id, kServerIp);
+        FDWEpochUnpackThreadMain(id);
         // LWLockAcquire(WALWriteLock, LW_EXCLUSIVE);
         // wrote_something = XLogBackgroundFlush();
         // LWLockRelease(WALWriteLock);

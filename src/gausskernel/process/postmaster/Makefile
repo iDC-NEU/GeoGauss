@@ -34,7 +34,7 @@ endif
 OBJS = autovacuum.o bgwriter.o fork_process.o pgarch.o pgstat.o postmaster.o gaussdb_version.o\
 	startup.o syslogger.o walwriter.o\
   epochlogicaltimermanager.o epochphysicaltimermanager.o epochmessagecachemanager.o epochmessagemanager.o\
-  epochsend.o epochlisten.o epochpack.o epochnotify.o epochunseri.o epochunpack.o epochmerge.o epochcommit.o tinyxml2.o\
+  epochsend.o epochlisten.o epochpack.o epochnotify.o epochunseri.o epochunpack.o epochmerge.o epochcommit.o epochrecordcommit.o tinyxml2.o\
   walwriterauxiliary.o checkpointer.o pgaudit.o alarmchecker.o \
 	twophasecleaner.o aiocompleter.o fencedudf.o lwlockmonitor.o cbmwriter.o remoteservice.o pagewriter.o\
 	barrier_creator.o $(top_builddir)/src/lib/config/libconfig.a

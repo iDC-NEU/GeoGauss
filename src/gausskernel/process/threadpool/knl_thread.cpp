@@ -1047,6 +1047,13 @@ static void knl_t_epochcommit_init(knl_t_epochcommit_context* epochcommit_cxt)
     epochcommit_cxt->epochcommit_id = -1;
 }
 
+static void knl_t_epochrecordcommit_init(knl_t_epochrecordcommit_context* epochrecordcommit_cxt)
+{
+    epochrecordcommit_cxt->got_SIGHUP = false;
+    epochrecordcommit_cxt->shutdown_requested = false;
+    epochrecordcommit_cxt->epochrecordcommit_id = -1;
+}
+
 
 
 static void knl_t_walwriterauxiliary_init(knl_t_walwriterauxiliary_context *const walwriterauxiliary_cxt)
@@ -1680,7 +1687,7 @@ void knl_thread_init(knl_thread_role role)
     knl_t_epochunpack_init(&t_thrd.epochunpack_cxt);
     knl_t_epochmerge_init(&t_thrd.epochmerge_cxt);
     knl_t_epochcommit_init(&t_thrd.epochcommit_cxt);
-
+    knl_t_epochrecordcommit_init(&t_thrd.epochrecordcommit_cxt);
 }
 
 __attribute__ ((__used__)) knl_thrd_context *GetCurrentThread()

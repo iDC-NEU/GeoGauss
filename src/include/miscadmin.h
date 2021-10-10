@@ -358,6 +358,7 @@ typedef enum {
     EpochUnpackProcess,
     EpochMergeProcess,
     EpochCommitProcess,
+    EpochRecordCommitProcess,
 
 
     WalWriterAuxiliaryProcess,
@@ -435,6 +436,7 @@ typedef enum {
 #define AmEpochUnpackProcess() (t_thrd.bootstrap_cxt.MyAuxProcType == EpochUnpackProcess)
 #define AmEpochMergeProcess() (t_thrd.bootstrap_cxt.MyAuxProcType == EpochMergeProcess)
 #define AmEpochCommitProcess() (t_thrd.bootstrap_cxt.MyAuxProcType == EpochCommitProcess)
+#define AmEpochRecordCommitProcess() (t_thrd.bootstrap_cxt.MyAuxProcType == EpochRecordCommitProcess)
 
 
 /*****************************************************************************

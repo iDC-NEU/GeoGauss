@@ -47,7 +47,7 @@ struct TableStruct_message_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[4]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[5]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -67,12 +67,16 @@ extern MergeRequest_Transaction_RowDefaultTypeInternal _MergeRequest_Transaction
 class MergeRequest_Transaction_Row_Column;
 class MergeRequest_Transaction_Row_ColumnDefaultTypeInternal;
 extern MergeRequest_Transaction_Row_ColumnDefaultTypeInternal _MergeRequest_Transaction_Row_Column_default_instance_;
+class ServerMessage;
+class ServerMessageDefaultTypeInternal;
+extern ServerMessageDefaultTypeInternal _ServerMessage_default_instance_;
 }  // namespace merge
 PROTOBUF_NAMESPACE_OPEN
 template<> ::merge::MergeRequest* Arena::CreateMaybeMessage<::merge::MergeRequest>(Arena*);
 template<> ::merge::MergeRequest_Transaction* Arena::CreateMaybeMessage<::merge::MergeRequest_Transaction>(Arena*);
 template<> ::merge::MergeRequest_Transaction_Row* Arena::CreateMaybeMessage<::merge::MergeRequest_Transaction_Row>(Arena*);
 template<> ::merge::MergeRequest_Transaction_Row_Column* Arena::CreateMaybeMessage<::merge::MergeRequest_Transaction_Row_Column>(Arena*);
+template<> ::merge::ServerMessage* Arena::CreateMaybeMessage<::merge::ServerMessage>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 namespace merge {
 
@@ -542,6 +546,8 @@ class MergeRequest_Transaction :
     kCommitEpochFieldNumber = 4,
     kCSNFieldNumber = 5,
     kServerIdFieldNumber = 6,
+    kPackEpochFieldNumber = 8,
+    kTypeFieldNumber = 7,
   };
   // repeated .merge.MergeRequest.Transaction.Row row = 2;
   int row_size() const;
@@ -606,6 +612,24 @@ class MergeRequest_Transaction :
   void _internal_set_server_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
   public:
 
+  // uint64 pack_epoch = 8;
+  void clear_pack_epoch();
+  ::PROTOBUF_NAMESPACE_ID::uint64 pack_epoch() const;
+  void set_pack_epoch(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_pack_epoch() const;
+  void _internal_set_pack_epoch(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // bool type = 7;
+  void clear_type();
+  bool type() const;
+  void set_type(bool value);
+  private:
+  bool _internal_type() const;
+  void _internal_set_type(bool value);
+  public:
+
   // @@protoc_insertion_point(class_scope:merge.MergeRequest.Transaction)
  private:
   class _Internal;
@@ -617,6 +641,8 @@ class MergeRequest_Transaction :
   ::PROTOBUF_NAMESPACE_ID::uint64 commitepoch_;
   ::PROTOBUF_NAMESPACE_ID::uint64 csn_;
   ::PROTOBUF_NAMESPACE_ID::uint64 server_id_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 pack_epoch_;
+  bool type_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_message_2eproto;
 };
@@ -789,6 +815,247 @@ class MergeRequest :
   ::PROTOBUF_NAMESPACE_ID::uint64 server_id_;
   ::PROTOBUF_NAMESPACE_ID::uint64 epoch_;
   ::PROTOBUF_NAMESPACE_ID::uint64 pack_id_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class ServerMessage :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.ServerMessage) */ {
+ public:
+  ServerMessage();
+  virtual ~ServerMessage();
+
+  ServerMessage(const ServerMessage& from);
+  ServerMessage(ServerMessage&& from) noexcept
+    : ServerMessage() {
+    *this = ::std::move(from);
+  }
+
+  inline ServerMessage& operator=(const ServerMessage& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline ServerMessage& operator=(ServerMessage&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const ServerMessage& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const ServerMessage* internal_default_instance() {
+    return reinterpret_cast<const ServerMessage*>(
+               &_ServerMessage_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    4;
+
+  friend void swap(ServerMessage& a, ServerMessage& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(ServerMessage* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ServerMessage* New() const final {
+    return CreateMaybeMessage<ServerMessage>(nullptr);
+  }
+
+  ServerMessage* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<ServerMessage>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ServerMessage& from);
+  void MergeFrom(const ServerMessage& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ServerMessage* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "merge.ServerMessage";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kIpFieldNumber = 3,
+    kNewServerIpFieldNumber = 10,
+    kTypeFieldNumber = 1,
+    kServerIdFieldNumber = 2,
+    kPhysicalEpochFieldNumber = 4,
+    kLogicalEpochFieldNumber = 5,
+    kEpochSizeFieldNumber = 6,
+    kCommitTimeFieldNumber = 7,
+    kSendTimeFieldNumber = 8,
+    kNewServerIdFieldNumber = 9,
+  };
+  // string ip = 3;
+  void clear_ip();
+  const std::string& ip() const;
+  void set_ip(const std::string& value);
+  void set_ip(std::string&& value);
+  void set_ip(const char* value);
+  void set_ip(const char* value, size_t size);
+  std::string* mutable_ip();
+  std::string* release_ip();
+  void set_allocated_ip(std::string* ip);
+  private:
+  const std::string& _internal_ip() const;
+  void _internal_set_ip(const std::string& value);
+  std::string* _internal_mutable_ip();
+  public:
+
+  // string new_server_ip = 10;
+  void clear_new_server_ip();
+  const std::string& new_server_ip() const;
+  void set_new_server_ip(const std::string& value);
+  void set_new_server_ip(std::string&& value);
+  void set_new_server_ip(const char* value);
+  void set_new_server_ip(const char* value, size_t size);
+  std::string* mutable_new_server_ip();
+  std::string* release_new_server_ip();
+  void set_allocated_new_server_ip(std::string* new_server_ip);
+  private:
+  const std::string& _internal_new_server_ip() const;
+  void _internal_set_new_server_ip(const std::string& value);
+  std::string* _internal_mutable_new_server_ip();
+  public:
+
+  // uint32 type = 1;
+  void clear_type();
+  ::PROTOBUF_NAMESPACE_ID::uint32 type() const;
+  void set_type(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_type() const;
+  void _internal_set_type(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint32 server_id = 2;
+  void clear_server_id();
+  ::PROTOBUF_NAMESPACE_ID::uint32 server_id() const;
+  void set_server_id(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_server_id() const;
+  void _internal_set_server_id(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint64 physical_epoch = 4;
+  void clear_physical_epoch();
+  ::PROTOBUF_NAMESPACE_ID::uint64 physical_epoch() const;
+  void set_physical_epoch(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_physical_epoch() const;
+  void _internal_set_physical_epoch(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint64 logical_epoch = 5;
+  void clear_logical_epoch();
+  ::PROTOBUF_NAMESPACE_ID::uint64 logical_epoch() const;
+  void set_logical_epoch(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_logical_epoch() const;
+  void _internal_set_logical_epoch(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint64 epoch_size = 6;
+  void clear_epoch_size();
+  ::PROTOBUF_NAMESPACE_ID::uint64 epoch_size() const;
+  void set_epoch_size(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_epoch_size() const;
+  void _internal_set_epoch_size(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint64 commit_time = 7;
+  void clear_commit_time();
+  ::PROTOBUF_NAMESPACE_ID::uint64 commit_time() const;
+  void set_commit_time(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_commit_time() const;
+  void _internal_set_commit_time(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint64 send_time = 8;
+  void clear_send_time();
+  ::PROTOBUF_NAMESPACE_ID::uint64 send_time() const;
+  void set_send_time(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_send_time() const;
+  void _internal_set_send_time(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint64 new_server_id = 9;
+  void clear_new_server_id();
+  ::PROTOBUF_NAMESPACE_ID::uint64 new_server_id() const;
+  void set_new_server_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_new_server_id() const;
+  void _internal_set_new_server_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:merge.ServerMessage)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr ip_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr new_server_ip_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 type_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 server_id_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 physical_epoch_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 logical_epoch_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 epoch_size_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 commit_time_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 send_time_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 new_server_id_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_message_2eproto;
 };
@@ -1269,6 +1536,46 @@ inline void MergeRequest_Transaction::set_server_id(::PROTOBUF_NAMESPACE_ID::uin
   // @@protoc_insertion_point(field_set:merge.MergeRequest.Transaction.server_id)
 }
 
+// bool type = 7;
+inline void MergeRequest_Transaction::clear_type() {
+  type_ = false;
+}
+inline bool MergeRequest_Transaction::_internal_type() const {
+  return type_;
+}
+inline bool MergeRequest_Transaction::type() const {
+  // @@protoc_insertion_point(field_get:merge.MergeRequest.Transaction.type)
+  return _internal_type();
+}
+inline void MergeRequest_Transaction::_internal_set_type(bool value) {
+  
+  type_ = value;
+}
+inline void MergeRequest_Transaction::set_type(bool value) {
+  _internal_set_type(value);
+  // @@protoc_insertion_point(field_set:merge.MergeRequest.Transaction.type)
+}
+
+// uint64 pack_epoch = 8;
+inline void MergeRequest_Transaction::clear_pack_epoch() {
+  pack_epoch_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest_Transaction::_internal_pack_epoch() const {
+  return pack_epoch_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest_Transaction::pack_epoch() const {
+  // @@protoc_insertion_point(field_get:merge.MergeRequest.Transaction.pack_epoch)
+  return _internal_pack_epoch();
+}
+inline void MergeRequest_Transaction::_internal_set_pack_epoch(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  pack_epoch_ = value;
+}
+inline void MergeRequest_Transaction::set_pack_epoch(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_pack_epoch(value);
+  // @@protoc_insertion_point(field_set:merge.MergeRequest.Transaction.pack_epoch)
+}
+
 // -------------------------------------------------------------------
 
 // MergeRequest
@@ -1372,9 +1679,295 @@ inline void MergeRequest::set_pack_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   // @@protoc_insertion_point(field_set:merge.MergeRequest.pack_id)
 }
 
+// -------------------------------------------------------------------
+
+// ServerMessage
+
+// uint32 type = 1;
+inline void ServerMessage::clear_type() {
+  type_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ServerMessage::_internal_type() const {
+  return type_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ServerMessage::type() const {
+  // @@protoc_insertion_point(field_get:merge.ServerMessage.type)
+  return _internal_type();
+}
+inline void ServerMessage::_internal_set_type(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  type_ = value;
+}
+inline void ServerMessage::set_type(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_type(value);
+  // @@protoc_insertion_point(field_set:merge.ServerMessage.type)
+}
+
+// uint32 server_id = 2;
+inline void ServerMessage::clear_server_id() {
+  server_id_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ServerMessage::_internal_server_id() const {
+  return server_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ServerMessage::server_id() const {
+  // @@protoc_insertion_point(field_get:merge.ServerMessage.server_id)
+  return _internal_server_id();
+}
+inline void ServerMessage::_internal_set_server_id(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  server_id_ = value;
+}
+inline void ServerMessage::set_server_id(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_server_id(value);
+  // @@protoc_insertion_point(field_set:merge.ServerMessage.server_id)
+}
+
+// string ip = 3;
+inline void ServerMessage::clear_ip() {
+  ip_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline const std::string& ServerMessage::ip() const {
+  // @@protoc_insertion_point(field_get:merge.ServerMessage.ip)
+  return _internal_ip();
+}
+inline void ServerMessage::set_ip(const std::string& value) {
+  _internal_set_ip(value);
+  // @@protoc_insertion_point(field_set:merge.ServerMessage.ip)
+}
+inline std::string* ServerMessage::mutable_ip() {
+  // @@protoc_insertion_point(field_mutable:merge.ServerMessage.ip)
+  return _internal_mutable_ip();
+}
+inline const std::string& ServerMessage::_internal_ip() const {
+  return ip_.GetNoArena();
+}
+inline void ServerMessage::_internal_set_ip(const std::string& value) {
+  
+  ip_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+}
+inline void ServerMessage::set_ip(std::string&& value) {
+  
+  ip_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:merge.ServerMessage.ip)
+}
+inline void ServerMessage::set_ip(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  ip_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:merge.ServerMessage.ip)
+}
+inline void ServerMessage::set_ip(const char* value, size_t size) {
+  
+  ip_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:merge.ServerMessage.ip)
+}
+inline std::string* ServerMessage::_internal_mutable_ip() {
+  
+  return ip_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* ServerMessage::release_ip() {
+  // @@protoc_insertion_point(field_release:merge.ServerMessage.ip)
+  
+  return ip_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void ServerMessage::set_allocated_ip(std::string* ip) {
+  if (ip != nullptr) {
+    
+  } else {
+    
+  }
+  ip_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ip);
+  // @@protoc_insertion_point(field_set_allocated:merge.ServerMessage.ip)
+}
+
+// uint64 physical_epoch = 4;
+inline void ServerMessage::clear_physical_epoch() {
+  physical_epoch_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ServerMessage::_internal_physical_epoch() const {
+  return physical_epoch_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ServerMessage::physical_epoch() const {
+  // @@protoc_insertion_point(field_get:merge.ServerMessage.physical_epoch)
+  return _internal_physical_epoch();
+}
+inline void ServerMessage::_internal_set_physical_epoch(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  physical_epoch_ = value;
+}
+inline void ServerMessage::set_physical_epoch(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_physical_epoch(value);
+  // @@protoc_insertion_point(field_set:merge.ServerMessage.physical_epoch)
+}
+
+// uint64 logical_epoch = 5;
+inline void ServerMessage::clear_logical_epoch() {
+  logical_epoch_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ServerMessage::_internal_logical_epoch() const {
+  return logical_epoch_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ServerMessage::logical_epoch() const {
+  // @@protoc_insertion_point(field_get:merge.ServerMessage.logical_epoch)
+  return _internal_logical_epoch();
+}
+inline void ServerMessage::_internal_set_logical_epoch(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  logical_epoch_ = value;
+}
+inline void ServerMessage::set_logical_epoch(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_logical_epoch(value);
+  // @@protoc_insertion_point(field_set:merge.ServerMessage.logical_epoch)
+}
+
+// uint64 epoch_size = 6;
+inline void ServerMessage::clear_epoch_size() {
+  epoch_size_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ServerMessage::_internal_epoch_size() const {
+  return epoch_size_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ServerMessage::epoch_size() const {
+  // @@protoc_insertion_point(field_get:merge.ServerMessage.epoch_size)
+  return _internal_epoch_size();
+}
+inline void ServerMessage::_internal_set_epoch_size(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  epoch_size_ = value;
+}
+inline void ServerMessage::set_epoch_size(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_epoch_size(value);
+  // @@protoc_insertion_point(field_set:merge.ServerMessage.epoch_size)
+}
+
+// uint64 commit_time = 7;
+inline void ServerMessage::clear_commit_time() {
+  commit_time_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ServerMessage::_internal_commit_time() const {
+  return commit_time_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ServerMessage::commit_time() const {
+  // @@protoc_insertion_point(field_get:merge.ServerMessage.commit_time)
+  return _internal_commit_time();
+}
+inline void ServerMessage::_internal_set_commit_time(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  commit_time_ = value;
+}
+inline void ServerMessage::set_commit_time(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_commit_time(value);
+  // @@protoc_insertion_point(field_set:merge.ServerMessage.commit_time)
+}
+
+// uint64 send_time = 8;
+inline void ServerMessage::clear_send_time() {
+  send_time_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ServerMessage::_internal_send_time() const {
+  return send_time_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ServerMessage::send_time() const {
+  // @@protoc_insertion_point(field_get:merge.ServerMessage.send_time)
+  return _internal_send_time();
+}
+inline void ServerMessage::_internal_set_send_time(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  send_time_ = value;
+}
+inline void ServerMessage::set_send_time(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_send_time(value);
+  // @@protoc_insertion_point(field_set:merge.ServerMessage.send_time)
+}
+
+// uint64 new_server_id = 9;
+inline void ServerMessage::clear_new_server_id() {
+  new_server_id_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ServerMessage::_internal_new_server_id() const {
+  return new_server_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ServerMessage::new_server_id() const {
+  // @@protoc_insertion_point(field_get:merge.ServerMessage.new_server_id)
+  return _internal_new_server_id();
+}
+inline void ServerMessage::_internal_set_new_server_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  new_server_id_ = value;
+}
+inline void ServerMessage::set_new_server_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_new_server_id(value);
+  // @@protoc_insertion_point(field_set:merge.ServerMessage.new_server_id)
+}
+
+// string new_server_ip = 10;
+inline void ServerMessage::clear_new_server_ip() {
+  new_server_ip_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline const std::string& ServerMessage::new_server_ip() const {
+  // @@protoc_insertion_point(field_get:merge.ServerMessage.new_server_ip)
+  return _internal_new_server_ip();
+}
+inline void ServerMessage::set_new_server_ip(const std::string& value) {
+  _internal_set_new_server_ip(value);
+  // @@protoc_insertion_point(field_set:merge.ServerMessage.new_server_ip)
+}
+inline std::string* ServerMessage::mutable_new_server_ip() {
+  // @@protoc_insertion_point(field_mutable:merge.ServerMessage.new_server_ip)
+  return _internal_mutable_new_server_ip();
+}
+inline const std::string& ServerMessage::_internal_new_server_ip() const {
+  return new_server_ip_.GetNoArena();
+}
+inline void ServerMessage::_internal_set_new_server_ip(const std::string& value) {
+  
+  new_server_ip_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+}
+inline void ServerMessage::set_new_server_ip(std::string&& value) {
+  
+  new_server_ip_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:merge.ServerMessage.new_server_ip)
+}
+inline void ServerMessage::set_new_server_ip(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  new_server_ip_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:merge.ServerMessage.new_server_ip)
+}
+inline void ServerMessage::set_new_server_ip(const char* value, size_t size) {
+  
+  new_server_ip_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:merge.ServerMessage.new_server_ip)
+}
+inline std::string* ServerMessage::_internal_mutable_new_server_ip() {
+  
+  return new_server_ip_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* ServerMessage::release_new_server_ip() {
+  // @@protoc_insertion_point(field_release:merge.ServerMessage.new_server_ip)
+  
+  return new_server_ip_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void ServerMessage::set_allocated_new_server_ip(std::string* new_server_ip) {
+  if (new_server_ip != nullptr) {
+    
+  } else {
+    
+  }
+  new_server_ip_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), new_server_ip);
+  // @@protoc_insertion_point(field_set_allocated:merge.ServerMessage.new_server_ip)
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

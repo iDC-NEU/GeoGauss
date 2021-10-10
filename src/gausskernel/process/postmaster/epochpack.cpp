@@ -226,7 +226,7 @@ void EpochPackMain(void)
             /* Normal exit from the epochpack is here */
             proc_exit(0); /* done */
         }
-        FDWEpochPackThreadMain(id, kServerIp, kServerNum, kPackageNum, kNotifyNum, kBatchNum, kPackThreadNum, kNotifyThreadNum, local_ip_index);
+        FDWEpochPackThreadMain(id);
         
 
         pgstat_report_activity(STATE_IDLE, NULL);

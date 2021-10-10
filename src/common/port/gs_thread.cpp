@@ -363,7 +363,9 @@ static void check_boot_name(char** argv, int argc, char** name_thread)
         case EpochCommitProcess:
             *name_thread = "EpochCommit";
             break;
-
+        case EpochRecordCommitProcess:
+            *name_thread = "EpochRecordCommit";
+            break;
 
 
         case WalWriterAuxiliaryProcess:

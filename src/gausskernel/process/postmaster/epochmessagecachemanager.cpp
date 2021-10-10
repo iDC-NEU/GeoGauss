@@ -224,7 +224,7 @@ void EpochMessageCacheManagerMain(void)
             /* Normal exit from the epochmessagecachemanager is here */
             proc_exit(0); /* done */
         }
-        FDWEpochMessageCacheManagerThreadMain(id, kServerIp, kServerNum, kPackageNum, kNotifyNum, kPackThreadNum, kNotifyThreadNum, local_ip_index);
+        FDWEpochMessageCacheManagerThreadMain(id);
 
         pgstat_report_activity(STATE_IDLE, NULL);
     }

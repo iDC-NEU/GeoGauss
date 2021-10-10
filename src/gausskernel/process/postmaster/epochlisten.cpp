@@ -224,7 +224,10 @@ void EpochListenMain(void)
             /* Normal exit from the epochlisten is here */
             proc_exit(0); /* done */
         }
-        FDWEpochListenThreadMain(id, send_ips[id], port[id]);
+        if(id == kListenThreadNum - 1)
+            FDWEpochMessageListenThreadMain(id);
+        else
+            FDWEpochListenThreadMain(id);
 
         pgstat_report_activity(STATE_IDLE, NULL);
     }

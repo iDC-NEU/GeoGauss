@@ -263,7 +263,12 @@ void EpochSendMain(void)
             /* Normal exit from the epochsend is here */
             proc_exit(0); /* done */
         }
-        FDWEpochSendThreadMain(id, send_ips[id], send_ports[id]);
+        if(id == kSendThreadNum - 1){
+            FDWEpochMessageSendThreadMain(id);
+        }
+        else{
+            FDWEpochSendThreadMain(id);
+        }
         // LWLockAcquire(WALWriteLock, LW_EXCLUSIVE);
         // wrote_something = XLogBackgroundFlush();
         // LWLockRelease(WALWriteLock);

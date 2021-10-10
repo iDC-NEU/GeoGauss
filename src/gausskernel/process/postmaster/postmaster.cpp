@@ -248,10 +248,11 @@
 std::vector<std::string> kServerIp;
 std::vector<uint64_t> port; // ServerNum * PackageNum
 uint64_t kServerNum = 1, kPortNum = 1, kPackageNum = 1, kNotifyNum = 1, kBatchNum = 1, kNotifyThreadNum = 1, kPackThreadNum = 1, kSendThreadNum = 1, 
-    kListenThreadNum = 1, kUnseriThreadNum = 1, kUnpackThreadNum = 1, kMergeThreadNum = 1, kCommitThreadNum = 1, kSendMessageNum = 1, kReceiveMessageNum = 1, 
+    kListenThreadNum = 1, kUnseriThreadNum = 1, kUnpackThreadNum = 1, kMergeThreadNum = 1, kCommitThreadNum = 1, kRecordCommitThreadNum = 1, kSendMessageNum = 1, kReceiveMessageNum = 1, 
     kSleepTime = 1, local_ip_index = 0;
 std::vector<std::string> send_ips;
 std::vector<uint64_t>send_ports;
+std::string kMasterIp;
 
 void GenerateEpochThreads();
 void CkeckEpochThreadsI();
@@ -9712,6 +9713,9 @@ static void SetAuxType()
         case EPOCH_COMMIT:
             t_thrd.bootstrap_cxt.MyAuxProcType = EpochCommitProcess;
             break;
+        case EPOCH_RECORD_COMMIT:
+            t_thrd.bootstrap_cxt.MyAuxProcType = EpochRecordCommitProcess;
+            break;
 
 
 
@@ -10007,7 +10011,10 @@ int GaussDbAuxiliaryThreadMain(knl_thread_arg* arg)
             EpochCommitMain();
             proc_exit(1);
             break;
-
+        case EPOCH_RECORD_COMMIT:
+            EpochRecordCommitMain();
+            proc_exit(1);
+            break;
 
 
         case WALWRITERAUXILIARY:
@@ -10295,6 +10302,7 @@ int GaussDbThreadMain(knl_thread_arg* arg)
         case EPOCH_UNPACK:
         case EPOCH_MERGE:
         case EPOCH_COMMIT:
+        case EPOCH_RECORD_COMMIT:
 
 
         case WALWRITERAUXILIARY:
@@ -10706,6 +10714,7 @@ static ThreadMetaData GaussdbThreadGate[] = {
     { GaussDbThreadMain<EPOCH_UNPACK>, EPOCH_UNPACK, "epochunpack", "epoch unpackage"},
     { GaussDbThreadMain<EPOCH_MERGE>, EPOCH_MERGE, "epochmerge", "epoch merge"},
     { GaussDbThreadMain<EPOCH_COMMIT>, EPOCH_COMMIT, "epochcommit", "epoch commit"},
+    { GaussDbThreadMain<EPOCH_RECORD_COMMIT>, EPOCH_RECORD_COMMIT, "epochRecommit", "epoch record commit"},
 
 
     { GaussDbThreadMain<WALWRITERAUXILIARY>, WALWRITERAUXILIARY, "WALwriteraux", "WAL writer auxiliary" },
@@ -11246,6 +11255,10 @@ void GenerateEpochThreads(){
     if (g_instance.pid_cxt.EpochCommitPIDS == NULL && kCommitThreadNum != 0) {
         ereport(FATAL, (errmsg("communicator palloc EpochCommitPIDS mempry failed")));
     }
+    g_instance.pid_cxt.EpochRecordCommitPIDS = (ThreadId*)palloc( kRecordCommitThreadNum * sizeof(ThreadId));
+    if (g_instance.pid_cxt.EpochRecordCommitPIDS == NULL && kRecordCommitThreadNum != 0) {
+        ereport(FATAL, (errmsg("communicator palloc EpochRecordCommitPIDS mempry failed")));
+    }
 
     
     for (int i = 0 ; i < 1 ; i++){
@@ -11330,6 +11343,12 @@ void GenerateEpochThreads(){
         g_instance.pid_cxt.EpochCommitPIDS[i] = initialize_util_thread(EPOCH_COMMIT); 
         epoch_commit_thread_ids.push_back(g_instance.pid_cxt.EpochCommitPIDS[i]);
         ereport(LOG, (errmsg("EpochCommitThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochCommitPIDS[i])));
+    }
+
+    for (int i = 0 ; i < (int)kRecordCommitThreadNum ; i++){
+        g_instance.pid_cxt.EpochRecordCommitPIDS[i] = initialize_util_thread(EPOCH_RECORD_COMMIT); 
+        epoch_record_commit_thread_ids.push_back(g_instance.pid_cxt.EpochRecordCommitPIDS[i]);
+        ereport(LOG, (errmsg("EpochRecordCommitThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochRecordCommitPIDS[i])));
     }
 
 
@@ -11445,6 +11464,15 @@ void CkeckEpochThreadsI(){
             }
         }
 
+    if (g_instance.pid_cxt.EpochRecordCommitPIDS != NULL) 
+        for (int i = 0 ; i < (int)kRecordCommitThreadNum ; i++){
+            if (g_instance.pid_cxt.EpochRecordCommitPIDS[i] == 0 && pmState == PM_RUN){
+                g_instance.pid_cxt.EpochRecordCommitPIDS[i] = initialize_util_thread(EPOCH_RECORD_COMMIT); 
+                epoch_record_commit_thread_ids[i] = g_instance.pid_cxt.EpochRecordCommitPIDS[i];
+                ereport(LOG, (errmsg("EpochRecordCommitThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochRecordCommitPIDS[i])));
+            }
+        }
+
 
 }
 
@@ -11455,7 +11483,6 @@ void GetServerInfo(){
     tinyxml2::XMLElement *root=doc.RootElement();  
     tinyxml2::XMLElement *index_element=root->FirstChildElement("local_remote_ip");  
 	int symbol_local_or_remote=0;
-    std::string temp="";
     while (index_element){  
         tinyxml2::XMLElement *ip_port=index_element->FirstChildElement();  
         const char* content;  
@@ -11471,6 +11498,10 @@ void GetServerInfo(){
         index_element=index_element->NextSiblingElement(); 
 		symbol_local_or_remote++; 
     }
+
+    tinyxml2::XMLElement* master_ip = root->FirstChildElement("master_ip");
+    std::string temp1(master_ip->GetText());
+    kMasterIp = temp1;
 
     tinyxml2::XMLElement* local_ip_index_xml = root->FirstChildElement("local_ip_index");
     local_ip_index=std::stoull(local_ip_index_xml->GetText()) ;
@@ -11493,8 +11524,8 @@ void GetServerInfo(){
     tinyxml2::XMLElement* pack_thread_num = root->FirstChildElement("pack_thread_num");
     kPackThreadNum = std::stoull(pack_thread_num->GetText());
 
-    kSendThreadNum = (kServerNum - 1) > 1 ? 1 : (kServerNum - 1);
-    kListenThreadNum = (kServerNum - 1) * kPackageNum;
+    kSendThreadNum = kServerNum > 1 ? 2 : 1;
+    kListenThreadNum = kServerNum > 1 ? 2 : 1;
 
 
     tinyxml2::XMLElement* sleep_time = root->FirstChildElement("sleep_time");
@@ -11516,14 +11547,19 @@ void GetServerInfo(){
     tinyxml2::XMLElement* commit_thread_num = root->FirstChildElement("commit_thread_num");
     kCommitThreadNum= std::stoull(commit_thread_num->GetText());
 
+    tinyxml2::XMLElement* record_commit_thread_num = root->FirstChildElement("record_commit_thread_num");
+    kRecordCommitThreadNum= std::stoull(record_commit_thread_num->GetText());
+
     ereport(LOG, (errmsg("local ip_index %llu ip %s",local_ip_index, kServerIp[local_ip_index].c_str())));
     for(int i = 0; i < (int)kServerNum; i++ ){
         ereport(LOG, (errmsg("ip: %s",kServerIp[i].c_str())));
         if(i == (int)local_ip_index) continue;
         for(int j = 0; j < (int)kPackThreadNum; j++){
+            //push pull模式
             port.push_back(20000 + i * 100 + j);//第i个服务器发送过来的第j个message
             send_ips.push_back(kServerIp[i]);//send线程向第i个发送 发送IP
             send_ports.push_back(20000 + local_ip_index * 100 + j);//send线程向第i个发送 端口是 我发送给它的第j个message
+            //改为PUB SUB模式为 send_port：20000 + local_ip_index*100          linsten_ports: 20000 + i * 100
         }
     }
     ereport(LOG, (errmsg("kServerNum %d",(int)kServerNum)));
@@ -11539,4 +11575,5 @@ void GetServerInfo(){
     ereport(LOG, (errmsg("kUnpackThreadNum %d",(int)kUnpackThreadNum)));
     ereport(LOG, (errmsg("kMergeThreadNum %d",(int)kMergeThreadNum)));
     ereport(LOG, (errmsg("kCommitThreadNum %d",(int)kCommitThreadNum)));
+    ereport(LOG, (errmsg("kRecordCommitThreadNum %d",(int)kRecordCommitThreadNum)));
 }

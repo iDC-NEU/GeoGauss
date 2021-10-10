@@ -104,6 +104,7 @@ typedef enum knl_thread_role {
     EPOCH_UNPACK,
     EPOCH_MERGE,
     EPOCH_COMMIT,
+    EPOCH_RECORD_COMMIT,
 
 
 
