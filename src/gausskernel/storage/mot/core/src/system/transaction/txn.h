@@ -174,6 +174,7 @@ public:
      * @brief Convenience interface which does both ValidateCommit and RecordCommit.
      */
     RC Commit();
+    // RC Commit(uint64_t &thread_id);
     void LiteCommit();
 
     /**

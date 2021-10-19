@@ -1642,7 +1642,6 @@ static void MOTXactCallback(XactEvent event, void* arg)
         elog(DEBUG2, "XACT_EVENT_END_TRANSACTION, tid %lu", tid);
         MOTAdaptor::EndTransaction();
         txn->SetTxnState(MOT::TxnState::TXN_END_TRANSACTION);
-        // auto epoch = txn->GetCommitEpoch();
         // if(!txn->isOnlyRead()){
         //     uint64_t thread_id = GetThreadID();//随机分布
         //     uint64_t index_pack = thread_id % kPackageNum;

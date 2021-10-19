@@ -641,8 +641,7 @@ private:
     
     static bool timerStop;
     //ADDBY NUE Concurrency
-    static volatile bool remoteExeced;
-    static volatile bool record_commited;
+    static volatile bool remoteExeced, record_commited, remote_record_commited, changing_logical_epoch, txn_return;
     static volatile uint64_t logical_epoch;
     static volatile uint64_t physical_epoch;
 
@@ -659,7 +658,7 @@ public:
     static std::mutex logical_cache_mutex;//cache和logical线程 更新unpackageNum时 加锁用
 
     static std::vector<std::atomic<uint64_t>*> local_txn_counters;//本地事务执行阶段计数器 多个
-    static std::vector<std::atomic<uint64_t>*> local_txn_execed_counters;//本地事务执行阶段完成计数器 多个
+    static std::vector<std::atomic<uint64_t>*> local_txn_exc_counters;//本地事务执行阶段完成计数器 多个
     static std::vector<std::atomic<uint64_t>*> local_txn_index;//本地事务pack_index
     static std::vector<std::atomic<uint64_t>*> record_commit_txn_counters;
     static std::vector<std::atomic<uint64_t>*> record_committed_txn_counters;
@@ -686,7 +685,6 @@ public:
     static std::atomic<uint64_t> local_commit_count1, local_commit_count2;
 
     static void setTimerStop(bool value) {timerStop = value;}
-
     static bool isTimerStop() {return timerStop;}
 
     static bool isRemoteExeced() {return remoteExeced;}
@@ -694,6 +692,13 @@ public:
 
     static bool IsRecordCommitted(){ return record_commited;}
     static void SetRecordCommited(bool value){ record_commited = value;}
+    static bool IsRemoteRecordCommitted(){ return remote_record_commited;}
+    static void SetRemoteRecordCommited(bool value){ remote_record_commited = value;}
+    static bool IsTxnReturn(){ return txn_return;}
+    static void SetTxnReturn(bool value){ txn_return = value;}
+
+    static bool IsChangingLogicalEpoch(){ return changing_logical_epoch;}
+    static void SetChangingLogicalEpoch(bool value){ changing_logical_epoch = value;}
 
     static bool add(MOT::TxnManager *txnManager){return txnBuffer.insert(txnManager).second;}
 
@@ -704,38 +709,23 @@ public:
     static TxnBufferIter end(){return txnBuffer.end();}
     
 
-    static void IncLocalTxnCounter(uint64_t index){ local_txn_counters[index]->fetch_add(10000000001);}
-    static void DecLocalTxnCounter(uint64_t index){ local_txn_counters[index]->fetch_sub(10000000001);}
-    static void DecExeCounter(uint64_t index){ local_txn_counters[index]->fetch_sub(1);}
-    static uint64_t GetExeCounter(uint64_t index) { return local_txn_counters[index]->load() % static_cast<uint64_t>(1e10);}
-    static void DecComCounter(uint64_t index){ local_txn_counters[index]->fetch_sub(10000000000);}
-    static uint64_t GetComCounter(uint64_t index) {return local_txn_counters[index]->load();}
+    static uint64_t IncLocalTxnCounters(uint64_t index){ return local_txn_counters[index]->fetch_add(10000000001);}
+    static uint64_t DecLocalTxnCounters(uint64_t index){ return local_txn_counters[index]->fetch_sub(10000000001);}
+    static uint64_t DecExeCounters(uint64_t index){ return local_txn_counters[index]->fetch_sub(1);}
+    static uint64_t GetExeCounters(uint64_t index) { return local_txn_counters[index]->load() % static_cast<uint64_t>(1e10);}
+    static uint64_t DecComCounters(uint64_t index){ return local_txn_counters[index]->fetch_sub(10000000000);}
+    static uint64_t GetComCounters(uint64_t index) {return local_txn_counters[index]->load();}
 
-    //添加local_txn_execed_counters是为了防止local_txn_counters使用的过于频繁导致争用过多
-    //local_txn_counters和local_txn_execed_counters都是用加法 不使用减法
-    static void IncLocalTxnEcxCounter(uint64_t index){ local_txn_execed_counters[index]->fetch_add(10000000001);}
-    static void IncExeCounter(uint64_t index){ local_txn_execed_counters[index]->fetch_add(1);}
-    static void IncComCounter(uint64_t index){ local_txn_execed_counters[index]->fetch_add(10000000000);}
-    static bool IsExeced(){
-        for(int i = 0; i < (int)local_txn_counters.size(); i++){
-            if(local_txn_counters[i]->load() % static_cast<uint64_t>(1e10) != 
-                local_txn_execed_counters[i]->load() % static_cast<uint64_t>(1e10)){
-                return false;
-            }
+    static uint64_t IncLocalTxnExcCounters(uint64_t index){ return local_txn_exc_counters[index]->fetch_add(1);}
+    static uint64_t GetLocalTxnExcCounters(){
+        uint64_t ans = 0;
+        for(auto &i : local_txn_exc_counters){
+            ans += i->load();
         }
-        return true;
+        return ans;
     }
 
-    static bool IsCommited(){
-        for(int i = 0; i < (int)local_txn_counters.size(); i++){
-            if(local_txn_counters[i]->load() != local_txn_execed_counters[i]->load()){
-                return false;
-            }
-        }
-        return true;
-    }
-
-    static uint64_t GetAllComCounter(){
+    static uint64_t GetComCounters(){
         uint64_t res = 0;
         for(auto &i : local_txn_counters){
             res += (i->load() / static_cast<uint64_t>(1e10) );
@@ -743,21 +733,21 @@ public:
         return res;
     }
 
-    static bool IsExcCounterEqualZero(){
+    static bool IsLocalTxnCountersExcEqualZero(){
         for(auto &i : local_txn_counters){
             if( i->load() % static_cast<uint64_t>(1e10) != 0) return false;
         }
         return true;
     }
 
-    static bool IsComCounterEqualZero(){
+    static bool IsLocalTxnCountersComEqualZero(){
         for(auto &i : local_txn_counters){
             if(i->load() != 0) return false;
         }
         return true;
     }
 
-    static uint64_t GetComCounters(){
+    static uint64_t GetLocalTxnCounters(){
         uint64_t ans = 0;
         for(auto &i : local_txn_counters){
             ans += i->load();
@@ -766,7 +756,7 @@ public:
     }
 
     static void SetRecordCommitTxnCounters(uint64_t index, uint64_t value){ record_commit_txn_counters[index]->store(value);}
-    static void IncRecordCommitTxnCounters(uint64_t index){ record_commit_txn_counters[index]->fetch_add(1);}
+    static uint64_t IncRecordCommitTxnCounters(uint64_t index){ return record_commit_txn_counters[index]->fetch_add(1);}
     static uint64_t GetRecordCommitTxnCounters(){ 
         uint64_t ans = 0;
         for(auto &i : record_commit_txn_counters) ans += i->load();
@@ -774,7 +764,7 @@ public:
     }
 
     static void SetRecordCommittedTxnCounters(uint64_t index, uint64_t value){ record_committed_txn_counters[index]->store(value);}
-    static void IncRecordCommittedTxnCounters(uint64_t index){ record_committed_txn_counters[index]->fetch_add(1);}
+    static uint64_t IncRecordCommittedTxnCounters(uint64_t index){ return record_committed_txn_counters[index]->fetch_add(1);}
     static uint64_t GetRecordCommittedTxnCounters(){ 
         uint64_t ans = 0;
         for(auto &i : record_committed_txn_counters) ans += i->load();
@@ -805,14 +795,14 @@ public:
 
 
     
+    static void SetUnpackagedMessageNum(uint64_t value){unpackaged_message_num = value;}
     static uint64_t AddUnpackagedMessageNum(){ return unpackaged_message_num.fetch_add(1);}// server
     static uint64_t AddUnpackagedMessageNum(uint64_t value){ return unpackaged_message_num.fetch_add(value);}
-    static void SetUnpackagedMessageNum(uint64_t value){unpackaged_message_num = value;}
     static uint64_t GetUnpackagedMessageNum(){ return unpackaged_message_num.load();}
 
+    static void SetUnpackagedTxnNum(uint64_t value){unpackaged_txn_num = value;}
     static uint64_t AddUnpackagedTxnNum(){ return unpackaged_txn_num.fetch_add(1);}
     static uint64_t AddUnpackagedTxnNum(uint64_t value){ return unpackaged_txn_num.fetch_add(value);}
-    static void SetUnpackagedTxnNum(uint64_t value){unpackaged_txn_num = value;}
     static uint64_t GetUnpackagedTxnNum(){return unpackaged_txn_num.load();}
 
     static uint64_t AddMergedTxnNum(){ return merged_txn_num.fetch_add(1);}
@@ -849,33 +839,35 @@ public:
 
 
     static void LogicalEndEpoch(){
-        std::unique_lock<std::mutex> lock(logical_cache_mutex);
-        unpackaged_message_num = 0;
-        unpackaged_txn_num = 0;
-        merged_txn_num = 0;
-        commit_txn_num = 0;
-        committed_txn_num = 0;
+        // std::unique_lock<std::mutex> lock(logical_cache_mutex);
+        unpackaged_message_num.store(0);
+        unpackaged_txn_num.store(0);
+        merged_txn_num.store(0);
+        commit_txn_num.store(0);
+        committed_txn_num.store(0);
         for(int i = 0; i < (int)local_txn_counters.size(); i++){
             local_txn_counters[i]->store(0);
-            local_txn_execed_counters[i]->store(0);
+            local_txn_exc_counters[i]->store(0);
             local_txn_index[i]->store(1);
         }
-        // for(auto &i : local_txn_execed_counters) i = 0;
-        local_txn_counter = local_txn_execed_counter = 0;
+        // for(auto &i : local_txn_exc_counters) i = 0;
+        // local_txn_counter = local_txn_execed_counter = 0;
         insertSet.clear();
         insertSetForCommit.clear();
         abort_transcation_csn_set.clear();
         remoteExeced = false;
-        logical_epoch ++;
+        ++ logical_epoch;
     }
 
     
 
-    static void* InsertRowToMergeRequestTxn(MOT::TxnManager* txMan);
+    static void* InsertRowToMergeRequestTxn(MOT::TxnManager* txMan, const uint64_t& index_pack, const uint64_t& index_unique);
     static bool InsertRowToSet(MOT::TxnManager* txMan, void* txn_void, const uint64_t& index_pack, const uint64_t& index_unique);
     static bool InsertTxnIntoRecordCommitQueue(MOT::TxnManager* txMan, void* txn_void, MOT::RC &rc);
     static void LocalTxnSafeExit(const uint64_t& index_pack, void* txn_void);
     static void Output(std::string v);
+    static void Merge(MOT::TxnManager* txMan, uint64_t& index_pack);
+    static void Commit(MOT::TxnManager* txMan, uint64_t& index_pack);
 
 };
 

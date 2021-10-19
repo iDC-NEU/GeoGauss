@@ -22,11 +22,11 @@ extern std::vector<std::string> kServerIp;
 extern std::vector<uint64_t> port;
 extern uint64_t kServerNum, kPortNum, kPackageNum, kNotifyNum, kBatchNum, kNotifyThreadNum, kPackThreadNum, kSendThreadNum, 
     kListenThreadNum, kUnseriThreadNum, kUnpackThreadNum, kMergeThreadNum, kCommitThreadNum, kRecordCommitThreadNum, kSendMessageNum, kReceiveMessageNum, 
-    kSleepTime, local_ip_index;
+    kSleepTime, local_ip_index, kCacheMaxLength;
 extern std::vector<std::string> send_ips;
 extern std::vector<uint64_t>send_ports;
 extern std::string kMasterIp;
-
+extern volatile bool is_stable_epoch_send, is_epoch_advanced_by_message;
 
 extern THR_LOCAL bool comm_client_bind;
 

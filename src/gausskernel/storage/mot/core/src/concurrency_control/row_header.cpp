@@ -191,6 +191,8 @@ bool RowHeader::ValidateAndSetWrite(uint64_t m_csn, uint64_t start_epoch, uint64
     } 
     else if(commit_epoch == GetCommitEpoch()){
         if(GetStartEpoch() < start_epoch) { // current transaction is the shorter transaction, win
+            std::string str = std::to_string(GetCSN()) + ":" + std::to_string(GetServerId());
+            MOTAdaptor::abort_transcation_csn_set.insert(str, str);
             SetCSN(m_csn);
             SetStartEpoch(start_epoch);
         } else if(GetStartEpoch() > start_epoch){ // current transaction is the longer transaction, failed
@@ -199,8 +201,21 @@ bool RowHeader::ValidateAndSetWrite(uint64_t m_csn, uint64_t start_epoch, uint64
             if(GetCSN() < m_csn) { // current transaction commit later, abort
                 result = false;
             } else if(GetCSN() > m_csn) { // current transaction commit earlier, commit
+                std::string str = std::to_string(GetCSN()) + ":" + std::to_string(GetServerId());
+                MOTAdaptor::abort_transcation_csn_set.insert(str, str);
                 SetCSN(m_csn);
             } else {// csn equals, startEpoch equal, endEpoch equal, 
+                if(server_id > GetStableServerId()){
+                    result = false;
+                }
+                else if(server_id == GetStableServerId() ){
+                    //do nothing
+                }
+                else{
+                    std::string str = std::to_string(GetCSN()) + ":" + std::to_string(GetServerId());
+                    MOTAdaptor::abort_transcation_csn_set.insert(str, str);
+                    SetServerId(server_id);
+                }
             }
         }
     }
@@ -224,7 +239,7 @@ bool RowHeader::ValidateAndSetWriteForCommit(uint64_t m_csn, uint64_t start_epoc
     LockStable();
     bool result = true;
     if(commit_epoch > GetStableCommitEpoch()) { // the first transaction in current epoch, direct write is okP
-        SetStableCSN(m_csn);
+         (m_csn);
         SetStableStartEpoch(start_epoch);
         SetStableCommitEpoch(commit_epoch);
         SetStableServerId(server_id);

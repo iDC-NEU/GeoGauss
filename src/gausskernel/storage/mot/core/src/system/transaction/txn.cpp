@@ -1283,6 +1283,10 @@ bool TxnManager::isOnlyRead()
     return true;
 }
 
+uint64_t GetThreadID(){
+    return (uint64_t) std::hash<std::thread::id>{}(std::this_thread::get_id());
+}
+
 //ADDBY NEU
 void TxnManager::CommitInternalII()
 {
@@ -1301,7 +1305,11 @@ void TxnManager::CommitInternalII()
     }
     
     if(!m_occManager.IsReadOnly(this)){
-        MOTAdaptor::AddRecordCommittedTxnNum();
+        uint64_t thread_id = GetThreadID();
+        uint64_t index_pack = thread_id % kPackageNum;
+        MOTAdaptor::IncRecordCommittedTxnCounters(index_pack);
+        // MOTAdaptor::Commit(this, index_pack);
+        while(!MOTAdaptor::IsRemoteRecordCommitted()) usleep(100);
     }
 }
 
@@ -1325,9 +1333,7 @@ void TxnManager::CommitForRemote()
     MOT::DbSessionStatisticsProvider::GetInstance().AddCommitTxn();
 }
 
-uint64_t GetThreadID(){
-    return (uint64_t) std::hash<std::thread::id>{}(std::this_thread::get_id());
-}
+
 
 
 //txn.cpp
@@ -1343,25 +1349,19 @@ uint64_t GetThreadID(){
 std::atomic<int> wait_count(0);
 std::atomic<int> wait_count_commit(0);
 
-RC TxnManager::Commit()
-{
-    // uint64_t thread_id = GetThreadID();//随机分布
-    // auto startCommit = now_to_us();
-    // MOT_LOG_INFO("time from start to begin commit = %lu", (startCommit - startTime));
-    // MOT_LOG_INFO("事务开始提交");
+RC TxnManager::Commit(){
     m_occManager.updateInsertSetSize(this);
     // bool result = isOnlyRead();
     bool result = m_occManager.IsReadOnly(this);
     if (this->m_accessMgr->m_rowCnt > 0 && !result){
-        // uint64_t index_unique = MOTAdaptor::IncLocalTxnIndex();
         uint64_t thread_id = GetThreadID();//随机分布
         uint64_t index_pack = thread_id % kPackageNum;
         uint64_t index_notify = thread_id % kNotifyNum;
-        
-        int cnt = 0;
+        uint64_t index_unique =  MOTAdaptor::IncLocalTxnIndex(index_pack);
+        uint64_t cnt = 0;
         RC rc = RC_OK;
         alloc:
-        void* txn = MOTAdaptor::InsertRowToMergeRequestTxn(this);
+        void* txn = MOTAdaptor::InsertRowToMergeRequestTxn(this, index_pack, index_unique);
         if(txn == nullptr){
             if(cnt == 0){ 
                 cnt = 1;
@@ -1370,69 +1370,78 @@ RC TxnManager::Commit()
             MOT_LOG_INFO("*=*=*=*=*= InsertRowToMergeRequestTxn txn内存分配失败");
             return RC_ABORT;
         }
-        begin:
-        // MOT_LOG_INFO("txn cpp begin");
-        while(MOTAdaptor::GetPhysicalEpoch() != MOTAdaptor::GetLogicalEpoch() ||  !MOTAdaptor::IsRecordCommitted()) usleep(100);
-
-        MOTAdaptor::IncLocalTxnCounter(index_pack);
-        if((MOTAdaptor::GetPhysicalEpoch() != MOTAdaptor::GetLogicalEpoch() && MOTAdaptor::GetLocalChangeSetNum(index_pack) == 0) ||
-             MOTAdaptor::isRemoteExeced() ){
-            //写集可能已经被发送出去或merge已进行到提交阶段,当前事务停止继续运行，阻塞到下一个epoch
-            //如果此时isRemoteExeced 为true 表明先前IncLocalTxnCounter无效 事务不应该继续运行  （单机问题，多主情况下由于网络延迟，不会产生此类问题）
-            MOTAdaptor::DecLocalTxnCounter(index_pack);
-            MOT_LOG_INFO("事务跳转 goto begin %llu %llu", MOTAdaptor::GetLogicalEpoch(), MOTAdaptor::local_change_set_ptr1_current_epoch);
-            goto begin;
-        }
-        // MOT_LOG_INFO("txn cpp begin end");
-        MOTAdaptor::IncLocalChangeSetNum(index_pack);
-        SetCommitEpoch(MOTAdaptor::local_change_set_ptr1_current_epoch);
-        SetCommitSequenceNumber(now_to_us());
-
-        MOTAdaptor::AddRecordCommitTxnNum();
-        if(!m_occManager.ValidateReadInMerge(this, local_ip_index)){
-            MOTAdaptor::LocalTxnSafeExit(index_pack, txn);
-            return RC_ABORT;
-        }
-        rc = m_occManager.ExecutionPhase(this, local_ip_index);
-        if (rc != RC_OK){
-            MOTAdaptor::LocalTxnSafeExit(index_pack, txn);  
-            return rc;
+        // MOT_LOG_INFO("is_stable_epoch_send %d", is_stable_epoch_send);
+        if(is_stable_epoch_send){
+            // MOT_LOG_INFO("txn commit epoch %llu", GetCommitEpoch());
+            // cnt = 0;
+            while(GetCommitEpoch() > MOTAdaptor::GetLogicalEpoch() || !MOTAdaptor::IsRecordCommitted()){
+                // if(cnt % 1000 == 0){
+                //     MOT_LOG_INFO("=txn =commit epoch %llu current epoch %llu", GetCommitEpoch(), MOTAdaptor::GetLogicalEpoch());
+                // }
+                usleep(100);
+            } 
+            MOTAdaptor::IncLocalTxnCounters(index_pack);//此处得控制一下，发送出去的事务必须执行，由于调度导致在isRemoteExeced后加，出现问题
+            MOTAdaptor::IncRecordCommitTxnCounters(index_pack);
+            MOTAdaptor::IncLocalTxnExcCounters(index_pack);
+            // MOT_LOG_INFO("*txn *commit epoch %llu %llu %llu %llu %llu", GetCommitEpoch(), MOTAdaptor::IncLocalTxnCounters(index_pack), 
+            //     MOTAdaptor::IncRecordCommitTxnCounters(index_pack), index_pack, wait_count.fetch_add(1));
         }
         else{
-            if(!MOTAdaptor::InsertRowToSet(this, txn, index_pack, MOTAdaptor::IncLocalTxnIndex(index_pack))){
+            begin:
+            while(MOTAdaptor::GetPhysicalEpoch() != MOTAdaptor::GetLogicalEpoch() ||  !MOTAdaptor::IsRecordCommitted()) usleep(100);
+
+            if(MOTAdaptor::IncLocalTxnCounters(index_pack) % static_cast<uint64_t>(1e10) == 0 && MOTAdaptor::isRemoteExeced()){
+                //如果此时isRemoteExeced 为true 表明先前IncLocalTxnCounter无效 事务不应该继续运行  （单机问题，多主情况下由于网络延迟，不会产生此类问题）
+                MOTAdaptor::DecLocalTxnCounters(index_pack);//merge已进行到提交阶段,当前事务停止继续运行，阻塞到下一个epoch
+                goto begin;
+            }
+            if((MOTAdaptor::IncLocalChangeSetNum(index_pack) == 0 && MOTAdaptor::GetPhysicalEpoch() != MOTAdaptor::GetLogicalEpoch()) ||
+                MOTAdaptor::isRemoteExeced()){
+                //当前epoch写集可能已经被发送出去
+                MOTAdaptor::DecLocalTxnCounters(index_pack);
                 MOTAdaptor::DecLocalChangeSetNum(index_pack);
-                MOTAdaptor::DecLocalTxnCounter(index_pack);
+                goto begin;
+            }
+            SetCommitEpoch(MOTAdaptor::local_change_set_ptr1_current_epoch);
+            SetCommitSequenceNumber(now_to_us());
+            MOTAdaptor::IncRecordCommitTxnCounters(index_pack);
+            do{
+                if(!m_occManager.ValidateReadInMerge(this, local_ip_index)){
+                    rc = RC_ABORT;
+                    break;
+                }
+                //直接全部发出去，所有事务做一次write row header代价与很少的几个事务网络通信代价
+                // if(m_occManager.ExecutionPhase(this, local_ip_index) != RC_OK){
+                //     rc = RC_ABORT;
+                //     break;
+                // }
+                if(!MOTAdaptor::InsertRowToSet(this, txn, index_pack, index_unique)){
+                    rc = RC_ABORT;
+                }
+            }while(0);
+
+            if (rc != RC_OK){
+                MOTAdaptor::LocalTxnSafeExit(index_pack, txn);  
                 return RC_ABORT;
             }
         }
+        rc = m_occManager.ExecutionPhase(this, local_ip_index);
+        // rc = m_occManager.CommitPhase(this, local_ip_index);//此时该事务需要发送出去，验证失败只需减少本地事务计数器。
+        MOTAdaptor::DecExeCounters(index_pack);
 
-
-        rc = m_occManager.CommitPhase(this, local_ip_index);//此时该事务需要发送出去，验证失败只需减少本地事务计数器。
-        if (rc == RC_ABORT){
-            MOTAdaptor::DecLocalTxnCounter(index_pack);
-            return RC_ABORT;
-        }
-        MOTAdaptor::DecExeCounter(index_pack);
-
-        while(!MOTAdaptor::isRemoteExeced()) usleep(100);
-        auto csn_temp = std::to_string(GetCommitSequenceNumber()) + ":" + std::to_string(local_ip_index);
-        // auto search = MOTAdaptor::abort_transcation_csn_set.unsafe_find(csn_temp);
-        // if(search != MOTAdaptor::abort_transcation_csn_set.unsafe_end()){
-        if(MOTAdaptor::abort_transcation_csn_set.contain(csn_temp, csn_temp)){
-            rc = RC_ABORT;
-            // MOTAdaptor::local_commit_count1.fetch_add(1);
-            // MOT_LOG_INFO("abort_transcation_csn_set %llu %s", MOTAdaptor::local_commit_count1.load(), csn_temp.c_str());
+        if (rc != RC_ABORT){    
+            // while(!MOTAdaptor::isRemoteExeced()) usleep(100);
+            MOTAdaptor::Merge(this, index_pack);
+            auto csn_temp = std::to_string(GetCommitSequenceNumber()) + ":" + std::to_string(local_ip_index);
+            if(MOTAdaptor::abort_transcation_csn_set.contain(csn_temp, csn_temp)){
+                rc = RC_ABORT;
+            }
+            // rc = m_occManager.CommitCheck(this, local_ip_index);
         }
 
-        // MOT_LOG_INFO("CommitCkeck ");
-        // rc = m_occManager.CommitCheck(this, local_ip_index);
-        // if(m_occManager.CommitCheck(this, local_ip_index) == RC_ABORT) {
-        //     MOTAdaptor::local_commit_count2.fetch_add(1);
-        //     // MOT_LOG_INFO("CommitCkeck %llu %s", MOTAdaptor::local_commit_count2.load(), csn_temp.c_str());
-        // }
-
+        MOTAdaptor::Commit(this, index_pack);
         MOTAdaptor::InsertTxnIntoRecordCommitQueue(this, txn, rc);
-        MOTAdaptor::DecComCounter(index_pack);
+        MOTAdaptor::DecComCounters(index_pack);
         return rc;
     }
     else{
@@ -1442,6 +1451,5 @@ RC TxnManager::Commit()
         return RC_OK;
     }
 }
-
 
 }  // namespace MOT
