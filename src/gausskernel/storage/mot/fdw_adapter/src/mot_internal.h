@@ -62,6 +62,8 @@ using std::map;
 using std::string;
 
 #define MAX_TXN_NUM 100000
+#define ADD_NUM 10000000001
+#define MOD_NUM 10000000000
 
 extern void EpochLogicalTimerManagerThreadMain(uint64_t id);
 extern void EpochPhysicalTimerManagerThreadMain(uint64_t id);
@@ -81,6 +83,8 @@ extern void EpochRecordCommitThreadMain(uint64_t id);
 
 extern void EpochMessageSendThreadMain(uint64_t id);
 extern void EpochMessageListenThreadMain(uint64_t id);
+
+class EpochCache;
 
 namespace aum {
     class SpinLock {
@@ -641,115 +645,77 @@ private:
     
     static bool timerStop;
     //ADDBY NUE Concurrency
-    static volatile bool remoteExeced, record_commited, remote_record_commited, changing_logical_epoch, txn_return;
+    static volatile bool remote_execed, record_committed, remote_record_committed;
     static volatile uint64_t logical_epoch;
     static volatile uint64_t physical_epoch;
 
-    static std::atomic<uint64_t> unpackaged_message_num;
-    static std::atomic<uint64_t> unpackaged_txn_num;
-    static std::atomic<uint64_t> merged_txn_num;
-    static std::atomic<uint64_t> commit_txn_num;
-    static std::atomic<uint64_t> committed_txn_num;
-    static std::atomic<uint64_t> record_commit_txn_num;
-    static std::atomic<uint64_t> record_committed_txn_num;
-
 public:
 
-    static std::mutex logical_cache_mutex;//cache和logical线程 更新unpackageNum时 加锁用
-
-    static std::vector<std::atomic<uint64_t>*> local_txn_counters;//本地事务执行阶段计数器 多个
-    static std::vector<std::atomic<uint64_t>*> local_txn_exc_counters;//本地事务执行阶段完成计数器 多个
-    static std::vector<std::atomic<uint64_t>*> local_txn_index;//本地事务pack_index
-    static std::vector<std::atomic<uint64_t>*> record_commit_txn_counters;
-    static std::vector<std::atomic<uint64_t>*> record_committed_txn_counters;
-
-    static std::atomic<uint64_t> local_txn_counter;//本地事务执行阶段计数器 单个
-    static std::atomic<uint64_t> local_txn_execed_counter;//本地事务执行阶段完成计数器 单个
-
+    static std::vector<std::unique_ptr<std::atomic<uint64_t>>> local_txn_counters, local_txn_exc_counters, local_txn_index, 
+        record_commit_txn_counters, record_committed_txn_counters;
+    static std::vector<std::unique_ptr<std::atomic<uint64_t>>> remote_merged_txn_counters, remote_commit_txn_counters, 
+        remote_committed_txn_counters;
 
     static std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>> local_change_set_txn_num_ptr1;
     static std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>> local_change_set_txn_num_ptr2;
     static uint64_t local_change_set_ptr1_current_epoch;
     static uint64_t local_change_set_ptr2_current_epoch;
 
-
-    // static aum::atomic_unordered_map<std::string, std::string, std::string> insertSet;
-    // static aum::atomic_unordered_map<std::string, std::string, std::string> insertSetForCommit;
-    // static aum::atomic_unordered_map<std::string, std::string, std::string> abort_transcation_csn_set;
-
+    static std::map<uint64_t, void*> remote_key_map;
     static aum::concurrent_unordered_map<std::string, std::string, std::string> insertSet;
     static aum::concurrent_unordered_map<std::string, std::string, std::string> insertSetForCommit;
     static aum::concurrent_unordered_map<std::string, std::string, std::string> abort_transcation_csn_set;
 
 
-    static std::atomic<uint64_t> local_commit_count1, local_commit_count2;
-
-    static void setTimerStop(bool value) {timerStop = value;}
-    static bool isTimerStop() {return timerStop;}
-
-    static bool isRemoteExeced() {return remoteExeced;}
-    static void setRemoteExeced(bool value) {remoteExeced = value;}
-
-    static bool IsRecordCommitted(){ return record_commited;}
-    static void SetRecordCommited(bool value){ record_commited = value;}
-    static bool IsRemoteRecordCommitted(){ return remote_record_commited;}
-    static void SetRemoteRecordCommited(bool value){ remote_record_commited = value;}
-    static bool IsTxnReturn(){ return txn_return;}
-    static void SetTxnReturn(bool value){ txn_return = value;}
-
-    static bool IsChangingLogicalEpoch(){ return changing_logical_epoch;}
-    static void SetChangingLogicalEpoch(bool value){ changing_logical_epoch = value;}
-
-    static bool add(MOT::TxnManager *txnManager){return txnBuffer.insert(txnManager).second;}
-
-    static void clear(){txnBuffer.clear();}
-
-    static TxnBufferIter begin(){return txnBuffer.begin();}
-
-    static TxnBufferIter end(){return txnBuffer.end();}
+    static void SetTimerStop(bool value) {timerStop = value;}
+    static bool IsTimerStop() {return timerStop;}
     
+    static bool IsRemoteExeced() {return remote_execed;}
+    static void SetRemoteExeced(bool value) {remote_execed = value;}
+    
+    static bool IsRecordCommitted(){ return record_committed;}
+    static void SetRecordCommitted(bool value){ record_committed = value;}
+    
+    static bool IsRemoteRecordCommitted(){ return remote_record_committed;}
+    static void SetRemoteRecordCommitted(bool value){ remote_record_committed = value;}
+    
+    static void SetPhysicalEpoch(int value){ physical_epoch = value;}
+    static uint64_t AddPhysicalEpoch(){ return ++ physical_epoch;}
+    static uint64_t GetPhysicalEpoch(){ return physical_epoch;}
 
-    static uint64_t IncLocalTxnCounters(uint64_t index){ return local_txn_counters[index]->fetch_add(10000000001);}
-    static uint64_t DecLocalTxnCounters(uint64_t index){ return local_txn_counters[index]->fetch_sub(10000000001);}
+    static void SetLogicalEpoch(int value){ logical_epoch = value;}
+    static uint64_t AddLogicalEpoch(){ return ++ logical_epoch;}
+    static uint64_t GetLogicalEpoch(){ return logical_epoch;}
+
+    static uint64_t IncLocalTxnCounters(uint64_t index){ return local_txn_counters[index]->fetch_add(ADD_NUM);}
+    static uint64_t DecLocalTxnCounters(uint64_t index){ return local_txn_counters[index]->fetch_sub(ADD_NUM);}
     static uint64_t DecExeCounters(uint64_t index){ return local_txn_counters[index]->fetch_sub(1);}
-    static uint64_t GetExeCounters(uint64_t index) { return local_txn_counters[index]->load() % static_cast<uint64_t>(1e10);}
-    static uint64_t DecComCounters(uint64_t index){ return local_txn_counters[index]->fetch_sub(10000000000);}
-    static uint64_t GetComCounters(uint64_t index) {return local_txn_counters[index]->load();}
-
-    static uint64_t IncLocalTxnExcCounters(uint64_t index){ return local_txn_exc_counters[index]->fetch_add(1);}
-    static uint64_t GetLocalTxnExcCounters(){
-        uint64_t ans = 0;
-        for(auto &i : local_txn_exc_counters){
-            ans += i->load();
-        }
-        return ans;
-    }
-
-    static uint64_t GetComCounters(){
-        uint64_t res = 0;
-        for(auto &i : local_txn_counters){
-            res += (i->load() / static_cast<uint64_t>(1e10) );
-        }
-        return res;
-    }
-
+    static uint64_t DecComCounters(uint64_t index){ return local_txn_counters[index]->fetch_sub(MOD_NUM);}
     static bool IsLocalTxnCountersExcEqualZero(){
         for(auto &i : local_txn_counters){
             if( i->load() % static_cast<uint64_t>(1e10) != 0) return false;
         }
         return true;
     }
-
     static bool IsLocalTxnCountersComEqualZero(){
         for(auto &i : local_txn_counters){
             if(i->load() != 0) return false;
         }
         return true;
     }
-
     static uint64_t GetLocalTxnCounters(){
         uint64_t ans = 0;
         for(auto &i : local_txn_counters){
+            ans += i->load();
+        }
+        return ans;
+    }
+
+    static void SetLocalTxnExcCounters(uint64_t index, uint64_t value){ local_txn_exc_counters[index]->store(value);}
+    static uint64_t IncLocalTxnExcCounters(uint64_t index){ return local_txn_exc_counters[index]->fetch_add(1);}
+    static uint64_t GetLocalTxnExcCounters(){
+        uint64_t ans = 0;
+        for(auto &i : local_txn_exc_counters){
             ans += i->load();
         }
         return ans;
@@ -771,97 +737,55 @@ public:
         return ans;
     }
 
-
     static uint64_t IncLocalTxnIndex(uint64_t index){ return local_txn_index[index]->fetch_add(1);}
-    
-    static uint64_t IncLocalTxnCounter(){ return local_txn_counter.fetch_add(10000000001);}// 10 000 000 000 + 1
-    static uint64_t DecLocalTxnCounter(){ return local_txn_counter.fetch_sub(10000000001);}
-    static uint64_t DecExeCounter(){ return local_txn_counter.fetch_sub(1);}
-    static uint64_t GetExeCounter() { return  local_txn_counter.load() % static_cast<uint64_t>(1e10);}
-    static bool IsExeCounterEqual(){ 
-        return ((local_txn_counter.load() == local_txn_execed_counter.load()) 
-        && (local_txn_counter.load() % static_cast<uint64_t>(1e10) == 0)); 
+
+    static void SetRemoteMergedTxnCounters(uint64_t index, uint64_t value){ remote_merged_txn_counters[index]->store(value);}
+    static uint64_t IncRemoteMergedTxnCounters(uint64_t index){ return remote_merged_txn_counters[index]->fetch_add(1);}
+    static uint64_t GetRemoteMergedTxnCounters(){ 
+        uint64_t ans = 0;
+        for(auto &i : remote_merged_txn_counters) ans += i->load();
+        return ans;
     }
-    static uint64_t DecComCounter(){ return local_txn_counter.fetch_sub(10000000000);}
-    static uint64_t GetComCounter() { return local_txn_counter.load();}
-    static bool IsComCounterEqual(){ return local_txn_counter.load() == local_txn_execed_counter.load();}
 
-    //与上面的多个同理
-    static uint64_t IncLocalTxnExcCounter(){ return local_txn_execed_counter.fetch_add(10000000001);}
-    static uint64_t IncExeCounter(){ return local_txn_execed_counter.fetch_add(1);}
-    static uint64_t IncComCounter(){ return local_txn_execed_counter.fetch_add(10000000000);}
+    static void SetRemoteCommitTxnCounters(uint64_t index, uint64_t value){ remote_commit_txn_counters[index]->store(value);}
+    static uint64_t IncRemoteCommitTxnCounters(uint64_t index){ return remote_commit_txn_counters[index]->fetch_add(1);}
+    static uint64_t GetRemoteCommitTxnCounters(){ 
+        uint64_t ans = 0;
+        for(auto &i : remote_commit_txn_counters) ans += i->load();
+        return ans;
+    }
 
+    static void SetRemoteCommittedTxnCounters(uint64_t index, uint64_t value){ remote_committed_txn_counters[index]->store(value);}
+    static uint64_t IncRemoteCommittedTxnCounters(uint64_t index){ return remote_committed_txn_counters[index]->fetch_add(1);}
+    static uint64_t GetRemoteCommittedTxnCounters(){ 
+        uint64_t ans = 0;
+        for(auto &i : remote_committed_txn_counters) ans += i->load();
+        return ans;
+    }
 
-
-
-    
-    static void SetUnpackagedMessageNum(uint64_t value){unpackaged_message_num = value;}
-    static uint64_t AddUnpackagedMessageNum(){ return unpackaged_message_num.fetch_add(1);}// server
-    static uint64_t AddUnpackagedMessageNum(uint64_t value){ return unpackaged_message_num.fetch_add(value);}
-    static uint64_t GetUnpackagedMessageNum(){ return unpackaged_message_num.load();}
-
-    static void SetUnpackagedTxnNum(uint64_t value){unpackaged_txn_num = value;}
-    static uint64_t AddUnpackagedTxnNum(){ return unpackaged_txn_num.fetch_add(1);}
-    static uint64_t AddUnpackagedTxnNum(uint64_t value){ return unpackaged_txn_num.fetch_add(value);}
-    static uint64_t GetUnpackagedTxnNum(){return unpackaged_txn_num.load();}
-
-    static uint64_t AddMergedTxnNum(){ return merged_txn_num.fetch_add(1);}
-    static uint64_t SubMergedTxnNum(){ return merged_txn_num.fetch_sub(1);}
-    static uint64_t GetMergedTxnNum(){ return merged_txn_num.load();}
-
-    static uint64_t AddCommitTxnNum(){ return commit_txn_num.fetch_add(1);}
-    static uint64_t GetCommitTxnNum(){ return commit_txn_num.load();}
-
-    static uint64_t AddCommittedTxnNum(){ return committed_txn_num.fetch_add(1);}
-    static uint64_t GetCommittedTxnNum(){ return committed_txn_num.load();}
-
-    static void SetRecordCommitTxnNum(uint64_t value){ record_commit_txn_num.store(value);}
-    static uint64_t AddRecordCommitTxnNum(){ return record_commit_txn_num.fetch_add(1);}
-    static uint64_t GetRecordCommitTxnNum(){ return record_commit_txn_num.load();}
-
-    static void SetRecordCommittedTxnNum(uint64_t value){ record_committed_txn_num.store(value);}
-    static uint64_t AddRecordCommittedTxnNum(){ return record_committed_txn_num.fetch_add(1);}
-    static uint64_t GetRecordCommittedTxnNum(){ return record_committed_txn_num.load();}
-
-
-    static void SetPhysicalEpoch(int value){ physical_epoch = value;}
-    static uint64_t AddPhysicalEpoch(){ return physical_epoch ++;}
-    static uint64_t GetPhysicalEpoch(){ return physical_epoch;}
-
-    static void SetLogicalEpoch(int value){ logical_epoch = value;}
-    static uint64_t AddLogicalEpoch(){ return logical_epoch ++;}
-    static uint64_t GetLogicalEpoch(){ return logical_epoch;}
-
+    static void LogicalEndEpoch(){
+        for(int i = 0; i < (int)local_txn_counters.size(); i++){
+            local_txn_counters[i]->store(0);
+            local_txn_exc_counters[i]->store(0);
+            local_txn_index[i]->store(1);
+            remote_merged_txn_counters[i]->store(0);
+            remote_commit_txn_counters[i]->store(0);
+            remote_committed_txn_counters[i]->store(0);
+        }
+        insertSet.clear();
+        insertSetForCommit.clear();
+        abort_transcation_csn_set.clear();
+        remote_execed = false;
+        ++ logical_epoch;
+    }
 
     static uint64_t GetLocalChangeSetNum(uint64_t index){ return (*local_change_set_txn_num_ptr1)[index]->load();}
     static uint64_t IncLocalChangeSetNum(uint64_t index){ return (*local_change_set_txn_num_ptr1)[index]->fetch_add(1);}
     static uint64_t DecLocalChangeSetNum(uint64_t index){ return (*local_change_set_txn_num_ptr1)[index]->fetch_sub(1);}
 
-
-    static void LogicalEndEpoch(){
-        // std::unique_lock<std::mutex> lock(logical_cache_mutex);
-        unpackaged_message_num.store(0);
-        unpackaged_txn_num.store(0);
-        merged_txn_num.store(0);
-        commit_txn_num.store(0);
-        committed_txn_num.store(0);
-        for(int i = 0; i < (int)local_txn_counters.size(); i++){
-            local_txn_counters[i]->store(0);
-            local_txn_exc_counters[i]->store(0);
-            local_txn_index[i]->store(1);
-        }
-        // for(auto &i : local_txn_exc_counters) i = 0;
-        // local_txn_counter = local_txn_execed_counter = 0;
-        insertSet.clear();
-        insertSetForCommit.clear();
-        abort_transcation_csn_set.clear();
-        remoteExeced = false;
-        ++ logical_epoch;
-    }
-
     
-
     static void* InsertRowToMergeRequestTxn(MOT::TxnManager* txMan, const uint64_t& index_pack, const uint64_t& index_unique);
+    static bool IncLocalChangeSetNum(uint64_t epoch, uint64_t &index_pack);
     static bool InsertRowToSet(MOT::TxnManager* txMan, void* txn_void, const uint64_t& index_pack, const uint64_t& index_unique);
     static bool InsertTxnIntoRecordCommitQueue(MOT::TxnManager* txMan, void* txn_void, MOT::RC &rc);
     static void LocalTxnSafeExit(const uint64_t& index_pack, void* txn_void);

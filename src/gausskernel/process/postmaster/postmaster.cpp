@@ -11536,8 +11536,13 @@ void GetServerInfo(){
     tinyxml2::XMLElement* pack_thread_num = root->FirstChildElement("pack_thread_num");
     kPackThreadNum = std::stoull(pack_thread_num->GetText());
 
-    kSendThreadNum = kServerNum > 1 ? 2 : 1;
-    kListenThreadNum = kServerNum > 1 ? 2 : 1;
+    if(kServerNum > 1){
+        // kSendThreadNum = kListenThreadNum = kPackageNum + 1;
+        kSendThreadNum = kListenThreadNum = 2;
+    }
+    else{
+        kSendThreadNum = kListenThreadNum = 1;
+    }
 
 
     tinyxml2::XMLElement* sleep_time = root->FirstChildElement("sleep_time");

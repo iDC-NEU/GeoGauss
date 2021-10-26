@@ -1370,46 +1370,38 @@ RC TxnManager::Commit(){
             MOT_LOG_INFO("*=*=*=*=*= InsertRowToMergeRequestTxn txn内存分配失败");
             return RC_ABORT;
         }
-        // MOT_LOG_INFO("is_stable_epoch_send %d", is_stable_epoch_send);
         if(is_stable_epoch_send){
-            // MOT_LOG_INFO("txn commit epoch %llu", GetCommitEpoch());
-            // cnt = 0;
             while(GetCommitEpoch() > MOTAdaptor::GetLogicalEpoch() || !MOTAdaptor::IsRecordCommitted()){
-                // if(cnt % 1000 == 0){
-                //     MOT_LOG_INFO("=txn =commit epoch %llu current epoch %llu", GetCommitEpoch(), MOTAdaptor::GetLogicalEpoch());
-                // }
                 usleep(100);
             } 
             MOTAdaptor::IncLocalTxnCounters(index_pack);//此处得控制一下，发送出去的事务必须执行，由于调度导致在isRemoteExeced后加，出现问题
             MOTAdaptor::IncRecordCommitTxnCounters(index_pack);
             MOTAdaptor::IncLocalTxnExcCounters(index_pack);
-            // MOT_LOG_INFO("*txn *commit epoch %llu %llu %llu %llu %llu", GetCommitEpoch(), MOTAdaptor::IncLocalTxnCounters(index_pack), 
-            //     MOTAdaptor::IncRecordCommitTxnCounters(index_pack), index_pack, wait_count.fetch_add(1));
         }
         else{
             begin:
             while(MOTAdaptor::GetPhysicalEpoch() != MOTAdaptor::GetLogicalEpoch() ||  !MOTAdaptor::IsRecordCommitted()) usleep(100);
 
-            if(MOTAdaptor::IncLocalTxnCounters(index_pack) % static_cast<uint64_t>(1e10) == 0 && MOTAdaptor::isRemoteExeced()){
+            if(MOTAdaptor::IncLocalTxnCounters(index_pack) % static_cast<uint64_t>(1e10) == 0 && MOTAdaptor::IsRemoteExeced()){
                 //如果此时isRemoteExeced 为true 表明先前IncLocalTxnCounter无效 事务不应该继续运行  （单机问题，多主情况下由于网络延迟，不会产生此类问题）
                 MOTAdaptor::DecLocalTxnCounters(index_pack);//merge已进行到提交阶段,当前事务停止继续运行，阻塞到下一个epoch
                 goto begin;
             }
-            if((MOTAdaptor::IncLocalChangeSetNum(index_pack) == 0 && MOTAdaptor::GetPhysicalEpoch() != MOTAdaptor::GetLogicalEpoch()) ||
-                MOTAdaptor::isRemoteExeced()){
-                //当前epoch写集可能已经被发送出去
+            SetCommitEpoch(MOTAdaptor::GetLogicalEpoch());
+            if(!MOTAdaptor::IncLocalChangeSetNum(GetCommitEpoch(), index_pack)){
+                //未成功增加发送集合计数器
                 MOTAdaptor::DecLocalTxnCounters(index_pack);
-                MOTAdaptor::DecLocalChangeSetNum(index_pack);
                 goto begin;
             }
-            SetCommitEpoch(MOTAdaptor::local_change_set_ptr1_current_epoch);
+            MOTAdaptor::IncLocalTxnExcCounters(index_pack);
             SetCommitSequenceNumber(now_to_us());
             MOTAdaptor::IncRecordCommitTxnCounters(index_pack);
             do{
-                if(!m_occManager.ValidateReadInMerge(this, local_ip_index)){
-                    rc = RC_ABORT;
-                    break;
-                }
+                //隔离级别不同：
+                // if(!m_occManager.ValidateReadInMerge(this, local_ip_index)){
+                //     rc = RC_ABORT;
+                //     break;
+                // }
                 //直接全部发出去，所有事务做一次write row header代价与很少的几个事务网络通信代价
                 // if(m_occManager.ExecutionPhase(this, local_ip_index) != RC_OK){
                 //     rc = RC_ABORT;
@@ -1421,7 +1413,7 @@ RC TxnManager::Commit(){
             }while(0);
 
             if (rc != RC_OK){
-                MOTAdaptor::LocalTxnSafeExit(index_pack, txn);  
+                MOTAdaptor::LocalTxnSafeExit(index_pack, txn);
                 return RC_ABORT;
             }
         }
