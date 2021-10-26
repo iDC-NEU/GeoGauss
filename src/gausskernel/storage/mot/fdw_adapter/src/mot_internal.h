@@ -772,6 +772,7 @@ public:
             remote_commit_txn_counters[i]->store(0);
             remote_committed_txn_counters[i]->store(0);
         }
+        remote_key_map.clear();
         insertSet.clear();
         insertSetForCommit.clear();
         abort_transcation_csn_set.clear();

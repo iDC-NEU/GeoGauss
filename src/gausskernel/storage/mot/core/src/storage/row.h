@@ -617,8 +617,8 @@ protected:
 //ADDBY NEU
 public:
     bool ValidateAndSetWriteForRemote(uint64_t m_csn, uint64_t start_epoch, uint64_t commit_epoch, uint32_t server_id) {
-        return this->m_rowHeader.ValidateAndSetWrite(m_csn, start_epoch, commit_epoch, server_id);
-        // return this->m_rowHeader.ValidateAndSetWriteForCommit(m_csn, start_epoch, commit_epoch, server_id);
+        // return this->m_rowHeader.ValidateAndSetWrite(m_csn, start_epoch, commit_epoch, server_id);
+        return this->m_rowHeader.ValidateAndSetWriteForCommit(m_csn, start_epoch, commit_epoch, server_id);
     }
 
     uint32_t GetServerId(){

@@ -1388,9 +1388,7 @@ RC TxnManager::Commit(){
                 goto begin;
             }
             SetCommitEpoch(MOTAdaptor::GetLogicalEpoch());
-            if(!MOTAdaptor::IncLocalChangeSetNum(GetCommitEpoch(), index_pack)){
-                //未成功增加发送集合计数器
-                MOTAdaptor::DecLocalTxnCounters(index_pack);
+            if(!MOTAdaptor::IncLocalChangeSetNum(GetCommitEpoch(), index_pack)){//未成功增加发送集合计数器
                 goto begin;
             }
             MOTAdaptor::IncLocalTxnExcCounters(index_pack);
@@ -1417,8 +1415,8 @@ RC TxnManager::Commit(){
                 return RC_ABORT;
             }
         }
-        rc = m_occManager.ExecutionPhase(this, local_ip_index);
-        // rc = m_occManager.CommitPhase(this, local_ip_index);//此时该事务需要发送出去，验证失败只需减少本地事务计数器。
+        // rc = m_occManager.ExecutionPhase(this, local_ip_index);
+        rc = m_occManager.CommitPhase(this, local_ip_index);//此时该事务需要发送出去，验证失败只需减少本地事务计数器。
         MOTAdaptor::DecExeCounters(index_pack);
 
         if (rc != RC_ABORT){    

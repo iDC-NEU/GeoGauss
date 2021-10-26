@@ -660,7 +660,7 @@ bool OccTransactionManager::ValidateAndSetWriteSet(TxnManager *txMan, uint32_t s
             if(!ac->GetRowFromHeader()->m_rowHeader.ValidateAndSetWrite(txMan->GetCommitSequenceNumber(), txMan->GetStartEpoch(), txMan->GetCommitEpoch(), server_id))
                 result = false;
         }
-        // if(result == false) break;
+        if(result == false) break;
     }
     if(result == false) MOTAdaptor::abort_transcation_csn_set.insert(csn_temp, csn_temp);
     return result;
