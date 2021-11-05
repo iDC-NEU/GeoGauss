@@ -1393,13 +1393,14 @@ RC TxnManager::Commit(){
             }
             MOTAdaptor::IncLocalTxnExcCounters(index_pack);
             SetCommitSequenceNumber(now_to_us());
-            MOTAdaptor::IncRecordCommitTxnCounters(index_pack);
             do{
                 //隔离级别不同：
-                // if(!m_occManager.ValidateReadInMerge(this, local_ip_index)){
-                //     rc = RC_ABORT;
-                //     break;
-                // }
+                if(is_read_repeatable){
+                    if(!m_occManager.ValidateReadInMerge(this, local_ip_index)){
+                        rc = RC_ABORT;
+                        break;
+                    }
+                }
                 //直接全部发出去，所有事务做一次write row header代价与很少的几个事务网络通信代价
                 // if(m_occManager.ExecutionPhase(this, local_ip_index) != RC_OK){
                 //     rc = RC_ABORT;
@@ -1427,10 +1428,12 @@ RC TxnManager::Commit(){
                 rc = RC_ABORT;
             }
             // rc = m_occManager.CommitCheck(this, local_ip_index);
+            MOTAdaptor::Commit(this, index_pack);
         }
 
-        MOTAdaptor::Commit(this, index_pack);
         MOTAdaptor::InsertTxnIntoRecordCommitQueue(this, txn, rc);
+        if(rc == RC_OK)
+            MOTAdaptor::IncRecordCommitTxnCounters(index_pack);
         MOTAdaptor::DecComCounters(index_pack);
         return rc;
     }

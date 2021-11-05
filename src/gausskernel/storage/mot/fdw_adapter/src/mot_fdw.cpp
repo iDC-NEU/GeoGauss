@@ -1608,9 +1608,9 @@ static void MOTXactCallback(XactEvent event, void* arg)
             elog(DEBUG2, "commit failed");
             elog(DEBUG2, "Abort parent transaction from MOT commit, tid %lu", tid);
             MemoryEreportError();
-            // abortParentTransactionParamsNoDetail(ERRCODE_T_R_SERIALIZATION_FAILURE,
-            //     "Commit: could not serialize access due to concurrent update(%d)",
-            //     txnState);//ADDBY NEU
+            abortParentTransactionParamsNoDetail(ERRCODE_T_R_SERIALIZATION_FAILURE,
+                "Commit: could not serialize access due to concurrent update(%d)",
+                txnState);//ADDBY NEU
         }
         txn->SetTxnState(MOT::TxnState::TXN_COMMIT);
     } else if (event == XACT_EVENT_RECORD_COMMIT) {

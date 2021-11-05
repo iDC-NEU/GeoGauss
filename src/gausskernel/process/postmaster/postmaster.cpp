@@ -253,7 +253,7 @@ uint64_t kServerNum = 1, kPortNum = 1, kPackageNum = 1, kNotifyNum = 1, kBatchNu
 std::vector<std::string> send_ips;
 std::vector<uint64_t>send_ports;
 std::string kMasterIp;
-volatile bool is_stable_epoch_send = false, is_epoch_advanced_by_message = true;
+volatile bool is_stable_epoch_send = false, is_epoch_advanced_by_message = true, is_read_repeatable = true;
 
 void GenerateEpochThreads();
 void CkeckEpochThreadsI();
@@ -2741,7 +2741,7 @@ static int ServerLoop(void)
 
         //ADDBY NEU
         // ereport(LOG,(errmsg("============================SerberLoop=================================")));
-        CkeckEpochThreadsI();
+        // CkeckEpochThreadsI();
         // ereport(LOG,(errmsg("============================SerberLoop=================================")));
 
 
@@ -11514,6 +11514,11 @@ void GetServerInfo(){
     is_epoch_advanced_by_message = true;
     tinyxml2::XMLElement* is_epoch_advanced_by_message_t = root->FirstChildElement("is_epoch_advanced_by_message");
     is_epoch_advanced_by_message = std::stoi(is_epoch_advanced_by_message_t->GetText()) == 0 ? false : true;
+
+    is_read_repeatable = true;
+    tinyxml2::XMLElement* is_read_repeatable_t = root->FirstChildElement("is_read_repeatable");
+    is_read_repeatable = std::stoi(is_read_repeatable_t->GetText()) == 0 ? false : true;
+
 
     tinyxml2::XMLElement* local_ip_index_xml = root->FirstChildElement("local_ip_index");
     local_ip_index=std::stoull(local_ip_index_xml->GetText()) ;

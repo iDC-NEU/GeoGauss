@@ -3971,7 +3971,7 @@ static void AbortTransaction(bool PerfectRollback, bool STP_rollback)
 
     /* check the current transaction state */
     if (s->state != TRANS_INPROGRESS && s->state != TRANS_PREPARE)
-        // ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("AbortTransaction while in %s state", TransStateAsString(s->state))));//ADDBY NEU 注释？？？
+        ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("AbortTransaction while in %s state", TransStateAsString(s->state))));//ADDBY NEU 注释？？？
 
     Assert((!StreamThreadAmI() && s->parent == NULL) || StreamThreadAmI());
 

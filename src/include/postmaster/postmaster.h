@@ -26,7 +26,7 @@ extern uint64_t kServerNum, kPortNum, kPackageNum, kNotifyNum, kBatchNum, kNotif
 extern std::vector<std::string> send_ips;
 extern std::vector<uint64_t>send_ports;
 extern std::string kMasterIp;
-extern volatile bool is_stable_epoch_send, is_epoch_advanced_by_message;
+extern volatile bool is_stable_epoch_send, is_epoch_advanced_by_message, is_read_repeatable;
 
 extern THR_LOCAL bool comm_client_bind;
 

@@ -129,6 +129,7 @@ void RowHeader::WriteChangesToRow(const Access* access, uint64_t csn)
         }
     }
 #endif
+    KeepStable();
     switch (type) {
         case WR:
             MOT_ASSERT(access->m_params.IsPrimarySentinel() == true);

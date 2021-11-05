@@ -2266,37 +2266,52 @@ struct send_thread_params{
 
 class ConcurrentVector{
 public:
-    uint64_t _max_length = 10000;
+    uint64_t _max_length = 10000, _pack_num;
     std::vector<std::shared_ptr<std::vector<std::shared_ptr<BlockingConcurrentQueue<std::unique_ptr<zmq::message_t>>>>>> 
         local_change_set_txn_ptrs;
     std::vector<std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>> local_change_set_txn_num_ptrs;
-    ConcurrentVector(uint64_t pack_num){
-        _max_length = pack_num;
-        local_change_set_txn_ptrs.resize(_max_length);
-        local_change_set_txn_num_ptrs.resize(_max_length);
+    ConcurrentVector(uint64_t pack_num, uint64_t length){
+        _pack_num = pack_num;
+        _max_length = length;
+        local_change_set_txn_ptrs.resize(_max_length + 5);
+        local_change_set_txn_num_ptrs.resize(_max_length + 5);
     }
     ConcurrentVector(){
-        local_change_set_txn_ptrs.resize(_max_length);
-        local_change_set_txn_num_ptrs.resize(_max_length);
+        local_change_set_txn_ptrs.resize(_max_length + 5);
+        local_change_set_txn_num_ptrs.resize(_max_length + 5);
     }
 
-    void init(uint64_t pack_num){
-        _max_length = pack_num;
-        local_change_set_txn_ptrs.resize(_max_length);
-        local_change_set_txn_num_ptrs.resize(_max_length);
+    void init(uint64_t pack_num, uint64_t length){
+        _pack_num = pack_num;
+        _max_length = length;
+        local_change_set_txn_ptrs.resize(_max_length + 5);
+        local_change_set_txn_num_ptrs.resize(_max_length + 5);
+        for(int i = 0; i <= length; i++){
+            local_change_set_txn_ptrs[i] = 
+                std::make_shared<std::vector<std::shared_ptr<BlockingConcurrentQueue<std::unique_ptr<zmq::message_t>>>>>();
+            local_change_set_txn_num_ptrs[i] = 
+                std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
+            local_change_set_txn_ptrs[i]->resize(_pack_num + 5);
+            local_change_set_txn_num_ptrs[i]->resize(_pack_num + 5);
+            for(int j = 0; j <= _pack_num; j++){
+                (*local_change_set_txn_ptrs[i])[j] = std::make_shared<BlockingConcurrentQueue<std::unique_ptr<zmq::message_t>>>(
+                    kMergeThreadNum * moodycamel::BlockingConcurrentQueue<std::unique_ptr<zmq::message_t>>::BLOCK_SIZE);
+                (*local_change_set_txn_num_ptrs[i])[j] = std::make_shared<std::atomic<uint64_t>>(0);
+            }
+        }
     }
     
     void push_back(uint64_t epoch, 
         std::shared_ptr<std::vector<std::shared_ptr<BlockingConcurrentQueue<std::unique_ptr<zmq::message_t>>>>> ptr1,
         std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>> ptr2){
-        local_change_set_txn_ptrs[epoch%_max_length] = ptr1;
-        local_change_set_txn_num_ptrs[epoch%_max_length] = ptr2;
+        local_change_set_txn_ptrs[epoch % _max_length] = ptr1;
+        local_change_set_txn_num_ptrs[epoch % _max_length] = ptr2;
     }
     
     uint64_t load_change_set(uint64_t epoch){
         uint64_t ans = 0;
-        for(auto i : (*(local_change_set_txn_num_ptrs[epoch%_max_length])) )
-            ans += i->load();
+        for(int i = 0; i < _pack_num; i ++)
+            ans += (*local_change_set_txn_num_ptrs[epoch % _max_length])[i]->load();
         return ans;
     }
     
@@ -2625,7 +2640,7 @@ void MOTAdaptor::LocalTxnSafeExit(const uint64_t& index_pack, void* txn_void){
 void InitEpochTimerManager(){
     //==========Cache===============
     max_length = kCacheMaxLength;
-    local_change_set_ptrs.init(max_length);
+    local_change_set_ptrs.init(kPackageNum, max_length);
     max_length = kCacheMaxLength;
     message_cache = std::make_unique<std::vector<std::unique_ptr<BlockingConcurrentQueue<std::unique_ptr<merge::MergeRequest_Transaction>>>>>();
     message_cache->reserve(max_length +1);
@@ -2696,14 +2711,14 @@ void ChangeLocalChangeSet(uint64_t kPackageNum){
     lock_change_change_set.lock();
 
     local_change_set_txn_ptr2 = std::make_shared<std::vector<std::shared_ptr<BlockingConcurrentQueue<std::unique_ptr<zmq::message_t>>>>>();
-    local_change_set_txn_ptr2->resize(kPackageNum);
+    local_change_set_txn_ptr2->resize(kPackageNum + 5);
     MOTAdaptor::local_change_set_txn_num_ptr2 = std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
-    MOTAdaptor::local_change_set_txn_num_ptr2->resize(kPackageNum);
-    for(int i = 0; i < (int)kPackageNum; i++){
+    MOTAdaptor::local_change_set_txn_num_ptr2->resize(kPackageNum + 5);
+    for(int i = 0; i <= (int)kPackageNum; i++){
         (*local_change_set_txn_ptr2)[i] = 
             std::make_shared<BlockingConcurrentQueue<std::unique_ptr<zmq::message_t>>>(kMergeThreadNum * 
             moodycamel::BlockingConcurrentQueue<std::unique_ptr<zmq::message_t>>::BLOCK_SIZE);
-        (*MOTAdaptor::local_change_set_txn_num_ptr2)[i] =std::make_shared<std::atomic<uint64_t>>(0);
+        (*MOTAdaptor::local_change_set_txn_num_ptr2)[i] = std::make_shared<std::atomic<uint64_t>>(0);
     }
     MOTAdaptor::local_change_set_ptr2_current_epoch = MOTAdaptor::GetPhysicalEpoch() + 1;
     local_change_set_ptrs.push_back(MOTAdaptor::local_change_set_ptr2_current_epoch, 
@@ -2788,12 +2803,12 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
         //等待merge线程之间进行同步 同步条件：远端所有message都已接受 && message解压完成 && txn都merge完成 
 
         start_merge_time = now_to_us();
-        while(static_cast<uint64_t>(local_change_set_ptrs.load_change_set(MOTAdaptor::GetLogicalEpoch()) / MOD_NUM) 
+        while(static_cast<uint64_t>(local_change_set_ptrs.load_change_set(epoch_mod) / MOD_NUM) 
             != MOTAdaptor::GetLocalTxnExcCounters()){
             usleep(20);
         }
-        while(message_cache_pack_num[MOTAdaptor::GetLogicalEpoch() % max_length]->load() != kReceiveMessageNum) usleep(20);
-        remote_merged_txn_num = message_cache_txn_num[MOTAdaptor::GetLogicalEpoch() % max_length]->load();
+        while(message_cache_pack_num[epoch_mod]->load() != kReceiveMessageNum) usleep(20);
+        remote_merged_txn_num = message_cache_txn_num[epoch_mod]->load();
         while(MOTAdaptor::GetRemoteMergedTxnCounters() != remote_merged_txn_num) usleep(20);
 
 
@@ -2814,9 +2829,10 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
         
         // ============= 结束处理 ==================
         //远端事务已经写完，不写完无法开始下一个logical epoch
-        message_cache_txn_num[MOTAdaptor::GetLogicalEpoch() % max_length]->store(0);
-        message_cache_pack_num[MOTAdaptor::GetLogicalEpoch() % max_length]->store(0);
-        minimum_epoch_id ++;
+        message_cache_txn_num[epoch_mod]->store(0);
+        message_cache_pack_num[epoch_mod]->store(0);
+        epoch ++;
+        epoch_mod = epoch % max_length;
         SwitchLocalChangeSetPtr(kPackageNum);
         MOTAdaptor::LogicalEndEpoch();
         commit_time = now_to_us();
@@ -3265,6 +3281,7 @@ void EpochCommitThreadMain(uint64_t id){//validate
                 session_context = MOT::GetSessionManager()->CreateSessionContext(IS_PGXC_COORDINATOR, 0, nullptr, INVALID_CONNECTION_ID);
                 txn_manager = session_context->GetTxnManager();
             }
+            MOTAdaptor::IncRecordCommitTxnCounters(index_pack);
             txn_manager->CleanTxn();
             for(int j = 0; j < txn_ptr->row_size(); j++){
                 const auto& row = txn_ptr->row(j);
@@ -3277,6 +3294,7 @@ void EpochCommitThreadMain(uint64_t id){//validate
                 if(op_type == 0 || op_type == 2) {
                     table->FindRow(key,localRow, 0);
                     MOT_ASSERT(localRow != nullptr);
+                    localRow->GetRowHeader()->KeepStable();
                     if(op_type == 2)
                         localRow->GetPrimarySentinel()->SetDirty();
                     else{
@@ -3300,6 +3318,7 @@ void EpochCommitThreadMain(uint64_t id){//validate
                 MOT::MemSessionFree(buf);
             }
             txn_manager->CommitForRemote();
+            MOTAdaptor::IncRecordCommittedTxnCounters(index_pack);
         }
         MOTAdaptor::IncRemoteCommittedTxnCounters(index_pack);
     }

@@ -256,7 +256,7 @@ public:
     inline void SetCommitSequenceNumber(uint64_t csn)
     {
         m_rowHeader.SetCSN(csn);
-        m_rowHeader.SetStableCSN(csn);
+        // m_rowHeader.SetStableCSN(csn);
     }
 
     /**
@@ -635,6 +635,10 @@ public:
 
     void RecoverToStable(){
         this->m_rowHeader.RecoverToStable();
+    }
+
+    RowHeader* GetRowHeader(){
+        return &(this->m_rowHeader);
     }
 
     void SetValueVariable_1(int id, const void* ptr, uint32_t size);
