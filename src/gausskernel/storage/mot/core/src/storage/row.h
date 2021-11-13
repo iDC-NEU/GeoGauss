@@ -145,6 +145,9 @@ public:
         // If so we copy garbage and we fall in validation.
         if (data != nullptr) {
             errno_t erc = memcpy_s(m_data, GetTupleSize(), data, size);
+            if (erc == ERANGE_AND_RESET) {
+                assert(false);
+            }
             securec_check(erc, "\0", "\0");
         }
     }

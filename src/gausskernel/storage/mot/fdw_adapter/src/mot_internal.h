@@ -264,6 +264,18 @@ namespace aum {
             lock.unlock();
         }
 
+        void remove(key &k) 
+        {
+            std::mutex& _mutex_temp = GetMutexRef(k);
+            std::unordered_map<key, value>& _map_temp = GetMapRef(k);
+            std::unique_lock<std::mutex> lock(_mutex_temp);
+            map_iterator iter = _map_temp.find(k);
+            if (iter != _map_temp.end()) {
+                _map_temp.erase(iter);
+            }
+            lock.unlock();
+        }
+
         void clear() {
             for(uint64_t i = 0; i < _N; i ++){
                 std::unique_lock<std::mutex> lock(_mutex[i]);
@@ -284,6 +296,15 @@ namespace aum {
                 if(iter->second == v){
                     return true;
                 }
+            }
+            return false;
+        }
+
+        bool contain(key &k){
+            std::unordered_map<key, value>& _map_temp = GetMapRef(k);
+            map_iterator iter = _map_temp.find(k);
+            if(iter != _map_temp.end()){
+                return true;
             }
             return false;
         }
@@ -656,12 +677,7 @@ public:
     static std::vector<std::unique_ptr<std::atomic<uint64_t>>> remote_merged_txn_counters, remote_commit_txn_counters, 
         remote_committed_txn_counters;
 
-    static std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>> local_change_set_txn_num_ptr1;
-    static std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>> local_change_set_txn_num_ptr2;
-    static uint64_t local_change_set_ptr1_current_epoch;
-    static uint64_t local_change_set_ptr2_current_epoch;
-
-    static std::map<uint64_t, void*> remote_key_map;
+    static std::map<uint64_t, std::unique_ptr<std::vector<void*>>> remote_key_map;
     static aum::concurrent_unordered_map<std::string, std::string, std::string> insertSet;
     static aum::concurrent_unordered_map<std::string, std::string, std::string> insertSetForCommit;
     static aum::concurrent_unordered_map<std::string, std::string, std::string> abort_transcation_csn_set;
@@ -779,11 +795,6 @@ public:
         remote_execed = false;
         ++ logical_epoch;
     }
-
-    static uint64_t GetLocalChangeSetNum(uint64_t index){ return (*local_change_set_txn_num_ptr1)[index]->load();}
-    static uint64_t IncLocalChangeSetNum(uint64_t index){ return (*local_change_set_txn_num_ptr1)[index]->fetch_add(1);}
-    static uint64_t DecLocalChangeSetNum(uint64_t index){ return (*local_change_set_txn_num_ptr1)[index]->fetch_sub(1);}
-
     
     static void* InsertRowToMergeRequestTxn(MOT::TxnManager* txMan, const uint64_t& index_pack, const uint64_t& index_unique);
     static bool IncLocalChangeSetNum(uint64_t epoch, uint64_t &index_pack);

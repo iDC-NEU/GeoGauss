@@ -1350,6 +1350,7 @@ std::atomic<int> wait_count(0);
 std::atomic<int> wait_count_commit(0);
 
 RC TxnManager::Commit(){
+    // MOT_LOG_INFO("commit()");
     m_occManager.updateInsertSetSize(this);
     // bool result = isOnlyRead();
     bool result = m_occManager.IsReadOnly(this);
@@ -1375,7 +1376,6 @@ RC TxnManager::Commit(){
                 usleep(100);
             } 
             MOTAdaptor::IncLocalTxnCounters(index_pack);//此处得控制一下，发送出去的事务必须执行，由于调度导致在isRemoteExeced后加，出现问题
-            MOTAdaptor::IncRecordCommitTxnCounters(index_pack);
             MOTAdaptor::IncLocalTxnExcCounters(index_pack);
         }
         else{

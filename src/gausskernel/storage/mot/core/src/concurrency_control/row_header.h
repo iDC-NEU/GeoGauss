@@ -362,6 +362,7 @@ public:
     }
 
     bool ValidateReadI(TransactionId tid, uint32_t server_id) const;
+    bool ValidateReadForSnap(TransactionId tid, uint64_t start_epoch, uint32_t server_id) const;
 private:
     volatile uint64_t commitEpoch = 0;//ADDBY NEU
     volatile uint64_t startEpoch = 0;

@@ -673,31 +673,73 @@ bool OccTransactionManager::ValidateAndSetWriteSetII(TxnManager *txMan, uint32_t
     std::string table_name, key, key_temp, csn_temp, csn_result;
     uint64_t currentCSN;
     MOT::Key* key_ptr;
+    MOT::Row* row;
     currentCSN = txMan->GetCommitSequenceNumber();
     csn_temp = std::to_string(currentCSN) + ":" + std::to_string(server_id);
+/**
+ * 对于多种不同类型事务的并发情况在这里进行说明：
+ * del ins并发：有当前行，则在del commit后才能执行ins，由于主键冲突导致无法建立索引直接abort insert事务；没有当前行，则del无法找到当前行直到ins commit
+ * del wd并发：两者跨epoch的并发执行成功
+ * ins ins并发：并发成功
+ * del del并发：
+ * */
     for (const auto &raPair : orderedSet){
         const Access *ac = raPair.second;
         if (ac->m_type == RD){
             continue;
         }
-        else if(ac->m_type == INS) {
+        else if(ac->m_type == INS) { //已经生成了localInsertRow 问题在于先后插入，先插入的已经完成后将dirty置为true
+            if(ac->m_localInsertRow->GetTable() == nullptr){
+                // MOT_LOG_INFO("ac->m_localInsertRow->GetTable() nullptr local isnert");
+                result = false;
+                continue;
+            }
             table_name = ac->m_localInsertRow->GetTable()->GetLongTableName();
             key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan);
             key = key_ptr->GetKeyStr();
+            if (ac->m_localInsertRow->GetTable()->FindRow(key_ptr, row, 0) == RC::RC_OK) {//insert 并发 查看输出结果
+                // MOT_LOG_INFO("ac->m_localInsertRow->GetTable()->FindRow(key,localRow, 0) == RC::RC_OK local isnert");
+                // if (ac->m_origSentinel->IsDirty() == false) {
+                //     MOT_LOG_INFO("ac->m_localInsertRow->GetTable()->FindRow() == RC::RC_OK 已经插入同一行数据 ?? ");
+                //     result = false;
+                // }
+                result = false;
+            }
             key_temp = table_name + key;
             if(!MOTAdaptor::insertSetForCommit.insert(key_temp, csn_temp, &csn_result)){
                 result = false;
             }
             MOTAdaptor::abort_transcation_csn_set.insert(csn_result, csn_result);
-            MOT::MemSessionFree(key_ptr);
+            MOT::MemSessionFree(key_ptr);   
         }
         else{ // update or delete
+            if (ac->m_localRow->GetTable() == nullptr){
+                // MOT_LOG_INFO("ac->m_localInsertRow->GetTable() nullptr local isnert");
+                result = false;
+                continue;
+            }
+            // table_name = ac->m_localInsertRow->GetTable()->GetLongTableName();
+            // key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan);
+            // key = key_ptr->GetKeyStr();
+            // if (ac->m_localRow->GetTable()->FindRow(key_ptr, row, 0) != RC_ok){
+            //     result = false;
+            //     continue;
+            // }
+            //与table->FindRow() 等效
+            if (ac->m_origSentinel == nullptr || ac->m_origSentinel->IsDirty()) {
+                // if(ac->m_origSentinel == nullptr) MOT_LOG_INFO("ac->m_origSentinel 为空 查找失败");
+                // MOT_LOG_INFO("ac->m_origSentinel->IsDirty() 已经被删除 update or delete失败");
+                result = false;
+                continue;
+            }
             if(!ac->GetRowFromHeader()->m_rowHeader.ValidateAndSetWriteForCommit(txMan->GetCommitSequenceNumber(), txMan->GetStartEpoch(), txMan->GetCommitEpoch(), server_id)){
                 result = false;
             }
         }
     }
-    if(result == false) MOTAdaptor::abort_transcation_csn_set.insert(csn_temp, csn_temp);
+    if(result == false){
+        MOTAdaptor::abort_transcation_csn_set.insert(csn_temp, csn_temp);
+    } 
     return result;
 }
 

@@ -11346,11 +11346,11 @@ void GenerateEpochThreads(){
         ereport(LOG, (errmsg("EpochCommitThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochCommitPIDS[i])));
     }
 
-    for (int i = 0 ; i < (int)kRecordCommitThreadNum ; i++){
-        g_instance.pid_cxt.EpochRecordCommitPIDS[i] = initialize_util_thread(EPOCH_RECORD_COMMIT); 
-        epoch_record_commit_thread_ids.push_back(g_instance.pid_cxt.EpochRecordCommitPIDS[i]);
-        ereport(LOG, (errmsg("EpochRecordCommitThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochRecordCommitPIDS[i])));
-    }
+    // for (int i = 0 ; i < (int)kRecordCommitThreadNum ; i++){
+    //     g_instance.pid_cxt.EpochRecordCommitPIDS[i] = initialize_util_thread(EPOCH_RECORD_COMMIT); 
+    //     epoch_record_commit_thread_ids.push_back(g_instance.pid_cxt.EpochRecordCommitPIDS[i]);
+    //     ereport(LOG, (errmsg("EpochRecordCommitThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochRecordCommitPIDS[i])));
+    // }
 
 
 }
@@ -11465,14 +11465,14 @@ void CkeckEpochThreadsI(){
             }
         }
 
-    if (g_instance.pid_cxt.EpochRecordCommitPIDS != NULL) 
-        for (int i = 0 ; i < (int)kRecordCommitThreadNum ; i++){
-            if (g_instance.pid_cxt.EpochRecordCommitPIDS[i] == 0 && pmState == PM_RUN){
-                g_instance.pid_cxt.EpochRecordCommitPIDS[i] = initialize_util_thread(EPOCH_RECORD_COMMIT); 
-                epoch_record_commit_thread_ids[i] = g_instance.pid_cxt.EpochRecordCommitPIDS[i];
-                ereport(LOG, (errmsg("EpochRecordCommitThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochRecordCommitPIDS[i])));
-            }
-        }
+    // if (g_instance.pid_cxt.EpochRecordCommitPIDS != NULL) 
+    //     for (int i = 0 ; i < (int)kRecordCommitThreadNum ; i++){
+    //         if (g_instance.pid_cxt.EpochRecordCommitPIDS[i] == 0 && pmState == PM_RUN){
+    //             g_instance.pid_cxt.EpochRecordCommitPIDS[i] = initialize_util_thread(EPOCH_RECORD_COMMIT); 
+    //             epoch_record_commit_thread_ids[i] = g_instance.pid_cxt.EpochRecordCommitPIDS[i];
+    //             ereport(LOG, (errmsg("EpochRecordCommitThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochRecordCommitPIDS[i])));
+    //         }
+    //     }
 
 
 }

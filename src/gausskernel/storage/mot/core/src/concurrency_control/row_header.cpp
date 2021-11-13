@@ -109,6 +109,15 @@ bool RowHeader::ValidateReadI(TransactionId tid, uint32_t server_id) const
     return true;
 }
 
+bool RowHeader::ValidateReadForSnap(TransactionId tid, uint64_t start_epoch, uint32_t server_id) const
+{
+    if (IsStableLocked() or (start_epoch < GetStableCommitEpoch()) or (tid != GetStableCSN()) or (server_id != GetStableServerId())) {
+        return false;
+    }
+    return true;
+}
+
+
 void RowHeader::WriteChangesToRow(const Access* access, uint64_t csn)
 {
     Row* row = access->GetRowFromHeader();
