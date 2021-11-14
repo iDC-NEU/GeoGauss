@@ -209,6 +209,7 @@ public:
     
     bool IsReadOnly(TxnManager * txMan);
     bool ValidateReadInMerge(TxnManager * txMan, uint32_t server_id);
+    bool ValidateReadInMergeForSnap(TxnManager * txMan, uint32_t server_id);
     void recoverRowHeader(TxnManager * txMax, uint32_t server_id);
     bool ValidateAndSetWriteSet(TxnManager *txMan, uint32_t server_id);
     bool ValidateAndSetWriteSetII(TxnManager *txMan, uint32_t server_id);

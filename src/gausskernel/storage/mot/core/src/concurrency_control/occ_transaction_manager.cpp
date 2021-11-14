@@ -598,6 +598,28 @@ bool OccTransactionManager::ValidateReadInMerge(TxnManager * txMan, uint32_t ser
     }
     return result;
 }
+bool OccTransactionManager::ValidateReadInMergeForSnap(TxnManager * txMan, uint32_t server_id){
+    auto start_epoch = txMan->GetStartEpoch();
+    auto commit_epoch = txMan->GetCommitEpoch();
+    // if(commit_epoch == start_epoch) return true;
+    
+    TxnOrderedSet_t &orderedSet = txMan->m_accessMgr->GetOrderedRowSet();
+    bool result = true;
+    for (const auto &raPair : orderedSet)
+    {
+        const Access *ac = raPair.second;
+        if (ac->m_type == RD)
+        {
+            // if (!ac->GetRowFromHeader()->m_rowHeader.ValidateRead(ac->m_cts))
+            if (!ac->GetRowFromHeader()->m_rowHeader.ValidateReadForSnap(ac->m_cts, start_epoch, ac->m_server_id))
+            {
+                return false;
+            }
+        }
+    }
+    return result;
+}
+
 
 
 void OccTransactionManager::recoverRowHeader(TxnManager * txMan, uint32_t server_id){

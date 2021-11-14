@@ -2833,12 +2833,24 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
         start_merge_time = now_to_us();
         while(static_cast<uint64_t>(local_change_set_ptrs.load_change_set(epoch_mod) / MOD_NUM) 
             != MOTAdaptor::GetLocalTxnExcCounters()){
+            // cnt ++;
+            // if(cnt % 1000 == 0){
+            //     MOT_LOG_INFO("当前epoch所有事务正在进入 %llu, %llu %llu %llu", static_cast<uint64_t>(local_change_set_ptrs.load_change_set(epoch_mod) / MOD_NUM) , 
+            // MOTAdaptor::GetLocalTxnExcCounters(), MOTAdaptor::GetLocalTxnCounters(), now_to_us());
+            // }
             usleep(20);
         }
         while(message_cache_pack_num[epoch_mod]->load() != kReceiveMessageNum) usleep(20);
         remote_merged_txn_num = message_cache_txn_num[epoch_mod]->load();
         while(MOTAdaptor::GetRemoteMergedTxnCounters() != remote_merged_txn_num) usleep(20);
-        while(!MOTAdaptor::IsLocalTxnCountersExcEqualZero()) usleep(20);
+        while(!MOTAdaptor::IsLocalTxnCountersExcEqualZero()){
+            // cnt ++;
+            // if(cnt % 1000 == 0){
+            //     MOT_LOG_INFO("当前epoch所有事务正在merge %llu, %llu %llu", static_cast<uint64_t>(local_change_set_ptrs.load_change_set(epoch_mod) / MOD_NUM) , 
+            // MOTAdaptor::GetLocalTxnCounters(), now_to_us());
+            // }
+            usleep(20);
+        } 
 
         // ======= Merge结束 开始Commit ============   
         MOTAdaptor::SetRecordCommitted(false);

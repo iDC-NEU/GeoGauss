@@ -1381,21 +1381,32 @@ RC TxnManager::Commit(){
         else{
             begin:
             while(MOTAdaptor::GetPhysicalEpoch() != MOTAdaptor::GetLogicalEpoch() ||  !MOTAdaptor::IsRecordCommitted()) usleep(100);
-
-            if(MOTAdaptor::IncLocalTxnCounters(index_pack) % static_cast<uint64_t>(1e10) == 0 && MOTAdaptor::IsRemoteExeced()){
+            uint64_t cnt = MOTAdaptor::IncLocalTxnCounters(index_pack);
+            if(cnt % static_cast<uint64_t>(1e10) == 0 && cnt != 0){
                 //如果此时isRemoteExeced 为true 表明先前IncLocalTxnCounter无效 事务不应该继续运行  （单机问题，多主情况下由于网络延迟，不会产生此类问题）
+                MOTAdaptor::DecLocalTxnCounters(index_pack);//merge已进行到提交阶段,当前事务停止继续运行，阻塞到下一个epoch
+                goto begin;
+            }
+            if(MOTAdaptor::IsRemoteExeced()){
                 MOTAdaptor::DecLocalTxnCounters(index_pack);//merge已进行到提交阶段,当前事务停止继续运行，阻塞到下一个epoch
                 goto begin;
             }
             SetCommitEpoch(MOTAdaptor::GetLogicalEpoch());
             if(!MOTAdaptor::IncLocalChangeSetNum(GetCommitEpoch(), index_pack)){//未成功增加发送集合计数器
+                MOTAdaptor::DecLocalTxnCounters(index_pack);
                 goto begin;
             }
             MOTAdaptor::IncLocalTxnExcCounters(index_pack);
             SetCommitSequenceNumber(now_to_us());
             do{
                 //隔离级别不同：
-                if(is_read_repeatable){
+                if(is_snap_isolation){
+                    if(!m_occManager.ValidateReadInMergeForSnap(this, local_ip_index)){
+                        rc = RC_ABORT;
+                        break;
+                    }
+                }
+                else if(is_read_repeatable){
                     if(!m_occManager.ValidateReadInMerge(this, local_ip_index)){
                         rc = RC_ABORT;
                         break;
