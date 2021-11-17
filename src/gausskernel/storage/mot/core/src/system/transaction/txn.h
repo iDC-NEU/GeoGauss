@@ -593,6 +593,14 @@ public:
     {
         return startEpoch;
     }
+    void SetStartLogicalEpoch(uint64_t start_logical_epoch)//ADDBY NEU
+    {
+        startLogicalEpoch = start_logical_epoch;
+    }
+    uint64_t GetStartLogicalEpoch()//ADDBY NEU
+    {
+        return startLogicalEpoch;
+    }
     void SetCommitEpoch(uint64_t commit_epoch) {
         CommitEpoch = commit_epoch;
     }
@@ -605,6 +613,8 @@ public:
     bool GetStartInMerge(){//ADDBY NEU
         return startInMerge;
     }
+    
+    Key* GetTxnKey(MOT::Index* index, void* buf);
 
 private:
 
@@ -612,7 +622,7 @@ private:
     /** @var timestamp for start and commit of the transaction. */
     // uint64_t startts;//ADDBY NEU
     // uint64_t committs;
-    uint64_t startEpoch;
+    uint64_t startEpoch, startLogicalEpoch;
     uint64_t CommitEpoch;
     bool startInMerge;
     uint64_t startTime;

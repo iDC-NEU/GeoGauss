@@ -1084,7 +1084,7 @@ public:
     void SerializeRedo(char* dataOut);
 
     //ADDBY NEU
-    Key* BuildKeyByRow(Row* row, TxnManager* txn);
+    Key* BuildKeyByRow(Row* row, TxnManager* txn, void* buf);
 };
 
 /** @typedef internal table identifier. */

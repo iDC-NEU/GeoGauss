@@ -578,10 +578,7 @@ void OccTransactionManager::CleanUp()
 //ADDBY NEU
 
 bool OccTransactionManager::ValidateReadInMerge(TxnManager * txMan, uint32_t server_id){
-    auto start_epoch = txMan->GetStartEpoch();
-    auto commit_epoch = txMan->GetCommitEpoch();
-    if(commit_epoch == start_epoch) return true;
-    
+    if(txMan->GetStartLogicalEpoch() == MOTAdaptor::GetLogicalEpoch()) return true;
     TxnOrderedSet_t &orderedSet = txMan->m_accessMgr->GetOrderedRowSet();
     bool result = true;
     for (const auto &raPair : orderedSet)
@@ -599,10 +596,8 @@ bool OccTransactionManager::ValidateReadInMerge(TxnManager * txMan, uint32_t ser
     return result;
 }
 bool OccTransactionManager::ValidateReadInMergeForSnap(TxnManager * txMan, uint32_t server_id){
-    auto start_epoch = txMan->GetStartEpoch();
-    auto commit_epoch = txMan->GetCommitEpoch();
-    // if(commit_epoch == start_epoch) return true;
-    
+    auto start_logical_epoch = txMan->GetStartLogicalEpoch(); 
+    if(start_logical_epoch == MOTAdaptor::GetLogicalEpoch()) return true;
     TxnOrderedSet_t &orderedSet = txMan->m_accessMgr->GetOrderedRowSet();
     bool result = true;
     for (const auto &raPair : orderedSet)
@@ -611,7 +606,7 @@ bool OccTransactionManager::ValidateReadInMergeForSnap(TxnManager * txMan, uint3
         if (ac->m_type == RD)
         {
             // if (!ac->GetRowFromHeader()->m_rowHeader.ValidateRead(ac->m_cts))
-            if (!ac->GetRowFromHeader()->m_rowHeader.ValidateReadForSnap(ac->m_cts, start_epoch, ac->m_server_id))
+            if (!ac->GetRowFromHeader()->m_rowHeader.ValidateReadForSnap(ac->m_cts, start_logical_epoch, ac->m_server_id))
             {
                 return false;
             }
@@ -628,6 +623,7 @@ void OccTransactionManager::recoverRowHeader(TxnManager * txMan, uint32_t server
     uint64_t currentCSN;
     MOT::Key* key_ptr;
     MOT::Row* row;
+    void* buf;
     currentCSN = txMan->GetCommitSequenceNumber();
     csn_temp = std::to_string(currentCSN) + ":" + std::to_string(server_id);
     for (const auto &raPair : orderedSet){
@@ -637,11 +633,11 @@ void OccTransactionManager::recoverRowHeader(TxnManager * txMan, uint32_t server
         }
         if(ac->m_type == INS){
             table_name = ac->m_localInsertRow->GetTable()->GetLongTableName();
-            key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan);
+            key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan, buf);
             key = key_ptr->GetKeyStr();
             key_temp = table_name + key;
             MOTAdaptor::insertSet.remove(key_temp, csn_temp);
-            MOT::MemSessionFree(key_ptr);
+            // MOT::MemSessionFree(buf);
             continue;
         }
         if (!ac->GetRowFromHeader()->m_rowHeader.GetCSN() != txMan->GetCommitSequenceNumber()){
@@ -660,6 +656,7 @@ bool OccTransactionManager::ValidateAndSetWriteSet(TxnManager *txMan, uint32_t s
     std::string table_name, key, key_temp, csn_temp, csn_result;
     uint64_t currentCSN;
     MOT::Key* key_ptr;
+    void* buf; 
     currentCSN = txMan->GetCommitSequenceNumber();
     csn_temp = std::to_string(currentCSN) + ":" + std::to_string(server_id);
     for (const auto &raPair : orderedSet){
@@ -669,14 +666,14 @@ bool OccTransactionManager::ValidateAndSetWriteSet(TxnManager *txMan, uint32_t s
         }
         else if(ac->m_type == INS) {
             table_name = ac->m_localInsertRow->GetTable()->GetLongTableName();
-            key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan);
+            key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan, buf);
             key = key_ptr->GetKeyStr();
             key_temp = table_name + key;
             if(!MOTAdaptor::insertSet.insert(key_temp, csn_temp, &csn_result)){
                 result = false;
             }
             MOTAdaptor::abort_transcation_csn_set.insert(csn_result, csn_result);
-            MOT::MemSessionFree(key_ptr);
+            // MOT::MemSessionFree(buf);
         }
         else{
             if(!ac->GetRowFromHeader()->m_rowHeader.ValidateAndSetWrite(txMan->GetCommitSequenceNumber(), txMan->GetStartEpoch(), txMan->GetCommitEpoch(), server_id))
@@ -696,15 +693,9 @@ bool OccTransactionManager::ValidateAndSetWriteSetII(TxnManager *txMan, uint32_t
     uint64_t currentCSN;
     MOT::Key* key_ptr;
     MOT::Row* row;
+    void* buf; 
     currentCSN = txMan->GetCommitSequenceNumber();
     csn_temp = std::to_string(currentCSN) + ":" + std::to_string(server_id);
-/**
- * 对于多种不同类型事务的并发情况在这里进行说明：
- * del ins并发：有当前行，则在del commit后才能执行ins，由于主键冲突导致无法建立索引直接abort insert事务；没有当前行，则del无法找到当前行直到ins commit
- * del wd并发：两者跨epoch的并发执行成功
- * ins ins并发：并发成功
- * del del并发：
- * */
     for (const auto &raPair : orderedSet){
         const Access *ac = raPair.second;
         if (ac->m_type == RD){
@@ -712,19 +703,14 @@ bool OccTransactionManager::ValidateAndSetWriteSetII(TxnManager *txMan, uint32_t
         }
         else if(ac->m_type == INS) { //已经生成了localInsertRow 问题在于先后插入，先插入的已经完成后将dirty置为true
             if(ac->m_localInsertRow->GetTable() == nullptr){
-                // MOT_LOG_INFO("ac->m_localInsertRow->GetTable() nullptr local isnert");
                 result = false;
                 continue;
             }
             table_name = ac->m_localInsertRow->GetTable()->GetLongTableName();
-            key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan);
+
+            key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan, buf);
             key = key_ptr->GetKeyStr();
-            if (ac->m_localInsertRow->GetTable()->FindRow(key_ptr, row, 0) == RC::RC_OK) {//insert 并发 查看输出结果
-                // MOT_LOG_INFO("ac->m_localInsertRow->GetTable()->FindRow(key,localRow, 0) == RC::RC_OK local isnert");
-                // if (ac->m_origSentinel->IsDirty() == false) {
-                //     MOT_LOG_INFO("ac->m_localInsertRow->GetTable()->FindRow() == RC::RC_OK 已经插入同一行数据 ?? ");
-                //     result = false;
-                // }
+            if (ac->m_localInsertRow->GetTable()->FindRow(key_ptr, row, 0) == RC::RC_OK) {
                 result = false;
             }
             key_temp = table_name + key;
@@ -732,25 +718,14 @@ bool OccTransactionManager::ValidateAndSetWriteSetII(TxnManager *txMan, uint32_t
                 result = false;
             }
             MOTAdaptor::abort_transcation_csn_set.insert(csn_result, csn_result);
-            MOT::MemSessionFree(key_ptr);   
+            // MOT::MemSessionFree(buf);   
         }
         else{ // update or delete
             if (ac->m_localRow->GetTable() == nullptr){
-                // MOT_LOG_INFO("ac->m_localInsertRow->GetTable() nullptr local isnert");
                 result = false;
                 continue;
             }
-            // table_name = ac->m_localInsertRow->GetTable()->GetLongTableName();
-            // key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan);
-            // key = key_ptr->GetKeyStr();
-            // if (ac->m_localRow->GetTable()->FindRow(key_ptr, row, 0) != RC_ok){
-            //     result = false;
-            //     continue;
-            // }
-            //与table->FindRow() 等效
             if (ac->m_origSentinel == nullptr || ac->m_origSentinel->IsDirty()) {
-                // if(ac->m_origSentinel == nullptr) MOT_LOG_INFO("ac->m_origSentinel 为空 查找失败");
-                // MOT_LOG_INFO("ac->m_origSentinel->IsDirty() 已经被删除 update or delete失败");
                 result = false;
                 continue;
             }
@@ -768,6 +743,7 @@ bool OccTransactionManager::ValidateAndSetWriteSetII(TxnManager *txMan, uint32_t
 bool OccTransactionManager::ValidateWriteSetII(TxnManager *txMan, uint32_t server_id){
     std::string table_name, key, key_temp, csn_temp;
     MOT::Key* key_ptr;
+    void* buf;
     csn_temp = std::to_string(txMan->GetCommitSequenceNumber())+ ":" + std::to_string(server_id);
     TxnOrderedSet_t &orderedSet = txMan->m_accessMgr->GetOrderedRowSet();
     for (const auto &raPair : orderedSet)
@@ -778,19 +754,9 @@ bool OccTransactionManager::ValidateWriteSetII(TxnManager *txMan, uint32_t serve
         }
         else if(ac->m_type == INS){
             table_name = ac->m_localInsertRow->GetTable()->GetLongTableName();
-            key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan);
+            key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan, buf);
             key_temp = table_name + key_ptr->GetKeyStr();
-            MOT::MemSessionFree(key_ptr);
-            /// 由于该阶段一般为只读操作，所以暂时没有加锁
-            // auto search = MOTAdaptor::insertSet.unsafe_find(key_temp);
-            // if (search != MOTAdaptor::insertSet.unsafe_end()) {
-            //     // compare insert csn
-            //     if(search->second != csn_temp){
-            //         return false;
-            //     }
-            // } else {
-            //     return false;
-            // }
+            // MOT::MemSessionFree(buf);
             if(MOTAdaptor::insertSet.contain(key_temp, csn_temp) == false){
                 return false;
             }
@@ -808,6 +774,7 @@ bool OccTransactionManager::ValidateWriteSetII(TxnManager *txMan, uint32_t serve
 bool OccTransactionManager::ValidateWriteSetIIForCommit(TxnManager *txMan, uint32_t server_id){
     std::string table_name, key, key_temp, csn_temp;
     MOT::Key* key_ptr;
+    void* buf;
     csn_temp = std::to_string(txMan->GetCommitSequenceNumber())+ ":" + std::to_string(server_id);
     TxnOrderedSet_t &orderedSet = txMan->m_accessMgr->GetOrderedRowSet();
     for (const auto &raPair : orderedSet)
@@ -818,19 +785,9 @@ bool OccTransactionManager::ValidateWriteSetIIForCommit(TxnManager *txMan, uint3
         }
         else if(ac->m_type == INS){
             table_name = ac->m_localInsertRow->GetTable()->GetLongTableName();
-            key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan);
+            key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan, buf);
             key_temp = table_name + key_ptr->GetKeyStr();
-            MOT::MemSessionFree(key_ptr);
-            /// 由于该阶段一般为只读操作，所以暂时没有加锁
-            // auto search = MOTAdaptor::insertSetForCommit.unsafe_find(key_temp);
-            // if (search != MOTAdaptor::insertSetForCommit.unsafe_end()) {
-            //     // compare insert csn
-            //     if(search->second != csn_temp){
-            //         return false;
-            //     }
-            // } else {
-            //     return false;
-            // }
+            // MOT::MemSessionFree(buf);
             if(MOTAdaptor::insertSetForCommit.contain(key_temp, csn_temp) == false){
                 return false;
             }

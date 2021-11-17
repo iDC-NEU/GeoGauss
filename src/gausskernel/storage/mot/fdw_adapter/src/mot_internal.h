@@ -676,8 +676,7 @@ public:
         record_commit_txn_counters, record_committed_txn_counters;
     static std::vector<std::unique_ptr<std::atomic<uint64_t>>> remote_merged_txn_counters, remote_commit_txn_counters, 
         remote_committed_txn_counters;
-
-    static std::map<uint64_t, std::unique_ptr<std::vector<void*>>> remote_key_map;
+    static std::map<uint64_t, std::unique_ptr<std::vector<MOT::Row*>>> remote_row_ptr_map;
     static aum::concurrent_unordered_map<std::string, std::string, std::string> insertSet;
     static aum::concurrent_unordered_map<std::string, std::string, std::string> insertSetForCommit;
     static aum::concurrent_unordered_map<std::string, std::string, std::string> abort_transcation_csn_set;
@@ -788,7 +787,7 @@ public:
             remote_commit_txn_counters[i]->store(0);
             remote_committed_txn_counters[i]->store(0);
         }
-        remote_key_map.clear();
+        remote_row_ptr_map.clear();
         insertSet.clear();
         insertSetForCommit.clear();
         abort_transcation_csn_set.clear();
@@ -796,7 +795,7 @@ public:
         ++ logical_epoch;
     }
     
-    static void* InsertRowToMergeRequestTxn(MOT::TxnManager* txMan, const uint64_t& index_pack, const uint64_t& index_unique);
+    static bool InsertRowToMergeRequestTxn(MOT::TxnManager* txMan, const uint64_t& index_pack, const uint64_t& index_unique);
     static bool IncLocalChangeSetNum(uint64_t epoch, uint64_t &index_pack);
     static bool InsertRowToSet(MOT::TxnManager* txMan, void* txn_void, const uint64_t& index_pack, const uint64_t& index_unique);
     static bool InsertTxnIntoRecordCommitQueue(MOT::TxnManager* txMan, void* txn_void, MOT::RC &rc);

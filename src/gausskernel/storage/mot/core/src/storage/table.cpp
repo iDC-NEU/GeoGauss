@@ -1273,12 +1273,12 @@ void Table::SerializeRedo(char* dataOut)
 
 
 //ADDBY NEU//创建Key
-Key* Table::BuildKeyByRow(Row* row, TxnManager* txn)
+Key* Table::BuildKeyByRow(Row* row, TxnManager* txn, void* buf)
 {
     MOT::Key* key = nullptr;
     // MOT_LOG_INFO("构造自己的key");
     MOT::Index* ix = GetPrimaryIndex();
-    key = txn->GetTxnKey(ix);
+    key = txn->GetTxnKey(ix, buf);
     if(key == nullptr){
         Assert(false);
     }
