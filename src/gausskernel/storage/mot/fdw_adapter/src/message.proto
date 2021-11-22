@@ -15,14 +15,11 @@ message MergeRequest {
       repeated Column column = 4;
       bytes data = 5;
     }
-    uint64 TxnID = 1;
     repeated Row row = 2;
     uint64 StartEpoch = 3;
     uint64 CommitEpoch = 4;
     uint64 CSN = 5;
     uint64 server_id = 6;
-    bool type = 7;//区分普通事务和结尾事务
-    uint64 pack_epoch = 8;//在哪个epoch打包 delete
   }
   repeated Transaction Txn = 1;
   uint64 server_id = 2;

@@ -2535,18 +2535,18 @@ bool MOTAdaptor::InsertRowToMergeRequestTxn(MOT::TxnManager* txMan, const uint64
         // MOT::MemSessionFree((void*)key);
         row->set_tablename(local_row->GetTable()->GetLongTableName());
         if (op_type == 0) {
-            row->set_data(local_row->GetData(), local_row->GetTable()->GetTupleSize());
+            // row->set_data(local_row->GetData(), local_row->GetTable()->GetTupleSize());
 
-            // fieldCnt = local_row->GetTable()->GetFieldCount();
-            // bmp = const_cast<MOT::BitmapSet*>(&(access->m_modifiedColumns));
-            // for (uint16_t field_i = 0; field_i < fieldCnt - 1 ; field_i ++) { 
-            //     if (bmp->GetBit(field_i)) { //真正的列有一个单位的偏移量，这是经过试验得出的结论 
-            //         int real_field = field_i + 1;
-            //         col = row->add_column(); 
-            //         col->set_id(real_field); 
-            //         col->set_value(local_row->GetValue(real_field),local_row->GetTable()->GetFieldSize(real_field));
-            //     }
-            // }
+            fieldCnt = local_row->GetTable()->GetFieldCount();
+            bmp = const_cast<MOT::BitmapSet*>(&(access->m_modifiedColumns));
+            for (uint16_t field_i = 0; field_i < fieldCnt - 1 ; field_i ++) { 
+                if (bmp->GetBit(field_i)) { //真正的列有一个单位的偏移量，这是经过试验得出的结论 
+                    int real_field = field_i + 1;
+                    col = row->add_column(); 
+                    col->set_id(real_field); 
+                    col->set_value(local_row->GetValue(real_field),local_row->GetTable()->GetFieldSize(real_field));
+                }
+            }
         }
         else if (op_type == 1) {
             row->set_data(local_row->GetData(), local_row->GetTable()->GetTupleSize());
@@ -3140,12 +3140,12 @@ void EpochCommitThreadMain(uint64_t id){//validate
                     if(op_type == 2)
                         localRow->GetPrimarySentinel()->SetDirty();
                     else{
-                        localRow->CopyData((uint8_t*)row.data().c_str(),table->GetTupleSize());
+                        // localRow->CopyData((uint8_t*)row.data().c_str(),table->GetTupleSize());
 
-                        // for (int k=0; k < row.column_size(); k++){
-                        //     const auto &col = row.column(k);
-                        //     localRow->SetValueVariable_1(col.id(),col.value().c_str(),col.value().length());
-                        // }
+                        for (int k=0; k < row.column_size(); k++){
+                            const auto &col = row.column(k);
+                            localRow->SetValueVariable_1(col.id(),col.value().c_str(),col.value().length());
+                        }
                     }
                 }
                 else{
@@ -3405,7 +3405,11 @@ void MOTAdaptor::Commit(MOT::TxnManager* txMan, uint64_t& index_pack){
                         if(op_type == 2)
                             localRow->GetPrimarySentinel()->SetDirty();
                         else{
-                            localRow->CopyData((uint8_t*)row.data().c_str(),table->GetTupleSize());
+                            // localRow->CopyData((uint8_t*)row.data().c_str(),table->GetTupleSize());
+                            for (int k=0; k < row.column_size(); k++){
+                                const auto &col = row.column(k);
+                                localRow->SetValueVariable_1(col.id(),col.value().c_str(),col.value().length());
+                            }
                         }
                     }else{
                         new_row = table->CreateNewRow();

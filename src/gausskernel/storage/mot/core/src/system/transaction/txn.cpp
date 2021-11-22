@@ -1303,7 +1303,7 @@ void TxnManager::CommitInternalII()
     // first write to redo log, then write changes
     
     //不写log
-    //m_redoLog.Commit();
+    m_redoLog.Commit();
     m_occManager.WriteChanges(this);
     
     if (GetGlobalConfiguration().m_enableCheckpoint) {
@@ -1330,7 +1330,7 @@ void TxnManager::CommitForRemote()
     // MOT_LOG_INFO("m_occManager.IsReadOnly(this) %u", m_occManager.IsReadOnly(this));
     // 对远端事务的update无法进行统计 未添加进入txnmanager中
     // CommitInternalII();
-    //m_redoLog.Commit();
+    m_redoLog.Commit();
     m_occManager.WriteChanges(this);
 
     if (GetGlobalConfiguration().m_enableCheckpoint) {
@@ -1401,14 +1401,14 @@ RC TxnManager::Commit(){
         MOTAdaptor::DecExeCounters(index_pack);
 
         if (rc != RC_ABORT){    
-            // while(!MOTAdaptor::isRemoteExeced()) usleep(100);
-            MOTAdaptor::Merge(this, index_pack);
+            while(!MOTAdaptor::IsRemoteExeced()) usleep(100);
+            // MOTAdaptor::Merge(this, index_pack);
             auto csn_temp = std::to_string(GetCommitSequenceNumber()) + ":" + std::to_string(local_ip_index);
             if(MOTAdaptor::abort_transcation_csn_set.contain(csn_temp, csn_temp)){
                 rc = RC_ABORT;
             }
             // rc = m_occManager.CommitCheck(this, local_ip_index);
-            MOTAdaptor::Commit(this, index_pack);
+            // MOTAdaptor::Commit(this, index_pack);
         }
         if(rc == RC_OK)
             MOTAdaptor::IncRecordCommitTxnCounters(index_pack);
