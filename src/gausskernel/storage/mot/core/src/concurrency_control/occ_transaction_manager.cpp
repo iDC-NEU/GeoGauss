@@ -691,9 +691,7 @@ bool OccTransactionManager::ValidateAndSetWriteSetII(TxnManager *txMan, uint32_t
     bool result = true;
     std::string table_name, key, key_temp, csn_temp, csn_result;
     uint64_t currentCSN;
-    MOT::Key* key_ptr;
     MOT::Row* row;
-    void* buf; 
     currentCSN = txMan->GetCommitSequenceNumber();
     csn_temp = std::to_string(currentCSN) + ":" + std::to_string(server_id);
     for (const auto &raPair : orderedSet){
@@ -707,8 +705,8 @@ bool OccTransactionManager::ValidateAndSetWriteSetII(TxnManager *txMan, uint32_t
                 continue;
             }
             table_name = ac->m_localInsertRow->GetTable()->GetLongTableName();
-
-            key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan, buf);
+            void* buf;
+            MOT::Key* key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan, buf);
             key = key_ptr->GetKeyStr();
             if (ac->m_localInsertRow->GetTable()->FindRow(key_ptr, row, 0) == RC::RC_OK) {
                 result = false;
@@ -742,8 +740,6 @@ bool OccTransactionManager::ValidateAndSetWriteSetII(TxnManager *txMan, uint32_t
 
 bool OccTransactionManager::ValidateWriteSetII(TxnManager *txMan, uint32_t server_id){
     std::string table_name, key, key_temp, csn_temp;
-    MOT::Key* key_ptr;
-    void* buf;
     csn_temp = std::to_string(txMan->GetCommitSequenceNumber())+ ":" + std::to_string(server_id);
     TxnOrderedSet_t &orderedSet = txMan->m_accessMgr->GetOrderedRowSet();
     for (const auto &raPair : orderedSet)
@@ -754,7 +750,8 @@ bool OccTransactionManager::ValidateWriteSetII(TxnManager *txMan, uint32_t serve
         }
         else if(ac->m_type == INS){
             table_name = ac->m_localInsertRow->GetTable()->GetLongTableName();
-            key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan, buf);
+            void* buf;
+            MOT::Key* key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan, buf);
             key_temp = table_name + key_ptr->GetKeyStr();
             // MOT::MemSessionFree(buf);
             if(MOTAdaptor::insertSet.contain(key_temp, csn_temp) == false){

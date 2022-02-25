@@ -2302,8 +2302,7 @@ public:
             local_change_set_txn_ptrs[i]->resize(_pack_num + 5);
             local_change_set_txn_num_ptrs[i]->resize(_pack_num + 5);
             for(int j = 0; j <= _pack_num; j++){
-                (*local_change_set_txn_ptrs[i])[j] = std::make_shared<BlockingConcurrentQueue<std::string*>>(
-                    kMergeThreadNum * moodycamel::BlockingConcurrentQueue<std::string*>::BLOCK_SIZE);
+                (*local_change_set_txn_ptrs[i])[j] = std::make_shared<BlockingConcurrentQueue<std::string*>>();
                 (*local_change_set_txn_num_ptrs[i])[j] = std::make_shared<std::atomic<uint64_t>>(0);
             }
         }
@@ -2379,11 +2378,13 @@ BlockingConcurrentQueue<std::unique_ptr<zmq::message_t>> message_send_pool;
 BlockingConcurrentQueue<std::unique_ptr<zmq::message_t>> message_receive_pool;
 BlockingConcurrentQueue<std::unique_ptr<pack_thread_params>> pack_pool;//存放每个epoch的任务队列
 std::vector<std::unique_ptr<BlockingConcurrentQueue<std::unique_ptr<send_thread_params>>>> send_pools;//存放需要发送的txn
+// std::vector<std::unique_ptr<BlockingMPMCQueue<std::unique_ptr<send_thread_params>>>> send_pools;//存放需要发送的txn
 BlockingConcurrentQueue<std::unique_ptr<zmq::message_t>> listen_message_queue;
 BlockingConcurrentQueue<std::unique_ptr<merge::MergeRequest_Transaction>> cache_queue_txn;
 BlockingConcurrentQueue<std::unique_ptr<merge::MergeRequest_Transaction>> merge_txn_queue;
 BlockingConcurrentQueue<std::unique_ptr<merge::MergeRequest_Transaction>> commit_txn_queue;
 BlockingConcurrentQueue<std::unique_ptr<commit_thread_params>> commit_txn_queue_struct;
+// BlockingMPMCQueue<std::unique_ptr<commit_thread_params>> commit_txn_queue_struct;
 BlockingConcurrentQueue<std::unique_ptr<merge::MergeRequest_Transaction>> record_commit_queue;//取出有序 epoch
 
 void SetCPU(); 
@@ -2590,14 +2591,15 @@ void InitEpochTimerManager(){
     local_change_set_ptrs.init(kPackageNum, max_length);
     max_length = kCacheMaxLength;
     message_cache = std::make_unique<std::vector<std::unique_ptr<BlockingConcurrentQueue<std::unique_ptr<merge::MergeRequest_Transaction>>>>>();
-    message_cache->reserve(max_length +1);
-    message_cache_txn_num.reserve(max_length +1);
-    message_cache_pack_num.reserve(max_length +1);
+    message_cache->reserve(max_length + 1);
+    message_cache_txn_num.reserve(max_length + 1);
+    message_cache_pack_num.reserve(max_length + 1);
+    receive_cache_txn_num.reserve(max_length + 1);
     for(int i = 0; i <= static_cast<int>(max_length); i ++){
-        (*message_cache).emplace_back(std::make_unique<BlockingConcurrentQueue<std::unique_ptr<merge::MergeRequest_Transaction>>>(
-            kMergeThreadNum * moodycamel::BlockingConcurrentQueue<std::unique_ptr<merge::MergeRequest_Transaction>>::BLOCK_SIZE));
+        (*message_cache).emplace_back(std::make_unique<BlockingConcurrentQueue<std::unique_ptr<merge::MergeRequest_Transaction>>>());
         message_cache_txn_num.emplace_back(std::make_unique<std::atomic<uint64_t>>(0));
         message_cache_pack_num.emplace_back(std::make_unique<std::atomic<uint64_t>>(0));
+        receive_cache_txn_num.emplace_back(std::make_unique<std::atomic<uint64_t>>(0));
     }
     //==========Logical=============
     for(int i = 0; i <= (int)kPackageNum; i++){
@@ -2613,6 +2615,7 @@ void InitEpochTimerManager(){
     //==========Physical============创建监听和发送本地write_set线程池和监听队列
     for(int i = 0; i <= (int)kSendThreadNum; i++){
         send_pools.push_back(std::move(std::make_unique<BlockingConcurrentQueue<std::unique_ptr<send_thread_params>>>()));
+        // send_pools.push_back(std::move(std::make_unique<BlockingMPMCQueue<std::unique_ptr<send_thread_params>>>()));
     }
     GenerateSendTasks(kPackageNum);
     MOTAdaptor::AddPhysicalEpoch();
@@ -2645,8 +2648,7 @@ void GenerateSendTasks(uint64_t kPackageNum){
     auto ptr2 = std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
     ptr2->resize(kPackageNum + 5);
     for(int i = 0; i <= (int)kPackageNum; i++){
-        (*ptr1)[i] = std::make_shared<BlockingConcurrentQueue<std::string*>>(kMergeThreadNum * 
-            moodycamel::BlockingConcurrentQueue<std::string*>::BLOCK_SIZE);
+        (*ptr1)[i] = std::make_shared<BlockingConcurrentQueue<std::string*>>();
         (*ptr2)[i] = std::make_shared<std::atomic<uint64_t>>(0);
     }
     auto num = MOTAdaptor::GetPhysicalEpoch() + 1;
@@ -2735,8 +2737,14 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
         remote_merged_txn_num = message_cache_txn_num[epoch_mod]->load();
         while(MOTAdaptor::GetRemoteMergedTxnCounters() != remote_merged_txn_num) {
             cnt++;
+            auto ptr = std::make_unique<merge::MergeRequest_Transaction>();
+            ptr->set_startepoch(0);
+            ptr->set_txnid(0);
+            ptr->set_commitepoch(0);
+            ptr->set_csn(0);
+            ((*message_cache)[epoch_mod])->enqueue(std::move(ptr));
             if(cnt % 1000 == 0){
-                MOT_LOG_INFO("等待远端事务完成 %llu, %llu %llu", MOTAdaptor::GetRemoteMergedTxnCounters(), 
+                MOT_LOG_INFO("等待远端事务完成 %llu %llu %llu, %llu %llu", MOTAdaptor::GetLogicalEpoch(), receive_cache_txn_num[epoch_mod]->load() , MOTAdaptor::GetRemoteMergedTxnCounters(), 
                     remote_merged_txn_num, now_to_us());
             }
             usleep(20);
@@ -2752,11 +2760,25 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
         current_local_txn_num = static_cast<uint64_t>(MOTAdaptor::GetLocalTxnCounters());
         remote_commit_txn_num = MOTAdaptor::GetRemoteCommitTxnCounters();
         auto startCommit = now_to_us();
-        MOT_LOG_INFO("==进行一个Epoch的合并 当前logic epoch：%llu 远端事务 mergedtxn %llu, CommitTxn %llu 本地事务ComCounter %llu %llu", 
+        MOT_LOG_INFO("==进行一个Epoch的合并 当前logic epoch：%llu current_local_txn_num %llu, remote_merged_txn_num %llu remote_commit_txn_num %llu %llu", 
             MOTAdaptor::GetLogicalEpoch(), current_local_txn_num, remote_merged_txn_num, 
             remote_commit_txn_num, now_to_us());
         
-        while(MOTAdaptor::GetRemoteCommittedTxnCounters() != remote_commit_txn_num) usleep(20);
+        while(MOTAdaptor::GetRemoteCommittedTxnCounters() != remote_commit_txn_num) {
+            cnt++;
+            auto ptr = std::make_unique<merge::MergeRequest_Transaction>();
+            auto row_vector_ptr = std::make_unique<std::vector<MOT::Row*>>();
+            ptr->set_startepoch(0);
+            ptr->set_txnid(0);
+            ptr->set_commitepoch(0);
+            ptr->set_csn(0);
+            commit_txn_queue_struct.enqueue(std::move(std::make_unique<commit_thread_params>(std::move(ptr), std::move(row_vector_ptr))));
+            if(cnt % 1000 == 0){
+                MOT_LOG_INFO("==进行一个Epoch的合并 当前logic epoch：%llu current_local_txn_num %llu, remote_merged_txn_num %llu remote_commit_txn_num %llu remote_committed_txn_num %llu %llu", 
+                    MOTAdaptor::GetLogicalEpoch(), current_local_txn_num, remote_merged_txn_num, remote_commit_txn_num, MOTAdaptor::GetRemoteCommittedTxnCounters(), now_to_us());
+            }
+            usleep(20);
+        }
         MOTAdaptor::SetRemoteRecordCommitted(true);
         while(!MOTAdaptor::IsLocalTxnCountersComEqualZero()) usleep(20);
         
@@ -2764,6 +2786,7 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
         //远端事务已经写完，不写完无法开始下一个logical epoch
         message_cache_txn_num[epoch_mod]->store(0);
         message_cache_pack_num[epoch_mod]->store(0);
+        receive_cache_txn_num[epoch_mod]->store(0);
         epoch ++;
         epoch_mod = epoch % max_length;
         MOTAdaptor::LogicalEndEpoch();
@@ -2848,9 +2871,11 @@ void EpochPackThreadMain(uint64_t id){
                 local_change_set_txn_ptr_temp = params->local_change_set_txn_ptr_temp;
                 local_change_set_txn_num_ptr_temp = params->local_change_set_txn_num_ptr_temp;
                 auto start_pack = now_to_us();
+                cout_count = 0;
                 while(true){
                     for(pack_index = 0; pack_index < kPackageNum; pack_index++){
                         while((*local_change_set_txn_ptr_temp)[pack_index]->try_dequeue(txn)){
+                            if((*txn) == "1") continue;
                             if(!send_pools[send_index]->enqueue(
                                 std::move(std::make_unique<send_thread_params>(current_epoch, 0, txn))) ) 
                                     Assert(false);
@@ -2867,6 +2892,15 @@ void EpochPackThreadMain(uint64_t id){
                             cnt += (*local_change_set_txn_num_ptr_temp)[pack_index]->load();
                         }
                         if(cnt % MOD_NUM == 0) break;
+                        for(int i = 0; i < kPackageNum; i++){
+                            auto ptr = new std::string("1");
+                            (*local_change_set_txn_ptr_temp)[pack_index]->enqueue(ptr);
+                        }
+                        if(cout_count % 100000 == 0){
+                            MOT_LOG_INFO("MergeRequest == 第%llu个Pack线程, 第%llu个package, epoch:%llu 共%d个事务 batch:%llu",
+                                id, send_index, current_epoch, tot, cnt);
+                        }
+                        cout_count ++;
                     }
                 }
                 txn_end->set_commitepoch(current_epoch);
@@ -2906,12 +2940,13 @@ void EpochSendThreadMain(uint64_t id){
     MOT_LOG_INFO("线程开始工作 break; Sned  %llu %s", id, 
         (kServerIp[local_ip_index] + ":"+ std::to_string(20000 + local_ip_index * 100)).c_str());
     while(true){
-        while(send_pools[id]->try_dequeue(params)){
+        send_pools[id]->wait_dequeue(params);
+        // while(send_pools[id]->wait_dequeue(params)){
             msg = std::make_unique<zmq::message_t>(static_cast<void*>(const_cast<char*>(params->merge_request_ptr->data())),
                     params->merge_request_ptr->size(), string_free, static_cast<void*>(params->merge_request_ptr));
             socket_send.send(*(msg));
-        }
-        usleep(50);
+        // }
+        // usleep(50);
     }
 }
 
@@ -2961,6 +2996,10 @@ void EpochListenThreadMain(uint64_t id){//任务多是接收需要进行内存co
     for(;;) {
         std::unique_ptr<zmq::message_t> message_ptr = std::make_unique<zmq::message_t>();
         socket_listen.recv(&(*message_ptr));
+        auto txn_ptr = std::make_unique<merge::MergeRequest_Transaction>();
+        auto message_string_ptr = std::make_unique<std::string>(static_cast<const char*>(message_ptr->data()), message_ptr->size());
+        txn_ptr->ParseFromString(*message_string_ptr);
+        receive_cache_txn_num[txn_ptr->commitepoch() % max_length]->fetch_add(1);
         if(!listen_message_queue.enqueue(std::move(message_ptr))) assert(false);
     }
 }
@@ -2980,7 +3019,7 @@ void EpochMergeThreadMain(uint64_t id){
     bool result, sleep_flag = false, is_current_epoch_txn;
     MOT::SessionContext* session_context = MOT::GetSessionManager()->
         CreateSessionContext(IS_PGXC_COORDINATOR, 0, nullptr, INVALID_CONNECTION_ID);
-    MOT::TxnManager* txn_manager = session_context->GetTxnManager();
+    // MOT::TxnManager* txn_manager = session_context->GetTxnManager();
     MOT::Table* table = nullptr;
     MOT::Row* localRow = nullptr;
     MOT::Key* key;
@@ -2994,7 +3033,7 @@ void EpochMergeThreadMain(uint64_t id){
     uint64_t message_epoch_id = 0, csn = 0, index_pack = id % kPackageNum;
     uint32_t op_type = 0;
     uint32_t server_id = 0;
-    int KeyLength;
+    int KeyLength, cnt = 0;
     void* buf;
     while(!init_ok.load()) usleep(100);
     for(;;){
@@ -3009,8 +3048,8 @@ void EpochMergeThreadMain(uint64_t id){
                 if((MOTAdaptor::GetLogicalEpoch() % max_length) ==  ((message_epoch_id + 5) % max_length) ) assert(false);
                 message_cache_txn_num[message_epoch_id % max_length]->fetch_add(txn_ptr->csn());
                 message_cache_pack_num[message_epoch_id % max_length]->fetch_add(1);
-                MOT_LOG_INFO("收到一个pack server: %llu, epoch: %llu, pack num %llu, txn num: %llu, message cache max: %llu, min: %llu %llu", 
-                    txn_ptr->server_id(), message_epoch_id, message_cache_pack_num[message_epoch_id % max_length]->load(),
+                MOT_LOG_INFO("收到一个pack server: %llu, epoch: %llu, receive num %llu, pack num %llu, txn num: %llu, message cache max: %llu, min: %llu %llu", 
+                    txn_ptr->server_id(), message_epoch_id, receive_cache_txn_num[message_epoch_id % max_length]->load(),  message_cache_pack_num[message_epoch_id % max_length]->load(),
                     message_cache_txn_num[message_epoch_id % max_length]->load(), maximum_epoch_id, minimum_epoch_id, now_to_us());
             }
             else{
@@ -3027,6 +3066,9 @@ void EpochMergeThreadMain(uint64_t id){
         if(is_current_epoch_txn || 
             ((*message_cache)[MOTAdaptor::GetLogicalEpoch() % max_length])->try_dequeue(txn_ptr)){
             result = true;
+            if(txn_ptr->csn() == 0 && txn_ptr->commitepoch() == 0 && txn_ptr->startepoch() == 0 && txn_ptr->txnid() == 0) {
+                continue;
+            }
             csn = txn_ptr->csn();
             server_id = txn_ptr->server_id();
             csn_temp = std::to_string(csn) + ":" + std::to_string(server_id);
@@ -3085,6 +3127,12 @@ void EpochMergeThreadMain(uint64_t id){
                 }
             }
             MOTAdaptor::IncRemoteMergedTxnCounters(index_pack);
+            // if(cnt ++ == 2){
+            //     cnt = 0;
+                MOT::GetSessionManager()->DestroySessionContext(session_context);
+                session_context = MOT::GetSessionManager()->
+                    CreateSessionContext(IS_PGXC_COORDINATOR, 0, nullptr, INVALID_CONNECTION_ID);
+            // }
             continue;
         }
         if(sleep_flag) usleep(100);
@@ -3106,7 +3154,7 @@ void EpochCommitThreadMain(uint64_t id){//validate
     uint64_t csn = 0, index_pack = id % kPackageNum;
     uint32_t op_type = 0;
     uint32_t server_id = 0;
-    int KeyLength;
+    int KeyLength, cnt = 0;
     void* buf;
     for(;;){
         // commit_txn_queue.wait_dequeue(txn_ptr);
@@ -3114,14 +3162,18 @@ void EpochCommitThreadMain(uint64_t id){//validate
         while(!MOTAdaptor::IsRemoteExeced()) usleep(100);
         txn_ptr = std::move(params->txn);
         row_vector_ptr = std::move(params->row_vector);
+        if(txn_ptr->csn() == 0 && txn_ptr->commitepoch() == 0 && txn_ptr->startepoch() == 0 && txn_ptr->txnid() == 0) {
+            continue;
+        }
         csn = txn_ptr->csn();
         server_id = txn_ptr->server_id();
         csn_temp = std::to_string(csn) + ":" + std::to_string(server_id);
         if(!MOTAdaptor::abort_transcation_csn_set.contain(csn_temp, csn_temp)){
-            if(session_context == nullptr){
+            // if(session_context == nullptr){
+                MOT::GetSessionManager()->DestroySessionContext(session_context);
                 session_context = MOT::GetSessionManager()->CreateSessionContext(IS_PGXC_COORDINATOR, 0, nullptr, INVALID_CONNECTION_ID);
                 txn_manager = session_context->GetTxnManager();
-            }
+            // }
             MOTAdaptor::IncRecordCommitTxnCounters(index_pack);
             txn_manager->CleanTxn();
             for(int j = 0; j < txn_ptr->row_size(); j++){
@@ -3163,6 +3215,11 @@ void EpochCommitThreadMain(uint64_t id){//validate
             MOTAdaptor::IncRecordCommittedTxnCounters(index_pack);
         }
         MOTAdaptor::IncRemoteCommittedTxnCounters(index_pack);
+        // if(cnt ++ == 2){
+        //     cnt = 0;
+        //     MOT::GetSessionManager()->DestroySessionContext(session_context);
+        //     session_context = nullptr;
+        // }
     }
 }
 

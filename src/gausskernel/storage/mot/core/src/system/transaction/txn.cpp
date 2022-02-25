@@ -1394,12 +1394,13 @@ RC TxnManager::Commit(){
         while(GetCommitEpoch() > MOTAdaptor::GetLogicalEpoch() || !MOTAdaptor::IsRecordCommitted()){
             usleep(100);
         } 
+
         MOTAdaptor::IncLocalTxnCounters(index_pack);//此处得控制一下，发送出去的事务必须执行，由于调度导致在isRemoteExeced后加，出现问题
         MOTAdaptor::IncLocalTxnExcCounters(index_pack);
         // rc = m_occManager.ExecutionPhase(this, local_ip_index);
         rc = m_occManager.CommitPhase(this, local_ip_index);//此时该事务需要发送出去，验证失败只需减少本地事务计数器。
         MOTAdaptor::DecExeCounters(index_pack);
-
+        
         if (rc != RC_ABORT){    
             while(!MOTAdaptor::IsRemoteExeced()) usleep(100);
             // MOTAdaptor::Merge(this, index_pack);
