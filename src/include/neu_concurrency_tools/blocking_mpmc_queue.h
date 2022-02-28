@@ -11,7 +11,7 @@
 template <typename T>
 class BlockingMPMCQueue {
 public:
-    explicit BlockingMPMCQueue(size_t size = 10000): queue(size) {}
+    explicit BlockingMPMCQueue(size_t size = 100000): queue(size) {}
 
     template <typename P, typename = typename std::enable_if<std::is_nothrow_constructible<T, P &&>::value>::type>
     inline bool try_pop(P &&v) noexcept {

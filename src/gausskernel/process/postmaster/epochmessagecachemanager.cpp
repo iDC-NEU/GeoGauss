@@ -207,8 +207,8 @@ void EpochMessageCacheManagerMain(void)
         }
         id++;
     }
-    if(id < (uint64_t)epoch_cache_thread_ids.size())
-        ereport(LOG, (errmsg("epoch cache pid %llu %llu %lu", id, epoch_cache_thread_ids[id], thread_id)));
+    // if(id < (uint64_t)epoch_cache_thread_ids.size())
+    //     ereport(LOG, (errmsg("epoch cache pid %llu %llu %lu", id, epoch_cache_thread_ids[id], thread_id)));
     for (;;) {
         pgstat_report_activity(STATE_RUNNING, NULL);
 

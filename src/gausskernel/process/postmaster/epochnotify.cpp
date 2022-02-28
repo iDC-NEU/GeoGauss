@@ -208,8 +208,8 @@ void EpochNotifyMain(void)
         }
         id++;
     }
-    if(id < (uint64_t)epoch_notify_thread_ids.size())
-        ereport(LOG, (errmsg("epoch notify pid %llu %llu %lu", id, epoch_notify_thread_ids[id], thread_id)));
+    // if(id < (uint64_t)epoch_notify_thread_ids.size())
+    //     ereport(LOG, (errmsg("epoch notify pid %llu %llu %lu", id, epoch_notify_thread_ids[id], thread_id)));
     for (;;) {
         pgstat_report_activity(STATE_RUNNING, NULL);
 

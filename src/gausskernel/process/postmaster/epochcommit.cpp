@@ -210,8 +210,8 @@ void EpochCommitMain(void)
         }
         id++;
     }
-    if(id < (uint64_t)epoch_commit_thread_ids.size())
-        ereport(LOG, (errmsg("epoch commit pid %llu %llu %lu", id, epoch_commit_thread_ids[id], thread_id)));
+    // if(id < (uint64_t)epoch_commit_thread_ids.size())
+    //     ereport(LOG, (errmsg("epoch commit pid %llu %llu %lu", id, epoch_commit_thread_ids[id], thread_id)));
     for (;;) {
         
         pgstat_report_activity(STATE_RUNNING, NULL);

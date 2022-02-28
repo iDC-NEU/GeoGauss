@@ -206,10 +206,10 @@ void EpochLogicalTimerManagerMain(void)
         }
         id++;
     }
-    if(id < (uint64_t)epoch_logical_thread_ids.size())
-        ereport(LOG, (errmsg("epoch logical pid %llu %llu %llu", id, epoch_logical_thread_ids[id], thread_id)));
-    else
-        ereport(LOG, (errmsg("epoch logical pid %llu %llu %lu", id, epoch_logical_thread_ids[0], thread_id)));
+    // if(id < (uint64_t)epoch_logical_thread_ids.size())
+    //     ereport(LOG, (errmsg("epoch logical pid %llu %llu %llu", id, epoch_logical_thread_ids[id], thread_id)));
+    // else
+    //     ereport(LOG, (errmsg("epoch logical pid %llu %llu %lu", id, epoch_logical_thread_ids[0], thread_id)));
     for (;;) {
         pgstat_report_activity(STATE_RUNNING, NULL);
 
