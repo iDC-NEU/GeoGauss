@@ -84,7 +84,7 @@
 #include "redo_log_handler_type.h"
 #include "ext_config_loader.h"
 #include "utilities.h"
-
+#include "utils/timestamp.h"
 // allow MOT Engine logging facilities
 DECLARE_LOGGER(ExternalWrapper, FDW);
 
@@ -994,6 +994,7 @@ static TupleTableSlot* IterateForeignScanStopAtFirst(
  */
 static TupleTableSlot* MOTIterateForeignScan(ForeignScanState* node)
 {
+    TryRecordTimestamp(1, startExec);//ADDBY NEU HW
     MOT::RC rc = MOT::RC_OK;
     if (node->ss.is_scan_end) {
         return nullptr;
@@ -1604,7 +1605,9 @@ static void MOTXactCallback(XactEvent event, void* arg)
         elog(DEBUG2, "XACT_EVENT_COMMIT, tid %lu", tid);
 
         rc = MOTAdaptor::ValidateCommit();//Commit();
+        TryRecordTimestamp(3, finishCommit);//ADDBY NEU HW
         if (rc != MOT::RC_OK) {
+            u_sess->storage_cxt.execPhase = 0; /* 提交失败，不计入 ADDBY NEU*/
             elog(DEBUG2, "commit failed");
             elog(DEBUG2, "Abort parent transaction from MOT commit, tid %lu", tid);
             MemoryEreportError();
@@ -1631,7 +1634,7 @@ static void MOTXactCallback(XactEvent event, void* arg)
             // auto epoch = txn->GetCommitEpoch();
             // if(!txn->isOnlyRead()){
             //     while(!epoch < MOTAdaptor::local_change_set_ptr1_current_epoch) usleep(100); 
-                //远端事务提交未完成，本地事务写完后等待。//ADDBY NEU
+                //远端事务提交未完成，本地事务写完后等待。
             // }
         }
     } else if (event == XACT_EVENT_END_TRANSACTION) {
@@ -1647,7 +1650,7 @@ static void MOTXactCallback(XactEvent event, void* arg)
         //     uint64_t index_pack = thread_id % kPackageNum;
         //     // MOTAdaptor::DecComCounter(index_pack);
         //     // while(!epoch < MOTAdaptor::local_change_set_ptr1_current_epoch) usleep(100); 
-        //     //远端事务提交未完成，本地事务写完后等待。//ADDBY NEU
+        //     //远端事务提交未完成，本地事务写完后等待。
         // }
     } else if (event == XACT_EVENT_PREPARE) {
         elog(DEBUG2, "XACT_EVENT_PREPARE, tid %lu", tid);
@@ -2408,7 +2411,7 @@ void FDWEpochMessageCacheManagerThreadMain(uint64_t id){
     EpochMessageCacheManagerThreadMain(id);
 }
 void FDWEpochMessageManagerThreadMain(uint64_t id){
-    
+    EpochMessageManagerThreadMain(id);
 }
 
 void FDWEpochNotifyThreadMain(uint64_t id){

@@ -634,10 +634,11 @@ void OccTransactionManager::recoverRowHeader(TxnManager * txMan, uint32_t server
         if(ac->m_type == INS){
             table_name = ac->m_localInsertRow->GetTable()->GetLongTableName();
             key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan, buf);
+            if(key_ptr == nullptr) assert(false);
             key = key_ptr->GetKeyStr();
             key_temp = table_name + key;
             MOTAdaptor::insertSet.remove(key_temp, csn_temp);
-            // MOT::MemSessionFree(buf);
+            MOT::MemSessionFree(buf);
             continue;
         }
         if (!ac->GetRowFromHeader()->m_rowHeader.GetCSN() != txMan->GetCommitSequenceNumber()){
@@ -667,6 +668,7 @@ bool OccTransactionManager::ValidateAndSetWriteSet(TxnManager *txMan, uint32_t s
         else if(ac->m_type == INS) {
             table_name = ac->m_localInsertRow->GetTable()->GetLongTableName();
             key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan, buf);
+            if(key_ptr == nullptr) assert(false);
             key = key_ptr->GetKeyStr();
             key_temp = table_name + key;
             if(!MOTAdaptor::insertSet.insert(key_temp, csn_temp, &csn_result)){
@@ -674,6 +676,7 @@ bool OccTransactionManager::ValidateAndSetWriteSet(TxnManager *txMan, uint32_t s
             }
             MOTAdaptor::abort_transcation_csn_set.insert(csn_result, csn_result);
             // MOT::MemSessionFree(buf);
+            // delete buf;
         }
         else{
             if(!ac->GetRowFromHeader()->m_rowHeader.ValidateAndSetWrite(txMan->GetCommitSequenceNumber(), txMan->GetStartEpoch(), txMan->GetCommitEpoch(), server_id))
@@ -707,8 +710,11 @@ bool OccTransactionManager::ValidateAndSetWriteSetII(TxnManager *txMan, uint32_t
             table_name = ac->m_localInsertRow->GetTable()->GetLongTableName();
             void* buf;
             MOT::Key* key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan, buf);
+            // MOT::Key* key_ptr = txMan->GetTxnKey(ac->m_localInsertRow->GetTable()->GetPrimaryIndex());
+            if(key_ptr == nullptr) assert(false);
             key = key_ptr->GetKeyStr();
-            if (ac->m_localInsertRow->GetTable()->FindRow(key_ptr, row, 0) == RC::RC_OK) {
+            row = ac->GetSentinel()->GetData();
+            if (!(row == nullptr || row->IsAbsentRow())) {
                 result = false;
             }
             key_temp = table_name + key;
@@ -752,6 +758,9 @@ bool OccTransactionManager::ValidateWriteSetII(TxnManager *txMan, uint32_t serve
             table_name = ac->m_localInsertRow->GetTable()->GetLongTableName();
             void* buf;
             MOT::Key* key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan, buf);
+            if(key_ptr == nullptr) assert(false);
+            // MOT::Key* key_ptr = txMan->GetTxnKey(ac->m_localInsertRow->GetTable()->GetPrimaryIndex());
+            key = key_ptr->GetKeyStr();
             key_temp = table_name + key_ptr->GetKeyStr();
             // MOT::MemSessionFree(buf);
             if(MOTAdaptor::insertSet.contain(key_temp, csn_temp) == false){
@@ -783,6 +792,7 @@ bool OccTransactionManager::ValidateWriteSetIIForCommit(TxnManager *txMan, uint3
         else if(ac->m_type == INS){
             table_name = ac->m_localInsertRow->GetTable()->GetLongTableName();
             key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan, buf);
+            if(key_ptr == nullptr) assert(false);
             key_temp = table_name + key_ptr->GetKeyStr();
             // MOT::MemSessionFree(buf);
             if(MOTAdaptor::insertSetForCommit.contain(key_temp, csn_temp) == false){

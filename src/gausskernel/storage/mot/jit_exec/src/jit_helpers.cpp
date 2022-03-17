@@ -38,7 +38,7 @@
 #include "mot_internal.h"
 #include "utilities.h"
 #include <unordered_set>
-
+#include "utils/timestamp.h"
 typedef std::unordered_set<int64_t> DistinctIntSetType;
 typedef std::unordered_set<double> DistinctDoubleSetType;
 
@@ -841,6 +841,7 @@ int isScanEnd(MOT::Index* index, MOT::IndexIterator* itr, MOT::IndexIterator* en
 MOT::Row* getRowFromIterator(
     MOT::Index* index, MOT::IndexIterator* itr, MOT::IndexIterator* end_itr, int access_mode, int forward_scan)
 {
+    TryRecordTimestamp(1, startExec);//ADDBY NEU HW
     MOT::Row* row = NULL;
     MOT::RC rc = MOT::RC_OK;
 

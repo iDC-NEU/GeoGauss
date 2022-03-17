@@ -57,7 +57,7 @@
 #include "workload/workload.h"
 #include "parser/scanner.h"
 #include "pgstat.h"
-
+#include "utils/timestamp.h"
 THR_LOCAL knl_session_context* u_sess;
 
 extern pg_enc2name pg_enc2name_tbl[];
@@ -838,6 +838,11 @@ static void knl_u_storage_init(knl_u_storage_context* storage_cxt)
     storage_cxt->num_bufs_in_block = 0;
     storage_cxt->total_bufs_allocated = 0;
     storage_cxt->LocalBufferContext = NULL;
+
+    //ADDBY NEU HW
+    storage_cxt->execPhase = 0;
+    storage_cxt->startQuery = storage_cxt->startExec = 0;
+    storage_cxt->startCommit = storage_cxt->finishCommit = storage_cxt->finishQuery = 0;
 }
 
 static void knl_u_libpq_init(knl_u_libpq_context* libpq_cxt)

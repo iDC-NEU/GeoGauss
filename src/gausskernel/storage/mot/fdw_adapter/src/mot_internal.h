@@ -666,7 +666,7 @@ private:
     
     static bool timerStop;
     //ADDBY NUE Concurrency
-    static volatile bool remote_execed, record_committed, remote_record_committed;
+    static volatile bool remote_execed, record_committed, remote_record_committed, is_current_epoch_abort;
     static volatile uint64_t logical_epoch;
     static volatile uint64_t physical_epoch;
 
@@ -693,6 +693,9 @@ public:
     
     static bool IsRemoteRecordCommitted(){ return remote_record_committed;}
     static void SetRemoteRecordCommitted(bool value){ remote_record_committed = value;}
+
+    static bool IsCurrentEpochAbort(){ return is_current_epoch_abort;}
+    static void SetCurrentEpochAbort(bool value){ is_current_epoch_abort = value;}
     
     static void SetPhysicalEpoch(int value){ physical_epoch = value;}
     static uint64_t AddPhysicalEpoch(){ return ++ physical_epoch;}

@@ -7724,6 +7724,8 @@ int PostgresMain(int argc, char* argv[], const char* dbname, const char* usernam
         /* update our elapsed time statistics. */
         timeInfoRecordStart();
 
+        TryRecordTimestamp(0, startQuery);//ADDBY NEU HW
+
         /* stmt retry routine phase : pack input_message */
         if (IsStmtRetryEnabled()) {
 #ifdef USE_ASSERT_CHECKING

@@ -575,29 +575,29 @@ public:
 
 public:
     void CommitInternalII();//ADDBY NEU
-    bool isOnlyRead();//ADDBY NEU
-    void CommitForRemote();//ADDBY NEU
-    RC ValidateOcc();//ADDBY NEU
-    bool localMergeValidate(uint64_t csn);//ADDBY NEU
+    bool isOnlyRead();
+    void CommitForRemote();
+    RC ValidateOcc();
+    bool localMergeValidate(uint64_t csn);
 
-    inline void SetFailedCommitPrepared(bool value)//ADDBY NEU
+    inline void SetFailedCommitPrepared(bool value)
     {
         m_failedCommitPrepared = value;
     }
 
-    void SetStartEpoch(uint64_t start_epoch)//ADDBY NEU
+    void SetStartEpoch(uint64_t start_epoch)
     {
         startEpoch = start_epoch;
     }
-    uint64_t GetStartEpoch()//ADDBY NEU
+    uint64_t GetStartEpoch()
     {
         return startEpoch;
     }
-    void SetStartLogicalEpoch(uint64_t start_logical_epoch)//ADDBY NEU
+    void SetStartLogicalEpoch(uint64_t start_logical_epoch)
     {
         startLogicalEpoch = start_logical_epoch;
     }
-    uint64_t GetStartLogicalEpoch()//ADDBY NEU
+    uint64_t GetStartLogicalEpoch()
     {
         return startLogicalEpoch;
     }
@@ -607,10 +607,10 @@ public:
     uint64_t GetCommitEpoch() {
         return CommitEpoch;
     }
-    void SetStartInMerge(bool inMerge){//ADDBY NEU
+    void SetStartInMerge(bool inMerge){
         startInMerge = inMerge;
     }
-    bool GetStartInMerge(){//ADDBY NEU
+    bool GetStartInMerge(){
         return startInMerge;
     }
     
@@ -620,7 +620,7 @@ private:
 
     bool m_failedCommitPrepared;
     /** @var timestamp for start and commit of the transaction. */
-    // uint64_t startts;//ADDBY NEU
+    // uint64_t startts;
     // uint64_t committs;
     uint64_t startEpoch, startLogicalEpoch;
     uint64_t CommitEpoch;

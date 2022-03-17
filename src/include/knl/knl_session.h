@@ -1527,6 +1527,14 @@ typedef struct knl_u_storage_context {
     int32 dumpHashbucketIdNum;
     int2 *dumpHashbucketIds;
 
+    // 注意：只适用于单条语句的事务 //ADDBY NEU HW
+    int execPhase; // 现在取到了第几个时间，啥也没取是 0，打完日志回到 0
+    TimestampTz startQuery;    // 拿到语句的时候
+    TimestampTz startExec;     // 第一次进入 MOT 内部
+    TimestampTz startCommit;   // 开始提交
+    TimestampTz finishCommit;  // 提交完成
+    TimestampTz finishQuery;   // 完全结束
+
     /* Pointers to shared state */
     // struct BufferStrategyControl* StrategyControl;
     int NLocBuffer; /* until buffers are initialized */
@@ -1542,6 +1550,7 @@ typedef struct knl_u_storage_context {
     MemoryContext LocalBufferContext;
 } knl_u_storage_context;
 
+#define TryRecordTimestamp(phase, type) {if(u_sess->storage_cxt.execPhase == phase) {u_sess->storage_cxt.execPhase = phase+1;u_sess->storage_cxt.type = GetCurrentTimestamp();}}
 
 typedef struct knl_u_libpq_context {
     /*

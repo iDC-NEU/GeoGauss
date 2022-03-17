@@ -42,6 +42,7 @@
 #include "postmaster/postmaster.h"
 #include <cpuid.h>
 #include <sstream>
+#include "utils/timestamp.h"
 namespace MOT {
 DECLARE_LOGGER(TxnManager, System);
 
@@ -80,6 +81,7 @@ Key* TxnManager::GetTxnKey(MOT::Index* index, void* buf)
 {
     int size = index->GetAlignedKeyLength() + sizeof(Key);
     buf = MemSessionAlloc(size);
+    // buf = new(size);
     if (buf == nullptr) {
         return nullptr;
     }
@@ -98,6 +100,7 @@ RC TxnManager::InsertRow(Row* row)
 
 Row* TxnManager::RowLookup(const AccessType type, Sentinel* const& originalSentinel, RC& rc)
 {
+    TryRecordTimestamp(1, startExec);//ADDBY NEU HW
     rc = RC_OK;
     // Look for the Sentinel in the cache
     Row* local_row = nullptr;
@@ -628,6 +631,7 @@ RC TxnManager::RowDel()
 // Not Used with FDW!
 Row* TxnManager::RowLookupByKey(Table* const& table, const AccessType type, Key* const currentKey)
 {
+    TryRecordTimestamp(1, startExec);//ADDBY NEU HW
     RC rc = RC_OK;
     Row* originalRow = nullptr;
     Sentinel* pSentinel = nullptr;
@@ -1259,6 +1263,13 @@ RC TxnManager::DropIndex(MOT::Index* index)
 
 
 
+
+
+
+
+
+
+
 //ADDBY NEU
 bool TxnManager::localMergeValidate(uint64_t csn)
 {
@@ -1275,7 +1286,6 @@ bool TxnManager::localMergeValidate(uint64_t csn)
     }
     return true;
 }
-//ADDBY NEU
 bool TxnManager::isOnlyRead()
 {
     return m_occManager.IsReadOnly(this);
@@ -1297,7 +1307,6 @@ uint64_t GetThreadID(){
     return (uint64_t) std::hash<std::thread::id>{}(std::this_thread::get_id());
 }
 
-//ADDBY NEU
 void TxnManager::CommitInternalII()
 {
     // first write to redo log, then write changes
@@ -1323,7 +1332,6 @@ void TxnManager::CommitInternalII()
     }
 }
 
-//ADDBY NEU
 void TxnManager::CommitForRemote()
 {
     m_occManager.updateInsertSetSize(this);
@@ -1343,11 +1351,7 @@ void TxnManager::CommitForRemote()
     MOT::DbSessionStatisticsProvider::GetInstance().AddCommitTxn();
 }
 
-
-
-
 //txn.cpp
-//ADDBY NEU
 /**
  * @brief Commit
  * 改动：改为先写胜利的情况下，不需要precommit阶段，只保留两个计数器
@@ -1391,9 +1395,10 @@ RC TxnManager::Commit(){
             MOT_LOG_INFO("*=*=*=*=*= InsertRowToMergeRequestTxn txn内存分配失败");
             return RC_ABORT;
         }
+
         while(GetCommitEpoch() > MOTAdaptor::GetLogicalEpoch() || !MOTAdaptor::IsRecordCommitted()){
             usleep(100);
-        } 
+        }
 
         MOTAdaptor::IncLocalTxnCounters(index_pack);//此处得控制一下，发送出去的事务必须执行，由于调度导致在isRemoteExeced后加，出现问题
         MOTAdaptor::IncLocalTxnExcCounters(index_pack);
@@ -1402,7 +1407,9 @@ RC TxnManager::Commit(){
         MOTAdaptor::DecExeCounters(index_pack);
         
         if (rc != RC_ABORT){    
-            while(!MOTAdaptor::IsRemoteExeced()) usleep(100);
+            while(!MOTAdaptor::IsRemoteExeced()) {
+                usleep(100);
+            }
             // MOTAdaptor::Merge(this, index_pack);
             auto csn_temp = std::to_string(GetCommitSequenceNumber()) + ":" + std::to_string(local_ip_index);
             if(MOTAdaptor::abort_transcation_csn_set.contain(csn_temp, csn_temp)){

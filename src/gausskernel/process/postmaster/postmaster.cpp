@@ -245,15 +245,16 @@
 
 #include <string>
 #include<vector>
-std::vector<std::string> kServerIp;
+std::vector<std::string> kServerIp, kCacheServerIp;
 std::vector<uint64_t> port; // ServerNum * PackageNum
 uint64_t kServerNum = 1, kPortNum = 1, kPackageNum = 1, kNotifyNum = 1, kBatchNum = 1, kNotifyThreadNum = 1, kPackThreadNum = 1, kSendThreadNum = 1, 
     kListenThreadNum = 1, kUnseriThreadNum = 1, kUnpackThreadNum = 1, kMergeThreadNum = 1, kCommitThreadNum = 1, kRecordCommitThreadNum = 1, kSendMessageNum = 1, kReceiveMessageNum = 1, 
-    kSleepTime = 1, local_ip_index = 0, kCacheMaxLength = 200000;
+    kSleepTime = 1, local_ip_index = 0, kCacheMaxLength = 200000, kDelayEpochNum = 0;
 std::vector<std::string> send_ips;
 std::vector<uint64_t>send_ports;
 std::string kMasterIp;
-volatile bool is_stable_epoch_send = false, is_epoch_advanced_by_message = true, is_read_repeatable = true, is_snap_isolation = true;
+volatile bool is_stable_epoch_send = false, is_epoch_advanced_by_message = true, is_read_repeatable = true, 
+    is_snap_isolation = true, is_cache_server_available = true;
 
 void GenerateEpochThreads();
 void CkeckEpochThreadsI();
@@ -11282,11 +11283,11 @@ void GenerateEpochThreads(){
     // }
 
     
-    // for (int i = 0 ; i < 1 ; i++){
-    //     g_instance.pid_cxt.EpochMessageManagerPIDS[i] = initialize_util_thread(EPOCH_MESSAGE_MANAGER); 
-    //     epoch_manager_thread_ids.push_back(g_instance.pid_cxt.EpochMessageManagerPIDS[i]);
-    //     ereport(LOG, (errmsg("EpochMessageManagerThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochMessageManagerPIDS[i])));
-    // }
+    for (int i = 0 ; i < 1 ; i++){
+        g_instance.pid_cxt.EpochMessageManagerPIDS[i] = initialize_util_thread(EPOCH_MESSAGE_MANAGER); 
+        epoch_manager_thread_ids.push_back(g_instance.pid_cxt.EpochMessageManagerPIDS[i]);
+        ereport(LOG, (errmsg("EpochMessageManagerThread创建完成第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochMessageManagerPIDS[i])));
+    }
 
     if(kServerNum != 1) {
         for (int i = 0 ; i < (int)kPackThreadNum; i++){
@@ -11386,14 +11387,14 @@ void CkeckEpochThreadsI(){
     //         }
     //     }
 
-    // if (g_instance.pid_cxt.EpochMessageManagerPIDS != NULL) 
-    //     for (int i = 0 ; i < 1 ; i++){
-    //         if (g_instance.pid_cxt.EpochMessageManagerPIDS[i] == 0 && pmState == PM_RUN){
-    //             g_instance.pid_cxt.EpochMessageManagerPIDS[i] = initialize_util_thread(EPOCH_MESSAGE_MANAGER); 
-    //             epoch_manager_thread_ids[i] = g_instance.pid_cxt.EpochMessageManagerPIDS[i];
-    //             ereport(LOG, (errmsg("EpochMessageManagerThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochMessageManagerPIDS[i])));
-    //         }
-    //     }
+    if (g_instance.pid_cxt.EpochMessageManagerPIDS != NULL) 
+        for (int i = 0 ; i < 1 ; i++){
+            if (g_instance.pid_cxt.EpochMessageManagerPIDS[i] == 0 && pmState == PM_RUN){
+                g_instance.pid_cxt.EpochMessageManagerPIDS[i] = initialize_util_thread(EPOCH_MESSAGE_MANAGER); 
+                epoch_manager_thread_ids[i] = g_instance.pid_cxt.EpochMessageManagerPIDS[i];
+                ereport(LOG, (errmsg("EpochMessageManagerThread 第 %d 个重新创建完成 pid %lu",i, g_instance.pid_cxt.EpochMessageManagerPIDS[i])));
+            }
+        }
 
     if(kServerNum != 1) {
 
@@ -11489,20 +11490,35 @@ void GetServerInfo(){
     tinyxml2::XMLElement *root=doc.RootElement();  
     tinyxml2::XMLElement *index_element=root->FirstChildElement("local_remote_ip");  
 	int symbol_local_or_remote=0;
-    while (index_element){  
-        tinyxml2::XMLElement *ip_port=index_element->FirstChildElement();  
-        const char* content;  
+    while (index_element){
+        tinyxml2::XMLElement *ip_port=index_element->FirstChildElement("ip");
+        const char* content;
 
         while(ip_port){
-				
-            content=ip_port->GetText();  
+
+            content=ip_port->GetText();
             std::string temp(content);
             kServerIp.push_back(temp);
-            ip_port=ip_port->NextSiblingElement();     
-                
-        }  
-        index_element=index_element->NextSiblingElement(); 
-		symbol_local_or_remote++; 
+            ip_port=ip_port->NextSiblingElement();
+
+        }
+        index_element=index_element->NextSiblingElement();
+        symbol_local_or_remote++;
+    }
+    index_element=root->FirstChildElement("local_remote_cache_ip");
+    symbol_local_or_remote = 0;
+    while (index_element){
+        tinyxml2::XMLElement *ip_port=index_element->FirstChildElement("cache_ip");
+        const char* content;
+        while(ip_port){
+            content=ip_port->GetText();
+            std::string temp(content);
+            kCacheServerIp.push_back(temp);
+            ip_port=ip_port->NextSiblingElement();
+
+        }
+        index_element=index_element->NextSiblingElement();
+        symbol_local_or_remote++;
     }
 
     tinyxml2::XMLElement* master_ip = root->FirstChildElement("master_ip");
@@ -11528,6 +11544,9 @@ void GetServerInfo(){
     tinyxml2::XMLElement* is_snap_isolation_t = root->FirstChildElement("is_snap_isolation");
     is_snap_isolation = std::stoi(is_snap_isolation_t->GetText()) == 0 ? false : true;
     
+    is_cache_server_available = true;
+    tinyxml2::XMLElement* is_cache_server_available_t = root->FirstChildElement("is_cache_server_available");
+    is_cache_server_available = std::stoi(is_cache_server_available_t->GetText()) == 0 ? false : true;
 
     tinyxml2::XMLElement* local_ip_index_xml = root->FirstChildElement("local_ip_index");
     local_ip_index=std::stoull(local_ip_index_xml->GetText()) ;
@@ -11546,6 +11565,10 @@ void GetServerInfo(){
 
     tinyxml2::XMLElement* notify_thread_num = root->FirstChildElement("notify_thread_num");
     kNotifyThreadNum = std::stoull(notify_thread_num->GetText());
+
+    tinyxml2::XMLElement* delay_epoch_num = root->FirstChildElement("delay_epoch_num");
+    kDelayEpochNum = std::stoull(delay_epoch_num->GetText());
+    
 
     tinyxml2::XMLElement* pack_thread_num = root->FirstChildElement("pack_thread_num");
     kPackThreadNum = std::stoull(pack_thread_num->GetText());

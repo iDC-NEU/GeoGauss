@@ -26,7 +26,7 @@
 #include "tsearch/ts_utils.h"
 #include "pgxc/pgxc.h"
 #include "utils/builtins.h"
-
+#include "utils/timestamp.h"
 #define FILEPATH_PREFIX_LOCAL "file://"
 #define FILEPATH_PREFIX_OBS "obs://"
 

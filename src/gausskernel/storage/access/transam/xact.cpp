@@ -97,6 +97,7 @@
 #include "tsdb/cache/queryid_cachemgr.h"
 #include "tsdb/cache/part_cachemgr.h"
 #include "tsdb/storage/part.h"
+
 #endif   /* ENABLE_MULTIPLE_NODES */
 
 extern void CodeGenThreadTearDown();
@@ -2612,6 +2613,7 @@ void ThreadLocalFlagCleanUp()
  */
 static void CommitTransaction(bool STP_commit)
 {
+    TryRecordTimestamp(2, startCommit); //ADDBY NEU HW
     u_sess->need_report_top_xid = false;
     TransactionState s = CurrentTransactionState;
     TransactionId latestXid;
@@ -3971,7 +3973,8 @@ static void AbortTransaction(bool PerfectRollback, bool STP_rollback)
 
     /* check the current transaction state */
     if (s->state != TRANS_INPROGRESS && s->state != TRANS_PREPARE)
-        ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("AbortTransaction while in %s state", TransStateAsString(s->state))));//ADDBY NEU 注释？？？
+        ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("AbortTransaction while in %s state", 
+            TransStateAsString(s->state))));//ADDBY NEU 注释？？？
 
     Assert((!StreamThreadAmI() && s->parent == NULL) || StreamThreadAmI());
 
@@ -4260,6 +4263,34 @@ void StartTransactionCommand(bool STP_rollback)
     Assert(t_thrd.mem_cxt.cur_transaction_mem_cxt != NULL);
     (void)MemoryContextSwitchTo(t_thrd.mem_cxt.cur_transaction_mem_cxt);
 }
+//ADDBY NEU HW
+static void ReportBreakDown()
+{
+    if (u_sess->storage_cxt.execPhase > 0 && u_sess->storage_cxt.execPhase != 5) {
+        elog(LOG, "zzj: 寄! %d", u_sess->storage_cxt.execPhase);
+    } else if (u_sess->storage_cxt.execPhase == 5) {
+        long secs = 0;
+        int usecs = 0;
+
+        TimestampDifference(u_sess->storage_cxt.startQuery, u_sess->storage_cxt.finishQuery, &secs, &usecs);
+        long long totalCost = 1ll * secs * 1000 * 1000 + usecs;
+
+        TimestampDifference(u_sess->storage_cxt.startQuery, u_sess->storage_cxt.startExec, &secs, &usecs);
+        long long sqlCost = 1ll * secs * 1000 * 1000 + usecs;
+
+        TimestampDifference(u_sess->storage_cxt.startExec, u_sess->storage_cxt.startCommit, &secs, &usecs);
+        long long execCost = 1ll * secs * 1000 * 1000 + usecs;
+
+        TimestampDifference(u_sess->storage_cxt.startCommit, u_sess->storage_cxt.finishCommit, &secs, &usecs);
+        long long commitCost = 1ll * secs * 1000 * 1000 + usecs;
+
+        TimestampDifference(u_sess->storage_cxt.finishCommit, u_sess->storage_cxt.finishQuery, &secs, &usecs);
+        long long xlogAndOtherCost = 1ll * secs * 1000 * 1000 + usecs;
+
+        elog(LOG, "zzj: total %lld(us), sql %lld(us), exec %lld(us), commit %lld(us), xlogAndOther %lld(us)", totalCost, sqlCost, execCost, commitCost, xlogAndOtherCost);
+    }
+    u_sess->storage_cxt.execPhase = 0;
+}
 
 void CommitTransactionCommand(bool STP_commit)
 {
@@ -4283,6 +4314,10 @@ void CommitTransactionCommand(bool STP_commit)
              */
         case TBLOCK_STARTED:
             CommitTransaction(STP_commit);
+            
+            TryRecordTimestamp(4, finishQuery);//ADDBY NEU HW
+            ReportBreakDown();//ADDBY NEU HW
+
             s->blockState = TBLOCK_DEFAULT;
             break;
 
@@ -4306,6 +4341,10 @@ void CommitTransactionCommand(bool STP_commit)
 
             if (STP_commit) {
                 CommitTransaction(STP_commit);
+
+                TryRecordTimestamp(4, finishQuery);//ADDBY NEU HW
+                ReportBreakDown();//ADDBY NEU HW
+
                 s->blockState = TBLOCK_DEFAULT;
             }
             break;
@@ -4438,6 +4477,10 @@ void CommitTransactionCommand(bool STP_commit)
             if (s->blockState == TBLOCK_END) {
                 Assert(s->parent == NULL);
                 CommitTransaction();
+
+                TryRecordTimestamp(4, finishQuery);//ADDBY NEU HW
+                ReportBreakDown();//ADDBY NEU HW
+
                 s->blockState = TBLOCK_DEFAULT;
             } else if (s->blockState == TBLOCK_PREPARE) {
                 Assert(s->parent == NULL);

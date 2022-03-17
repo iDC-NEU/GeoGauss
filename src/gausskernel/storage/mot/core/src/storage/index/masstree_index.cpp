@@ -24,7 +24,7 @@
 
 #include "masstree_index.h"
 #include "mot_engine.h"
-
+#include "utils/timestamp.h"
 namespace MOT {
 typedef MasstreePrimaryIndex::IndexImpl PrimaryMasstree;
 IMPLEMENT_TEMPLATE_LOGGER(PrimaryMasstree, Storage)
@@ -83,6 +83,8 @@ Sentinel* MasstreePrimaryIndex::IndexInsertImpl(const Key* key, Sentinel* sentin
 
 Sentinel* MasstreePrimaryIndex::IndexReadImpl(const Key* key, uint32_t pid) const
 {
+    TryRecordTimestamp(1, startExec);//ADDBY NEU HW
+
     Sentinel* sentinel = nullptr;
     bool result = false;
     void* output = nullptr;
@@ -176,6 +178,7 @@ IndexIterator* MasstreePrimaryIndex::Begin(uint32_t pid, bool passive) const
 IndexIterator* MasstreePrimaryIndex::Search(
     const Key* key, bool matchKey, bool forward, uint32_t pid, bool& found, bool passive) const
 {
+    TryRecordTimestamp(1, startExec); //ADDBY NEU HW
     return Search(reinterpret_cast<char const*>(key->GetKeyBuf()),
         ALIGN8(key->GetKeyLength()),
         matchKey,
