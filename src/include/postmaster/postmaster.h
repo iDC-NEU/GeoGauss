@@ -20,13 +20,15 @@
 #include<vector>
 extern std::vector<std::string> kServerIp, kCacheServerIp;
 extern std::vector<uint64_t> port;
-extern uint64_t kServerNum, kPortNum, kPackageNum, kNotifyNum, kBatchNum, kNotifyThreadNum, kPackThreadNum, kSendThreadNum, 
+extern volatile uint64_t kServerNum;
+extern uint64_t kPortNum, kPackageNum, kNotifyNum, kBatchNum, kNotifyThreadNum, kPackThreadNum, kSendThreadNum, 
     kListenThreadNum, kUnseriThreadNum, kUnpackThreadNum, kMergeThreadNum, kCommitThreadNum, kRecordCommitThreadNum, kSendMessageNum, kReceiveMessageNum, 
-    kSleepTime, local_ip_index, kCacheMaxLength, kDelayEpochNum;
+    kSleepTime, local_ip_index, kCacheMaxLength, kDelayEpochNum, kServerTimeOut_us, kRaftTimeOut_us, kStartCheckStateNum;
 extern std::vector<std::string> send_ips;
 extern std::vector<uint64_t>send_ports;
 extern std::string kMasterIp;
-extern volatile bool is_stable_epoch_send, is_epoch_advanced_by_message, is_read_repeatable, is_snap_isolation, is_cache_server_available;
+extern volatile bool is_stable_epoch_send, is_epoch_advanced_by_message, is_read_repeatable, is_snap_isolation, is_cache_server_available,
+    is_breakdown, is_fault_tolerance_enable;
 
 extern THR_LOCAL bool comm_client_bind;
 

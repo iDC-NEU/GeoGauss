@@ -247,14 +247,16 @@
 #include<vector>
 std::vector<std::string> kServerIp, kCacheServerIp;
 std::vector<uint64_t> port; // ServerNum * PackageNum
-uint64_t kServerNum = 1, kPortNum = 1, kPackageNum = 1, kNotifyNum = 1, kBatchNum = 1, kNotifyThreadNum = 1, kPackThreadNum = 1, kSendThreadNum = 1, 
+volatile uint64_t kServerNum = 1;
+uint64_t kPortNum = 1, kPackageNum = 1, kNotifyNum = 1, kBatchNum = 1, kNotifyThreadNum = 1, kPackThreadNum = 1, kSendThreadNum = 1, 
     kListenThreadNum = 1, kUnseriThreadNum = 1, kUnpackThreadNum = 1, kMergeThreadNum = 1, kCommitThreadNum = 1, kRecordCommitThreadNum = 1, kSendMessageNum = 1, kReceiveMessageNum = 1, 
-    kSleepTime = 1, local_ip_index = 0, kCacheMaxLength = 200000, kDelayEpochNum = 0;
+    kSleepTime = 1, local_ip_index = 0, kCacheMaxLength = 200000, kDelayEpochNum = 0, kServerTimeOut_us = 700000, kRaftTimeOut_us = 500000,
+    kStartCheckStateNum = 1000000;
 std::vector<std::string> send_ips;
 std::vector<uint64_t>send_ports;
 std::string kMasterIp;
-volatile bool is_stable_epoch_send = false, is_epoch_advanced_by_message = true, is_read_repeatable = true, 
-    is_snap_isolation = true, is_cache_server_available = true;
+volatile bool is_stable_epoch_send = false, is_epoch_advanced_by_message = true, is_read_repeatable = true, is_breakdown = true, 
+    is_snap_isolation = true, is_cache_server_available = true, is_fault_tolerance_enable = false;
 
 void GenerateEpochThreads();
 void CkeckEpochThreadsI();
@@ -11521,57 +11523,67 @@ void GetServerInfo(){
         symbol_local_or_remote++;
     }
 
-    tinyxml2::XMLElement* master_ip = root->FirstChildElement("master_ip");
-    std::string temp1(master_ip->GetText());
-    kMasterIp = temp1;
-
-    is_stable_epoch_send = false;
-    tinyxml2::XMLElement* is_stable_epoch_t = root->FirstChildElement("is_stable_epoch_send");
-    is_stable_epoch_send = std::stoi(is_stable_epoch_t->GetText()) == 0 ? false : true;
-
-    tinyxml2::XMLElement* cachemaxlength = root->FirstChildElement("cache_max_length");
-    kCacheMaxLength = std::stoull(cachemaxlength->GetText());
-
-    is_epoch_advanced_by_message = true;
-    tinyxml2::XMLElement* is_epoch_advanced_by_message_t = root->FirstChildElement("is_epoch_advanced_by_message");
-    is_epoch_advanced_by_message = std::stoi(is_epoch_advanced_by_message_t->GetText()) == 0 ? false : true;
-
-    is_read_repeatable = true;
-    tinyxml2::XMLElement* is_read_repeatable_t = root->FirstChildElement("is_read_repeatable");
-    is_read_repeatable = std::stoi(is_read_repeatable_t->GetText()) == 0 ? false : true;
-
-    is_snap_isolation = true;
-    tinyxml2::XMLElement* is_snap_isolation_t = root->FirstChildElement("is_snap_isolation");
-    is_snap_isolation = std::stoi(is_snap_isolation_t->GetText()) == 0 ? false : true;
-    
-    is_cache_server_available = true;
-    tinyxml2::XMLElement* is_cache_server_available_t = root->FirstChildElement("is_cache_server_available");
-    is_cache_server_available = std::stoi(is_cache_server_available_t->GetText()) == 0 ? false : true;
+    tinyxml2::XMLElement* server_num = root->FirstChildElement("server_num");
+    kServerNum= std::stoull(server_num->GetText());
 
     tinyxml2::XMLElement* local_ip_index_xml = root->FirstChildElement("local_ip_index");
     local_ip_index=std::stoull(local_ip_index_xml->GetText()) ;
 
-    tinyxml2::XMLElement* server_num = root->FirstChildElement("server_num");
-    kServerNum= std::stoull(server_num->GetText());
+    tinyxml2::XMLElement* sleep_time = root->FirstChildElement("sleep_time");
+    kSleepTime= std::stoull(sleep_time->GetText());
 
-    tinyxml2::XMLElement* package_num = root->FirstChildElement("package_num");
-    kPackageNum = std::stoull(package_num->GetText());
+    tinyxml2::XMLElement* master_ip = root->FirstChildElement("master_ip");
+    std::string temp1(master_ip->GetText());
+    kMasterIp = temp1;
 
+    tinyxml2::XMLElement* cachemaxlength = root->FirstChildElement("cache_max_length");
+    kCacheMaxLength = std::stoull(cachemaxlength->GetText());
+
+    tinyxml2::XMLElement* is_stable_epoch_t = root->FirstChildElement("is_stable_epoch_send");
+    is_stable_epoch_send = std::stoi(is_stable_epoch_t->GetText()) == 0 ? false : true;
+
+    tinyxml2::XMLElement* is_epoch_advanced_by_message_t = root->FirstChildElement("is_epoch_advanced_by_message");
+    is_epoch_advanced_by_message = std::stoi(is_epoch_advanced_by_message_t->GetText()) == 0 ? false : true;
+
+    tinyxml2::XMLElement* is_read_repeatable_t = root->FirstChildElement("is_read_repeatable");
+    is_read_repeatable = std::stoi(is_read_repeatable_t->GetText()) == 0 ? false : true;
+
+    tinyxml2::XMLElement* is_snap_isolation_t = root->FirstChildElement("is_snap_isolation");
+    is_snap_isolation = std::stoi(is_snap_isolation_t->GetText()) == 0 ? false : true;
+    
+    tinyxml2::XMLElement* is_cache_server_available_t = root->FirstChildElement("is_cache_server_available");
+    is_cache_server_available = std::stoi(is_cache_server_available_t->GetText()) == 0 ? false : true;
+
+    tinyxml2::XMLElement* is_breakdown_t = root->FirstChildElement("is_breakdown");
+    is_breakdown = std::stoi(is_breakdown_t->GetText()) == 0 ? false : true;
+
+    tinyxml2::XMLElement* is_fault_tolerance_enable_t = root->FirstChildElement("is_fault_tolerance_enable");
+    is_fault_tolerance_enable = std::stoi(is_fault_tolerance_enable_t->GetText()) == 0 ? false : true;
+
+    
+
+    
     tinyxml2::XMLElement* notify_num = root->FirstChildElement("notify_num");
     kNotifyNum = std::stoull(notify_num->GetText());
 
     tinyxml2::XMLElement* batch_size = root->FirstChildElement("batch_size");
     kBatchNum = std::stoull(batch_size->GetText());
 
-    tinyxml2::XMLElement* notify_thread_num = root->FirstChildElement("notify_thread_num");
-    kNotifyThreadNum = std::stoull(notify_thread_num->GetText());
+    tinyxml2::XMLElement* package_num = root->FirstChildElement("package_num");
+    kPackageNum = std::stoull(package_num->GetText());
 
     tinyxml2::XMLElement* delay_epoch_num = root->FirstChildElement("delay_epoch_num");
     kDelayEpochNum = std::stoull(delay_epoch_num->GetText());
-    
 
-    tinyxml2::XMLElement* pack_thread_num = root->FirstChildElement("pack_thread_num");
-    kPackThreadNum = std::stoull(pack_thread_num->GetText());
+    tinyxml2::XMLElement* server_time_out_us = root->FirstChildElement("server_time_out_us");
+    kServerTimeOut_us = std::stoull(server_time_out_us->GetText());
+
+    tinyxml2::XMLElement* raft_time_out_us = root->FirstChildElement("raft_time_out_us");
+    kRaftTimeOut_us = std::stoull(raft_time_out_us->GetText());
+
+    tinyxml2::XMLElement* start_check_state_num = root->FirstChildElement("start_check_state_num");
+    kStartCheckStateNum = std::stoull(start_check_state_num->GetText());
+
 
     if(kServerNum > 1){
         // kSendThreadNum = kListenThreadNum = kPackageNum + 1;
@@ -11582,9 +11594,12 @@ void GetServerInfo(){
     }
 
 
-    tinyxml2::XMLElement* sleep_time = root->FirstChildElement("sleep_time");
-    kSleepTime= std::stoull(sleep_time->GetText());
+    tinyxml2::XMLElement* notify_thread_num = root->FirstChildElement("notify_thread_num");
+    kNotifyThreadNum = std::stoull(notify_thread_num->GetText());
+    
 
+    tinyxml2::XMLElement* pack_thread_num = root->FirstChildElement("pack_thread_num");
+    kPackThreadNum = std::stoull(pack_thread_num->GetText());
 
     tinyxml2::XMLElement* unseri_thread_num = root->FirstChildElement("unseri_thread_num");
     kUnseriThreadNum= std::stoull(unseri_thread_num->GetText());
@@ -11604,6 +11619,7 @@ void GetServerInfo(){
     tinyxml2::XMLElement* record_commit_thread_num = root->FirstChildElement("record_commit_thread_num");
     kRecordCommitThreadNum= std::stoull(record_commit_thread_num->GetText());
 
+
     ereport(LOG, (errmsg("local ip_index %llu ip %s",local_ip_index, kServerIp[local_ip_index].c_str())));
     for(int i = 0; i < (int)kServerNum; i++ ){
         ereport(LOG, (errmsg("ip: %s",kServerIp[i].c_str())));
@@ -11616,18 +11632,30 @@ void GetServerInfo(){
             //改为PUB SUB模式为 send_port：20000 + local_ip_index*100          linsten_ports: 20000 + i * 100
         }
     }
-    ereport(LOG, (errmsg("kServerNum %d",(int)kServerNum)));
-    ereport(LOG, (errmsg("local_ip_index %d",(int)local_ip_index)));
-    ereport(LOG, (errmsg("kPackageNum %d",(int)kPackageNum)));
-    ereport(LOG, (errmsg("kNotifyNum %d",(int)kNotifyNum)));
-    ereport(LOG, (errmsg("kBatchNum %d",(int)kBatchNum)));
-    ereport(LOG, (errmsg("kPackThreadNum %d",(int)kPackThreadNum)));
-    ereport(LOG, (errmsg("kNotifyThreadNum %d",(int)kNotifyThreadNum)));
+    ereport(LOG, (errmsg("server_num %d", (int)kServerNum)));
+    ereport(LOG, (errmsg("local_ip_index %d", (int)local_ip_index)));
+    ereport(LOG, (errmsg("sleep_time %d", (int)kSleepTime)));
+    ereport(LOG, (errmsg("master_ip %s", kMasterIp.c_str())));
+    ereport(LOG, (errmsg("cache_max_length %d", (int)kCacheMaxLength)));
+    ereport(LOG, (errmsg("is_stable_epoch_send %d",(int)is_stable_epoch_send)));
+    ereport(LOG, (errmsg("is_epoch_advanced_by_message %d",(int)is_epoch_advanced_by_message)));
+    ereport(LOG, (errmsg("is_read_repeatable %d",(int)is_read_repeatable)));
+    ereport(LOG, (errmsg("is_snap_isolation %d",(int)is_snap_isolation)));
+    ereport(LOG, (errmsg("is_cache_server_available %d",(int)is_cache_server_available)));
+    ereport(LOG, (errmsg("is_breakdown %d",(int)is_breakdown)));
+    ereport(LOG, (errmsg("notify_num %d",(int)kNotifyNum)));
+    ereport(LOG, (errmsg("batch_size %d",(int)kBatchNum)));
+    ereport(LOG, (errmsg("package_num %d",(int)kPackageNum)));
+    ereport(LOG, (errmsg("delay_epoch_num %d",(int)kDelayEpochNum)));
+    ereport(LOG, (errmsg("server_time_out_us %d",(int)kServerTimeOut_us)));
+    ereport(LOG, (errmsg("raft_time_out_us %d",(int)kRaftTimeOut_us)));
+
     ereport(LOG, (errmsg("kListenThreadNum == kSendThreadNum %d",(int)kListenThreadNum)));
-    ereport(LOG, (errmsg("kSleepTime %d",(int)kSleepTime)));
-    ereport(LOG, (errmsg("kUnseriThreadNum %d",(int)kUnseriThreadNum)));
-    ereport(LOG, (errmsg("kUnpackThreadNum %d",(int)kUnpackThreadNum)));
-    ereport(LOG, (errmsg("kMergeThreadNum %d",(int)kMergeThreadNum)));
-    ereport(LOG, (errmsg("kCommitThreadNum %d",(int)kCommitThreadNum)));
-    ereport(LOG, (errmsg("kRecordCommitThreadNum %d",(int)kRecordCommitThreadNum)));
+    ereport(LOG, (errmsg("notify_thread_num %d",(int)kNotifyThreadNum)));
+    ereport(LOG, (errmsg("pack_thread_num %d",(int)kPackThreadNum)));
+    ereport(LOG, (errmsg("unseri_thread_num %d",(int)kUnseriThreadNum)));
+    ereport(LOG, (errmsg("unpack_thread_num %d",(int)kSleepTime)));
+    ereport(LOG, (errmsg("merge_thread_num %d",(int)kUnpackThreadNum)));
+    ereport(LOG, (errmsg("commit_thread_num %d",(int)kMergeThreadNum)));
+    ereport(LOG, (errmsg("record_commit_thread_num %d",(int)kCommitThreadNum)));
 }

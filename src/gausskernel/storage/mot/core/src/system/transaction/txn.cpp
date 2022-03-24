@@ -1387,12 +1387,12 @@ RC TxnManager::Commit(){
         }
         alloc:
         ;
-        if(!MOTAdaptor::InsertRowToMergeRequestTxn(this, index_pack, index_unique)){
+        if(!MOTAdaptor::InsertTxntoLocalChangeSet(this, index_pack, index_unique)){
             if(cnt == 0){ 
                 cnt = 1;
                 goto alloc;
             }
-            MOT_LOG_INFO("*=*=*=*=*= InsertRowToMergeRequestTxn txn内存分配失败");
+            MOT_LOG_INFO("*=*=*=*=*= InsertTxntoLocalChangeSet txn内存分配失败");
             return RC_ABORT;
         }
 

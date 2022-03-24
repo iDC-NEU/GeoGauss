@@ -93,6 +93,7 @@
 #include "gstrace/access_gstrace.h"
 #include "instruments/instr_statement.h"
 #include "commands/sequence.h"
+#include "postmaster/postmaster.h"
 #ifdef ENABLE_MULTIPLE_NODES
 #include "tsdb/cache/queryid_cachemgr.h"
 #include "tsdb/cache/part_cachemgr.h"
@@ -4265,29 +4266,31 @@ void StartTransactionCommand(bool STP_rollback)
 }
 //ADDBY NEU HW
 static void ReportBreakDown()
-{
-    if (u_sess->storage_cxt.execPhase > 0 && u_sess->storage_cxt.execPhase != 5) {
-        elog(LOG, "zzj: 寄! %d", u_sess->storage_cxt.execPhase);
-    } else if (u_sess->storage_cxt.execPhase == 5) {
-        long secs = 0;
-        int usecs = 0;
+{   
+    if(is_breakdown) {
+        if (u_sess->storage_cxt.execPhase > 0 && u_sess->storage_cxt.execPhase != 5) {
+            elog(LOG, "zzj: 寄! %d", u_sess->storage_cxt.execPhase);
+        } else if (u_sess->storage_cxt.execPhase == 5) {
+            long secs = 0;
+            int usecs = 0;
 
-        TimestampDifference(u_sess->storage_cxt.startQuery, u_sess->storage_cxt.finishQuery, &secs, &usecs);
-        long long totalCost = 1ll * secs * 1000 * 1000 + usecs;
+            TimestampDifference(u_sess->storage_cxt.startQuery, u_sess->storage_cxt.finishQuery, &secs, &usecs);
+            long long totalCost = 1ll * secs * 1000 * 1000 + usecs;
 
-        TimestampDifference(u_sess->storage_cxt.startQuery, u_sess->storage_cxt.startExec, &secs, &usecs);
-        long long sqlCost = 1ll * secs * 1000 * 1000 + usecs;
+            TimestampDifference(u_sess->storage_cxt.startQuery, u_sess->storage_cxt.startExec, &secs, &usecs);
+            long long sqlCost = 1ll * secs * 1000 * 1000 + usecs;
 
-        TimestampDifference(u_sess->storage_cxt.startExec, u_sess->storage_cxt.startCommit, &secs, &usecs);
-        long long execCost = 1ll * secs * 1000 * 1000 + usecs;
+            TimestampDifference(u_sess->storage_cxt.startExec, u_sess->storage_cxt.startCommit, &secs, &usecs);
+            long long execCost = 1ll * secs * 1000 * 1000 + usecs;
 
-        TimestampDifference(u_sess->storage_cxt.startCommit, u_sess->storage_cxt.finishCommit, &secs, &usecs);
-        long long commitCost = 1ll * secs * 1000 * 1000 + usecs;
+            TimestampDifference(u_sess->storage_cxt.startCommit, u_sess->storage_cxt.finishCommit, &secs, &usecs);
+            long long commitCost = 1ll * secs * 1000 * 1000 + usecs;
 
-        TimestampDifference(u_sess->storage_cxt.finishCommit, u_sess->storage_cxt.finishQuery, &secs, &usecs);
-        long long xlogAndOtherCost = 1ll * secs * 1000 * 1000 + usecs;
+            TimestampDifference(u_sess->storage_cxt.finishCommit, u_sess->storage_cxt.finishQuery, &secs, &usecs);
+            long long xlogAndOtherCost = 1ll * secs * 1000 * 1000 + usecs;
 
-        elog(LOG, "zzj: total %lld(us), sql %lld(us), exec %lld(us), commit %lld(us), xlogAndOther %lld(us)", totalCost, sqlCost, execCost, commitCost, xlogAndOtherCost);
+            elog(LOG, "zzj: total %lld(us), sql %lld(us), exec %lld(us), commit %lld(us), xlogAndOther %lld(us)", totalCost, sqlCost, execCost, commitCost, xlogAndOtherCost);
+        }
     }
     u_sess->storage_cxt.execPhase = 0;
 }

@@ -798,7 +798,7 @@ public:
         ++ logical_epoch;
     }
     
-    static bool InsertRowToMergeRequestTxn(MOT::TxnManager* txMan, const uint64_t& index_pack, const uint64_t& index_unique);
+    static bool InsertTxntoLocalChangeSet(MOT::TxnManager* txMan, const uint64_t& index_pack, const uint64_t& index_unique);
     static bool IncLocalChangeSetNum(uint64_t epoch, uint64_t &index_pack);
     static bool InsertRowToSet(MOT::TxnManager* txMan, void* txn_void, const uint64_t& index_pack, const uint64_t& index_unique);
     static bool InsertTxnIntoRecordCommitQueue(MOT::TxnManager* txMan, void* txn_void, MOT::RC &rc);
