@@ -26,9 +26,9 @@ extern uint64_t kPortNum, kPackageNum, kNotifyNum, kBatchNum, kNotifyThreadNum, 
     kSleepTime, local_ip_index, kCacheMaxLength, kDelayEpochNum, kServerTimeOut_us, kRaftTimeOut_us, kStartCheckStateNum;
 extern std::vector<std::string> send_ips;
 extern std::vector<uint64_t>send_ports;
-extern std::string kMasterIp;
-extern volatile bool is_stable_epoch_send, is_epoch_advanced_by_message, is_read_repeatable, is_snap_isolation, is_cache_server_available,
-    is_breakdown, is_fault_tolerance_enable;
+extern std::string kMasterIp, kPrivateIp;
+extern volatile bool is_stable_epoch_send, is_epoch_advanced_by_message, is_read_repeatable, is_snap_isolation,
+    is_breakdown, is_cache_server_available, is_fault_tolerance_enable;
 
 extern THR_LOCAL bool comm_client_bind;
 

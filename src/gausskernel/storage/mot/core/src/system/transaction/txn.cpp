@@ -1395,6 +1395,7 @@ RC TxnManager::Commit(){
             MOT_LOG_INFO("*=*=*=*=*= InsertTxntoLocalChangeSet txn内存分配失败");
             return RC_ABORT;
         }
+        auto time1 = now_to_us();
 
         while(GetCommitEpoch() > MOTAdaptor::GetLogicalEpoch() || !MOTAdaptor::IsRecordCommitted()){
             usleep(100);
@@ -1418,8 +1419,12 @@ RC TxnManager::Commit(){
             // rc = m_occManager.CommitCheck(this, local_ip_index);
             // MOTAdaptor::Commit(this, index_pack);
         }
-        if(rc == RC_OK)
+        if(rc == RC_OK){
             MOTAdaptor::IncRecordCommitTxnCounters(index_pack);
+            auto time2 = now_to_us();
+            if(is_breakdown)
+                MOT_LOG_INFO("事务提交 commit epoch:%llu 用时:%llu", GetCommitEpoch(), time2 - time1);
+        }
         MOTAdaptor::DecComCounters(index_pack);
         return rc;
     }

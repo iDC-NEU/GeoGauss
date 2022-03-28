@@ -254,7 +254,7 @@ uint64_t kPortNum = 1, kPackageNum = 1, kNotifyNum = 1, kBatchNum = 1, kNotifyTh
     kStartCheckStateNum = 1000000;
 std::vector<std::string> send_ips;
 std::vector<uint64_t>send_ports;
-std::string kMasterIp;
+std::string kMasterIp, kPrivateIp;
 volatile bool is_stable_epoch_send = false, is_epoch_advanced_by_message = true, is_read_repeatable = true, is_breakdown = true, 
     is_snap_isolation = true, is_cache_server_available = true, is_fault_tolerance_enable = false;
 
@@ -11507,6 +11507,7 @@ void GetServerInfo(){
         index_element=index_element->NextSiblingElement();
         symbol_local_or_remote++;
     }
+
     index_element=root->FirstChildElement("local_remote_cache_ip");
     symbol_local_or_remote = 0;
     while (index_element){
@@ -11535,6 +11536,10 @@ void GetServerInfo(){
     tinyxml2::XMLElement* master_ip = root->FirstChildElement("master_ip");
     std::string temp1(master_ip->GetText());
     kMasterIp = temp1;
+
+    tinyxml2::XMLElement* private_ip = root->FirstChildElement("private_ip");
+    std::string temp2(private_ip->GetText());
+    kPrivateIp = temp2;
 
     tinyxml2::XMLElement* cachemaxlength = root->FirstChildElement("cache_max_length");
     kCacheMaxLength = std::stoull(cachemaxlength->GetText());

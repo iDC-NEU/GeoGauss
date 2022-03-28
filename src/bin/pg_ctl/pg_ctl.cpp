@@ -121,7 +121,7 @@ typedef enum {
 #define MAX_PERCENT 100
 #define FAIL_PERCENT -1
 
-#define DEFAULT_WAIT 60
+#define DEFAULT_WAIT 6000000
 #define MAX_JOB_NAME 128
 
 #define MAX_DISPLAY_STRING_LEN 1024

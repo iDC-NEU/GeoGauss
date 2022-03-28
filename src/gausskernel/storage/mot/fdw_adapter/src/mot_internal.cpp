@@ -3471,7 +3471,7 @@ void* ListenThread(void* param) {
     zmq::socket_t socket_listen(listen_context, ZMQ_PULL);
     int queue_length = 0;
     socket_listen.setsockopt(ZMQ_RCVHWM, &queue_length, sizeof(queue_length));
-    MOT_LOG_INFO("Receive From CacheServer Start PULL %s", 
+    MOT_LOG_INFO("***Receive From CacheServer Start PULL %s", 
         ("tcp://" +kCacheServerIp[params->remote_ip_index] + ":" + std::to_string(port)).c_str());
     socket_listen.bind("tcp://*:" + std::to_string(port));
     while(true) {
@@ -3495,14 +3495,16 @@ void* ListenThread(void* param) {
         }
         else{
             txn_queue->enqueue(std::move(txn_ptr));
+            received_total_txn_num ++;
             txn_queue->enqueue(nullptr);//防止moodycamel取不出
         }
         //未接收到cache的消息之前和epoch txn接受完全为完成之前 不退出
-        if(received_total_pack == params->total_pack_num->load() &&  received_total_txn_num == should_received_total_txn_num) {
+        if(params->message_received->load() == 1 && received_total_pack == params->total_pack_num->load() &&  
+            received_total_txn_num == should_received_total_txn_num) {
             break;
         }
     }
-    MOT_LOG_INFO("Receive From CacheServer End PULL %s", 
+    MOT_LOG_INFO("***Receive From CacheServer End PULL %s", 
         ("tcp://" +kCacheServerIp[params->remote_ip_index] + ":" + std::to_string(port)).c_str());
 }
 
@@ -3549,7 +3551,7 @@ void* MergeThread(void* param){
     remote_cache.SubShouldReceivePackNum(1);
     remote_cache.SetServerOffLine(index);
     (*(params->job_num))[index]->store(0);
-    MOT_LOG_INFO("服务器退出集群 server_ip_index : %llu ip:%s", index, kServerIp[index].c_str() );
+    MOT_LOG_INFO("***服务器退出集群 server_ip_index : %llu ip:%s", index, kServerIp[index].c_str() );
 }
 
 uint64_t StartThreads(ListenParams* ptr) {
@@ -3594,7 +3596,7 @@ void EpochMessageManagerThreadMain(uint64_t id) {
             _msg = std::make_unique<merge::ServerMessage>();
             _msg->ParseFromString(*message_string_ptr);
             // MOT_LOG_INFO("MessageManager接收一条消息 %s  %s\n", _msg->receive_ip().c_str(), local_ip.c_str());
-            if(_msg->receive_ip().compare(local_ip) == 0) {
+            if(_msg->receive_ip().compare(local_ip) == 0 || _msg->receive_ip().compare(kPrivateIp) == 0) {
                 for(int i = 0; i < _msg->msg_size(); i++) {
                         _map[_msg->msg(i).key()] = _msg->msg(i).value();
                 }
@@ -3613,7 +3615,7 @@ void EpochMessageManagerThreadMain(uint64_t id) {
                 }
 
                 if(_map["message_type"] == "cache_txn_reply" ) {
-                    MOT_LOG_INFO("CacheServer Txn Reply cache_index:%llu, cache_epoch_num:%llu", remote_ip_index, std::stoull(_map["cache_epoch_num"]))
+                    MOT_LOG_INFO("***CacheServer Txn Reply cache_index:%llu, cache_epoch_num:%llu", remote_ip_index, std::stoull(_map["cache_epoch_num"]))
                         _map_total_pack_num[remote_ip_index]->store(std::stoull(_map["cache_epoch_num"]));
                     _map_message_received[remote_ip_index]->store(1);
                 }
@@ -3651,7 +3653,7 @@ void EpochMessageManagerThreadMain(uint64_t id) {
                         }
                     }
                     if(remote_ip_index != local_ip_index) {
-                        MOT_LOG_INFO("出现服务器超时现象 server_ip_index :%llu %llu ip:%s",MOTAdaptor::GetLogicalEpoch(),
+                        MOT_LOG_INFO("***出现服务器超时现象 server_ip_index :%llu %llu ip:%s",MOTAdaptor::GetLogicalEpoch(),
                             remote_ip_index, kServerIp[remote_ip_index].c_str() );
                         std::unique_ptr<merge::ServerMessage> send_server_message_ptr = std::make_unique<merge::ServerMessage>();
                         merge::ServerMessage_Msg* msg;
@@ -3670,10 +3672,10 @@ void EpochMessageManagerThreadMain(uint64_t id) {
                         memcpy(send_message_ptr->data(), serialized_txn_str_ptr->c_str(), serialized_txn_str_ptr->size());
                         message_send_pool.enqueue(std::move(send_message_ptr));
                         sleep_flag = false;
-                    }
-                    if(is_cache_server_available == false) {
-                        _map_total_pack_num[remote_ip_index]->store(0);
-                        _map_message_received[remote_ip_index]->store(1);
+                        if(is_cache_server_available == false) {
+                            _map_total_pack_num[remote_ip_index]->store(0);
+                            _map_message_received[remote_ip_index]->store(1);
+                        }
                     }
                 }
                 else {
@@ -3702,13 +3704,14 @@ void EpochMessageSendThreadMain(uint64_t id) {
     zmq::socket_t socket_send(context, ZMQ_PUB);
     socket_send.setsockopt(ZMQ_SNDHWM, &queue_length, sizeof(queue_length)); 
     socket_send.bind("tcp://*:5547");//to server
-    socket_send.bind("tcp://*:5548");
-    //5548 to cache    need creat a thread to link
+    socket_send.bind("tcp://*:5548");//to cache
+    MOT_LOG_INFO("线程开始工作 EpochMessageSendThreadMain");
     std::unique_ptr<send_thread_params> params;
     std::unique_ptr<zmq::message_t> msg;
     while(true) {
         message_send_pool.wait_dequeue(msg);
         socket_send.send(*(msg));
+        MOT_LOG_INFO("发送一条消息");
     }
 }
 
@@ -3722,11 +3725,11 @@ void EpochMessageListenThreadMain(uint64_t id) {
     for(int i = 0; i < (int)kServerIp.size(); i ++) {
         if(i == (int)local_ip_index) continue;
         socket_listen.connect("tcp://" +kServerIp[i] + ":5547");
-        MOT_LOG_INFO("线程开始工作 ListenThread %s", ("tcp://" +kServerIp[i] + ":5547").c_str());
+        MOT_LOG_INFO("线程开始工作 EpochMessageListenThreadMain %s", ("tcp://" +kServerIp[i] + ":5547").c_str());
     }
     for(int i = 0; i < (int)kCacheServerIp.size(); i ++) {
         socket_listen.connect("tcp://" +kCacheServerIp[i] + ":5549");
-        MOT_LOG_INFO("线程开始工作 ListenThread %s", ("tcp://" +kCacheServerIp[i] + ":5549").c_str());
+        MOT_LOG_INFO("线程开始工作 EpochMessageListenThreadMain %s", ("tcp://" +kCacheServerIp[i] + ":5549").c_str());
     }
     for(;;) {
         std::unique_ptr<zmq::message_t> message_ptr = std::make_unique<zmq::message_t>();
