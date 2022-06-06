@@ -21,6 +21,8 @@
  *
  * -------------------------------------------------------------------------
  */
+#include <google/protobuf/io/gzip_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 
 #include <ostream>
 #include <istream>
@@ -2245,8 +2247,11 @@ using BlockingConcurrentQueue =  moodycamel::BlockingConcurrentQueue<T>;
 // using BlockingConcurrentQueue = BlockingMPMCQueue<T>;
 struct pack_params {
     std::string* str;
+    std::unique_ptr<merge::MergeRequest_Transaction> txn;
     uint64_t epoch, index;
-    pack_params(std::string* s, uint64_t e, uint64_t i):str(s), epoch(e), index(i){}
+    pack_params(std::string* s, std::unique_ptr<merge::MergeRequest_Transaction> &&t, uint64_t e, uint64_t i):str(s), epoch(e), index(i){
+        txn = std::move(t);
+    }
     pack_params(){}
 };
 
@@ -2337,8 +2342,8 @@ public:
     }
 
     bool AddSendTask(uint64_t epoch_num) {
-        if((txn_queue_ptrs[0]->enqueue(std::move(std::make_unique<pack_params>(nullptr, epoch_num, 0))))){
-            if(txn_queue_ptrs[0]->enqueue(std::move(std::make_unique<pack_params>(nullptr, 0, 0)))) Assert(false);//防止moodycamel取不出
+        if((txn_queue_ptrs[0]->enqueue(std::move(std::make_unique<pack_params>(nullptr, nullptr, epoch_num, 0))))){
+            if(txn_queue_ptrs[0]->enqueue(std::move(std::make_unique<pack_params>(nullptr, nullptr, 0, 0)))) Assert(false);//防止moodycamel取不出
             // MOT_LOG_INFO("添加一个epoch send task %llu", epoch_num);
             return true;
         }
@@ -2348,9 +2353,9 @@ public:
         }
     }
     
-    bool Enqueue(std::string* ptr1, uint64_t epoch_num, uint64_t index) {
-        if((txn_queue_ptrs[index]->enqueue(std::move(std::make_unique<pack_params>(ptr1, epoch_num, index))))){
-            if(txn_queue_ptrs[index]->enqueue(std::move(std::make_unique<pack_params>(nullptr, 0, 0)))) Assert(false);//防止moodycamel取不出
+    bool Enqueue(std::string* ptr1, std::unique_ptr<merge::MergeRequest_Transaction> &&txn, uint64_t epoch_num, uint64_t index) {
+        if((txn_queue_ptrs[index]->enqueue(std::move(std::make_unique<pack_params>(ptr1, std::move(txn), epoch_num, index))))){
+            if(txn_queue_ptrs[index]->enqueue(std::move(std::make_unique<pack_params>(nullptr, nullptr, 0, 0)))) Assert(false);//防止moodycamel取不出
             return true;
         }
         else {
@@ -2787,17 +2792,43 @@ bool MOTAdaptor::InsertTxntoLocalChangeSet(MOT::TxnManager* txMan, const uint64_
     if(kServerNum > 1) {
         txn->set_commitepoch(txMan->GetCommitEpoch());
         txn->set_csn(txMan->GetCommitSequenceNumber());
-        std::string* serialized_txn_str_ptr = new std::string();
-        txn->SerializeToString(serialized_txn_str_ptr);
-        if(local_write_set.Enqueue(serialized_txn_str_ptr, txMan->GetCommitEpoch(), index_pack)){
-            txn = nullptr;
-            return true;
+        if(is_total_pack) {
+            if(local_write_set.Enqueue(nullptr, std::move(txn), txMan->GetCommitEpoch(), index_pack)){
+                txn = nullptr;
+                return true;
+            }
+            else{
+                local_write_set.SubNum(txMan->GetCommitEpoch(), index_pack, ADD_NUM);
+                txn = nullptr;
+                return false;
+            }
         }
-        else{
-            local_write_set.SubNum(txMan->GetCommitEpoch(), index_pack, ADD_NUM);
-            txn = nullptr;
-            return false;
+        else {
+            std::string* serialized_txn_str_ptr = new std::string();
+            if(is_protobuf_gzip == true) {
+                google::protobuf::io::GzipOutputStream::Options options;
+                options.format = google::protobuf::io::GzipOutputStream::GZIP;
+                options.compression_level = 9;
+                google::protobuf::io::StringOutputStream outputStream(&(*serialized_txn_str_ptr));
+                google::protobuf::io::GzipOutputStream gzipStream(&outputStream, options);
+                txn->SerializeToZeroCopyStream(&gzipStream);
+                gzipStream.Close();
+            }
+            else {
+                txn->SerializeToString(serialized_txn_str_ptr);
+            }
+            MOT_LOG_INFO("=**= protobuf size %lu", serialized_txn_str_ptr->size());
+            if(local_write_set.Enqueue(serialized_txn_str_ptr, nullptr, txMan->GetCommitEpoch(), index_pack)){
+                txn = nullptr;
+                return true;
+            }
+            else{
+                local_write_set.SubNum(txMan->GetCommitEpoch(), index_pack, ADD_NUM);
+                txn = nullptr;
+                return false;
+            }
         }
+        
     }
     else {
         txn = nullptr;
@@ -3043,6 +3074,102 @@ void EpochPhysicalTimerManagerThreadMain(uint64_t id){
     }
 }
 
+BlockingConcurrentQueue<std::unique_ptr<pack_params>> q[32];
+void PackMergeRequest(uint64_t id){
+    uint64_t current_epoch = 0, send_index = 0, index = id, epoch = id, min_epoch = id, max_epoch = id;
+    if(id == 0) max_epoch = min_epoch = epoch = kPackThreadNum;
+    std::shared_ptr<zmq::message_t> merge_request_ptr;
+    std::unique_ptr<pack_params> pack_param;
+    std::unique_ptr<pack_thread_params> params;
+    std::unique_ptr<zmq::message_t> msg;
+    std::string *serialized_txn_str_ptr;
+    std::unique_ptr<merge::MergeRequest_Transaction> txn_end = std::make_unique<merge::MergeRequest_Transaction>();
+    txn_end->set_startepoch(0);
+    txn_end->set_commitepoch(0);
+    txn_end->set_csn(0);
+    txn_end->set_txnid(0);
+    txn_end->set_server_id(local_ip_index);
+    bool sleep_flag = false;
+    std::vector<merge::MergeRequest*> merge_request_vector;
+    merge_request_vector.push_back(new merge::MergeRequest());
+    merge_request_vector[0]->set_epoch(epoch);
+    merge_request_vector[0]->set_server_id(local_ip_index);
+    while(true) {
+        sleep_flag = true;
+        while(max_epoch <= min_epoch) {
+            auto merge_request = new merge::MergeRequest();
+            max_epoch += kPackThreadNum;
+            merge_request->set_epoch(max_epoch);
+            merge_request->set_server_id(local_ip_index);
+            merge_request_vector.push_back(merge_request);
+        }
+
+        while(q[id].try_dequeue(pack_param)) {
+            if(kServerNum == 1) continue;
+            if(pack_param->epoch == 0) continue;
+            current_epoch = pack_param->epoch;
+            while(max_epoch <= current_epoch) {
+                auto merge_request = new merge::MergeRequest();
+                max_epoch += kPackThreadNum;
+                merge_request->set_epoch(max_epoch);
+                merge_request->set_server_id(local_ip_index);
+                merge_request_vector.push_back(merge_request);
+            }
+            sleep_flag = false;
+            if(pack_param->txn != nullptr) {
+                auto i = (current_epoch - min_epoch) / kPackThreadNum;
+                auto ptr = merge_request_vector[i]->add_txn();
+                *(ptr) = std::move(*(pack_param->txn));
+                local_write_set.AddPackedNum(current_epoch, pack_param->index, MOD_NUM);
+                local_write_set.SubNum(current_epoch, pack_param->index, 1);
+            }
+        }
+
+        while(kServerNum > 1 && MOTAdaptor::GetPhysicalEpoch() > min_epoch &&  local_write_set.IsCurrentEpochFinished(min_epoch) == true) {
+            sleep_flag = false;
+            serialized_txn_str_ptr = new std::string(); 
+            if(is_protobuf_gzip == true) {
+                google::protobuf::io::GzipOutputStream::Options options;
+                options.format = google::protobuf::io::GzipOutputStream::GZIP;
+                options.compression_level = 9;
+                google::protobuf::io::StringOutputStream outputStream(&(*serialized_txn_str_ptr));
+                google::protobuf::io::GzipOutputStream gzipStream(&outputStream, options);
+                merge_request_vector[0]->SerializeToZeroCopyStream(&gzipStream);
+                gzipStream.Close();
+            }
+            else {
+                merge_request_vector[0]->SerializeToString(serialized_txn_str_ptr);
+            }
+            MOT_LOG_INFO("Merge_Request size %lu", serialized_txn_str_ptr->size());
+            if(!send_pool.enqueue(std::move(std::make_unique<send_thread_params>(min_epoch, 1, serialized_txn_str_ptr))) ) Assert(false);
+            if(!send_pool.enqueue(std::move(std::make_unique<send_thread_params>(0, 0, nullptr))) )  Assert(false); //防止moodycamel取不出
+            MOT_LOG_INFO("MergeRequest 到达发送时间，开始发送 第%llu个Pack线程, 第%llu个package, epoch:%llu 共%llu : %llu", 
+                id, send_index, min_epoch, local_write_set.LoadPackedTxnNum(min_epoch), local_write_set.LoadChangeSet(min_epoch));
+            min_epoch += kPackThreadNum;
+            while(max_epoch <= min_epoch) {
+                auto merge_request = new merge::MergeRequest();
+                max_epoch += kPackThreadNum;
+                merge_request->set_epoch(max_epoch);
+                merge_request->set_server_id(local_ip_index);
+                merge_request_vector.push_back(merge_request);
+            }
+            merge_request_vector.erase(merge_request_vector.begin());
+        }
+
+        for(int i = 0; i < (int)kPackageNum; i++) {
+            index = (index + 1) % kPackageNum;
+            while(local_write_set.TryDequeue(pack_param, index)) {
+                current_epoch = pack_param->epoch;
+                q[current_epoch % kPackThreadNum].enqueue(std::move(pack_param));
+                q[current_epoch % kPackThreadNum].enqueue(std::move(std::make_unique<pack_params>(nullptr, nullptr, 0, 0)));
+            }
+        }
+        if(sleep_flag)
+            usleep(100);
+    }
+}
+
+
 void EpochPackThreadMain(uint64_t id){
     MOT_LOG_INFO("线程开始工作 Pack id: %llu %llu", id, kBatchNum);
     SetCPU();
@@ -3060,6 +3187,7 @@ void EpochPackThreadMain(uint64_t id){
     txn_end->set_server_id(local_ip_index);
     bool sleep_flag = false;
     while(!init_ok.load()) usleep(100);
+    if(is_total_pack) PackMergeRequest(id);
     while(true){
         sleep_flag = true;
         for(int i = 0; i < (int)kPackageNum; i++) {
@@ -3074,16 +3202,27 @@ void EpochPackThreadMain(uint64_t id){
                     if(local_write_set.IsCurrentEpochFinished(current_epoch) == false) {
                         // MOT_LOG_INFO("重新放入epoch send task %llu %llu %llu", 
                         //     pack_param->epoch, local_write_set.LoadPackedTxnNum(pack_param->epoch), local_write_set.LoadChangeSet(pack_param->epoch));
-                        local_write_set.Enqueue(nullptr, current_epoch, 0);
+                        local_write_set.Enqueue(nullptr, nullptr, current_epoch, 0);
                         sleep_flag = false;
-                        // local_write_set.Enqueue(nullptr, 0, 0);
+
                     }
                     else {
                         sleep_flag = false;
                         txn_end->set_commitepoch(current_epoch);
                         txn_end->set_csn(static_cast<uint64_t>(local_write_set.LoadChangeSet(current_epoch) / MOD_NUM));
                         serialized_txn_str_ptr = new std::string();
-                        txn_end->SerializeToString(serialized_txn_str_ptr);
+                        if(is_protobuf_gzip == true) {
+                            google::protobuf::io::GzipOutputStream::Options options;
+                            options.format = google::protobuf::io::GzipOutputStream::GZIP;
+                            options.compression_level = 9;
+                            google::protobuf::io::StringOutputStream outputStream(&(*serialized_txn_str_ptr));
+                            google::protobuf::io::GzipOutputStream gzipStream(&outputStream, options);
+                            txn_end->SerializeToZeroCopyStream(&gzipStream);
+                            gzipStream.Close();
+                        }
+                        else {
+                            txn_end->SerializeToString(serialized_txn_str_ptr);
+                        }
                         if(!send_pool.enqueue(std::move(std::make_unique<send_thread_params>(current_epoch, 1, serialized_txn_str_ptr)))) Assert(false);
                         if(!send_pool.enqueue(std::move(std::make_unique<send_thread_params>(0, 0, nullptr)))) Assert(false); //防止moodycamel取不出
                         MOT_LOG_INFO("MergeRequest 到达发送时间，开始发送 第%llu个Pack线程, 第%llu个package, epoch:%llu 共%llu : %llu", 
@@ -3104,6 +3243,7 @@ void EpochPackThreadMain(uint64_t id){
     }
 }
 
+
 void EpochSendThreadMain(uint64_t id){
     SetCPU();
     zmq::context_t context(1);
@@ -3122,9 +3262,9 @@ void EpochSendThreadMain(uint64_t id){
     while(true){
         send_pool.wait_dequeue(params);
         if(params->merge_request_ptr == nullptr) continue;
-            msg = std::make_unique<zmq::message_t>(static_cast<void*>(const_cast<char*>(params->merge_request_ptr->data())),
-                    params->merge_request_ptr->size(), string_free, static_cast<void*>(params->merge_request_ptr));
-            socket_send.send(*(msg));
+        msg = std::make_unique<zmq::message_t>(static_cast<void*>(const_cast<char*>(params->merge_request_ptr->data())),
+                params->merge_request_ptr->size(), string_free, static_cast<void*>(params->merge_request_ptr));
+        socket_send.send(*(msg));
     }
 }
 
@@ -3182,7 +3322,7 @@ void EpochListenThreadMain(uint64_t id){
         socket_listen.recv(&(*message_ptr));//防止上次遗留消息造成message cache出现问题
         if(is_epoch_advance_started.load() == true){
             if(!listen_message_queue.enqueue(std::move(message_ptr))) assert(false);
-            if(!listen_message_queue.enqueue(std::move(nullptr))) assert(false); //防止moodycamel取不出
+            if(!listen_message_queue.enqueue(std::move(std::make_unique<zmq::message_t>()))) assert(false); //防止moodycamel取不出
             break;
         }
     }
@@ -3191,7 +3331,7 @@ void EpochListenThreadMain(uint64_t id){
         std::unique_ptr<zmq::message_t> message_ptr = std::make_unique<zmq::message_t>();
         socket_listen.recv(&(*message_ptr));
         if(!listen_message_queue.enqueue(std::move(message_ptr))) assert(false);
-        if(!listen_message_queue.enqueue(std::move(nullptr))) assert(false); //防止moodycamel取不出
+        if(!listen_message_queue.enqueue(std::move(std::make_unique<zmq::message_t>()))) assert(false); //防止moodycamel取不出
     }
 }
 
@@ -3236,26 +3376,66 @@ void EpochMergeThreadMain(uint64_t id){
     while(!init_ok.load()) usleep(100);
     for(;;){
         sleep_flag = true;
-        if(listen_message_queue.try_dequeue(message_ptr) && message_ptr != nullptr){
-            txn_ptr = std::make_unique<merge::MergeRequest_Transaction>();
-            message_string_ptr = std::make_unique<std::string>(static_cast<const char*>(message_ptr->data()), message_ptr->size());
-            txn_ptr->ParseFromString(*message_string_ptr);
-            message_epoch_id = txn_ptr->commitepoch();
-            server_id = txn_ptr->server_id();
-            message_epoch_mod = message_epoch_id % max_length;
-            if(txn_ptr->row_size() == 0 && txn_ptr->startepoch() == 0 && txn_ptr->txnid() == 0){
-                if((MOTAdaptor::GetLogicalEpoch() % max_length) ==  ((message_epoch_id + 2) % max_length) ) assert(false);
-                remote_cache.StoreShouldReceiveTxnNum(message_epoch_mod, server_id, txn_ptr->csn());
+        if(listen_message_queue.try_dequeue(message_ptr) && message_ptr->size() > 1){
+            if(is_total_pack == true) {
+                auto merge_ptr = std::make_unique<merge::MergeRequest>();
+                message_string_ptr = std::make_unique<std::string>(static_cast<const char*>(message_ptr->data()), message_ptr->size());
+                if(is_protobuf_gzip == true) {
+                    google::protobuf::io::ArrayInputStream inputStream(message_string_ptr->data(), message_string_ptr->size());
+                    google::protobuf::io::GzipInputStream gzipStream(&inputStream);
+                    merge_ptr->ParseFromZeroCopyStream(&gzipStream);
+                }
+                else {
+                    merge_ptr->ParseFromString(*message_string_ptr);
+                }
+                message_epoch_mod = merge_ptr->epoch() % max_length;
+                server_id = merge_ptr->server_id();
+                remote_cache.StoreShouldReceiveTxnNum(message_epoch_mod, server_id, merge_ptr->txn_size());
                 remote_cache.StoreReceivedPackNum(message_epoch_mod, server_id, 1);
                 remote_cache.AddReceivedPackNumTotal(message_epoch_mod, 1);
+                for(int i = 0; i < merge_ptr->txn_size(); i ++) {
+                    txn_ptr = std::make_unique<merge::MergeRequest_Transaction>(merge_ptr->txn(i));
+                    // *(txn_ptr) = std::move(merge_ptr->txn(i));
+                    // message_epoch_id = txn_ptr->commitepoch();
+                    // server_id = txn_ptr->server_id();
+                    // message_epoch_mod = message_epoch_id % max_length;
+                    message_cache[message_epoch_mod][server_id]->push(std::move(txn_ptr));
+                    remote_cache.AddReceivedTxnNum(message_epoch_mod, server_id, 1);
+                    remote_cache.AddReceivedTxnNumTotal(message_epoch_mod, 1);
+                }
                 MOT_LOG_INFO("收到一个pack server: %llu, epoch: %llu, pack num %llu, txn num: %llu,  %llu", 
-                    txn_ptr->server_id(), message_epoch_id, remote_cache.GetReceivedPackNum(message_epoch_mod),
-                    remote_cache.GetShouldReceiveTxnNum(message_epoch_mod), now_to_us());
+                        merge_ptr->server_id(), merge_ptr->epoch(), remote_cache.GetReceivedPackNum(message_epoch_mod),
+                        remote_cache.GetShouldReceiveTxnNum(message_epoch_mod), now_to_us());
             }
-            else{
-                message_cache[message_epoch_mod][server_id]->push(std::move(txn_ptr));
-                remote_cache.AddReceivedTxnNum(message_epoch_mod, server_id, 1);
-                remote_cache.AddReceivedTxnNumTotal(message_epoch_mod, 1);
+
+            else {
+                txn_ptr = std::make_unique<merge::MergeRequest_Transaction>();
+                message_string_ptr = std::make_unique<std::string>(static_cast<const char*>(message_ptr->data()), message_ptr->size());
+                if(is_protobuf_gzip == true) {
+                    google::protobuf::io::ArrayInputStream inputStream(message_string_ptr->data(), message_string_ptr->size());
+                    google::protobuf::io::GzipInputStream gzipStream(&inputStream);
+                    txn_ptr->ParseFromZeroCopyStream(&gzipStream);
+                }
+                else {
+                    txn_ptr->ParseFromString(*message_string_ptr);
+                }
+                message_epoch_id = txn_ptr->commitepoch();
+                server_id = txn_ptr->server_id();
+                message_epoch_mod = message_epoch_id % max_length;
+                if(txn_ptr->row_size() == 0 && txn_ptr->startepoch() == 0 && txn_ptr->txnid() == 0){
+                    if((MOTAdaptor::GetLogicalEpoch() % max_length) ==  ((message_epoch_id + 2) % max_length) ) assert(false);
+                    remote_cache.StoreShouldReceiveTxnNum(message_epoch_mod, server_id, txn_ptr->csn());
+                    remote_cache.StoreReceivedPackNum(message_epoch_mod, server_id, 1);
+                    remote_cache.AddReceivedPackNumTotal(message_epoch_mod, 1);
+                    MOT_LOG_INFO("收到一个pack server: %llu, epoch: %llu, pack num %llu, txn num: %llu,  %llu", 
+                        txn_ptr->server_id(), message_epoch_id, remote_cache.GetReceivedPackNum(message_epoch_mod),
+                        remote_cache.GetShouldReceiveTxnNum(message_epoch_mod), now_to_us());
+                }
+                else{
+                    message_cache[message_epoch_mod][server_id]->push(std::move(txn_ptr));
+                    remote_cache.AddReceivedTxnNum(message_epoch_mod, server_id, 1);
+                    remote_cache.AddReceivedTxnNumTotal(message_epoch_mod, 1);
+                }
             }
             sleep_flag = false;
         } 

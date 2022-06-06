@@ -248,7 +248,7 @@
 std::vector<std::string> kServerIp, kCacheServerIp;
 std::vector<uint64_t> port; // ServerNum * PackageNum
 volatile uint64_t kServerNum = 1;
-uint64_t kPortNum = 1, kPackageNum = 1, kNotifyNum = 1, kBatchNum = 1, kNotifyThreadNum = 1, kPackThreadNum = 1, kSendThreadNum = 1, 
+uint64_t kPortNum = 1, kPackageNum = 1, kNotifyNum = 1, kBatchNum = 1, kNotifyThreadNum = 1, kPackThreadNum = 4, kSendThreadNum = 1, 
     kListenThreadNum = 1, kUnseriThreadNum = 1, kUnpackThreadNum = 1, kMergeThreadNum = 1, kCommitThreadNum = 1, kRecordCommitThreadNum = 1, kSendMessageNum = 1, kReceiveMessageNum = 1, 
     kSleepTime = 1, local_ip_index = 0, kCacheMaxLength = 200000, kDelayEpochNum = 0, kServerTimeOut_us = 700000, kRaftTimeOut_us = 500000,
     kStartCheckStateNum = 1000000;
@@ -256,7 +256,7 @@ std::vector<std::string> send_ips;
 std::vector<uint64_t>send_ports;
 std::string kMasterIp, kPrivateIp;
 volatile bool is_stable_epoch_send = false, is_epoch_advanced_by_message = true, is_read_repeatable = true, is_breakdown = true, 
-    is_snap_isolation = true, is_cache_server_available = true, is_fault_tolerance_enable = false;
+    is_snap_isolation = true, is_cache_server_available = true, is_fault_tolerance_enable = false, is_protobuf_gzip = false, is_total_pack = false;
 
 void GenerateEpochThreads();
 void CkeckEpochThreadsI();
@@ -11565,7 +11565,11 @@ void GetServerInfo(){
     tinyxml2::XMLElement* is_fault_tolerance_enable_t = root->FirstChildElement("is_fault_tolerance_enable");
     is_fault_tolerance_enable = std::stoi(is_fault_tolerance_enable_t->GetText()) == 0 ? false : true;
 
-    
+    tinyxml2::XMLElement* is_total_pack_t = root->FirstChildElement("is_total_pack");
+    is_total_pack = std::stoi(is_total_pack_t->GetText()) == 0 ? false : true;
+
+    tinyxml2::XMLElement* is_protobuf_gzip_t = root->FirstChildElement("is_protobuf_gzip");
+    is_protobuf_gzip = std::stoi(is_protobuf_gzip_t->GetText()) == 0 ? false : true;
 
     
     tinyxml2::XMLElement* notify_num = root->FirstChildElement("notify_num");
