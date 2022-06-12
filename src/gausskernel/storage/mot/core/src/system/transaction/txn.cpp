@@ -101,6 +101,7 @@ RC TxnManager::InsertRow(Row* row)
 Row* TxnManager::RowLookup(const AccessType type, Sentinel* const& originalSentinel, RC& rc)
 {
     TryRecordTimestamp(1, startExec);//ADDBY NEU HW
+
     rc = RC_OK;
     // Look for the Sentinel in the cache
     Row* local_row = nullptr;
@@ -174,14 +175,38 @@ bool TxnManager::IsUpdatedInCurrStmt()
     return false;
 }
 
+uint64_t GetThreadID(){
+    return (uint64_t) std::hash<std::thread::id>{}(std::this_thread::get_id());
+}
+
 RC TxnManager::StartTransaction(uint64_t transactionId, int isolationLevel)
 {
     m_transactionId = transactionId;
     m_isolationLevel = isolationLevel;
     m_state = TxnState::TXN_START;
     GcSessionStart();
-    SetStartEpoch(MOTAdaptor::GetPhysicalEpoch());//ADDBY NEU
-    SetStartLogicalEpoch(MOTAdaptor::GetLogicalEpoch());
+
+    if(GetStartEpoch() == 0) {
+        SetIndexPack(GetThreadID() % kPackageNum);
+        add_num:
+        SetStartEpoch(MOTAdaptor::GetPhysicalEpoch());//ADDBY NEU
+        SetCommitEpoch(GetStartEpoch());
+        SetStartLogicalEpoch(MOTAdaptor::GetLogicalEpoch());
+        // MOT_LOG_INFO("Start Transaction 1 %llu %llu", GetStartEpoch(), MOTAdaptor::GetLogicalEpoch());
+        if(is_sync_exec) {
+            if(!MOTAdaptor::TryIncLocalChangeSetNum(GetStartEpoch(), GetIndexPack(), ADD_NUM)) goto add_num;
+            // MOT_LOG_INFO("==Start Transaction 1 %llu %llu", GetStartEpoch(), MOTAdaptor::GetLogicalEpoch());
+            // uint64_t cnt = 0;
+            while(GetStartEpoch() > MOTAdaptor::GetLogicalEpoch() || !MOTAdaptor::IsRecordCommitted()) {
+                usleep(100);
+                // cnt ++;
+                // if(cnt % 100 == 0) {
+                //     MOT_LOG_INFO("Start Transaction 1 %llu %llu", GetStartEpoch(), MOTAdaptor::GetLogicalEpoch());
+                // }
+            }
+        }
+    }
+    
     return RC_OK;
 }
 
@@ -374,6 +399,7 @@ void TxnManager::Cleanup()
     ClearErrorStack();
     m_accessMgr->ClearTableCache();
     m_queryState.clear();
+    ClearEpochState();
 }
 
 void TxnManager::UndoInserts()
@@ -632,6 +658,7 @@ RC TxnManager::RowDel()
 Row* TxnManager::RowLookupByKey(Table* const& table, const AccessType type, Key* const currentKey)
 {
     TryRecordTimestamp(1, startExec);//ADDBY NEU HW
+
     RC rc = RC_OK;
     Row* originalRow = nullptr;
     Sentinel* pSentinel = nullptr;
@@ -1303,9 +1330,7 @@ bool TxnManager::isOnlyRead()
     return true;
 }
 
-uint64_t GetThreadID(){
-    return (uint64_t) std::hash<std::thread::id>{}(std::this_thread::get_id());
-}
+
 
 void TxnManager::CommitInternalII()
 {
@@ -1324,10 +1349,8 @@ void TxnManager::CommitInternalII()
     }
     
     if(!m_occManager.IsReadOnly(this)){
-        uint64_t thread_id = GetThreadID();
-        uint64_t index_pack = thread_id % kPackageNum;
-        MOTAdaptor::IncRecordCommittedTxnCounters(index_pack);
-        // MOTAdaptor::Commit(this, index_pack);
+        MOTAdaptor::IncRecordCommittedTxnCounters(GetIndexPack());
+        // MOTAdaptor::Commit(this, GetIndexPack());
         while(!MOTAdaptor::IsRemoteRecordCommitted()) usleep(100);
     }
 }
@@ -1369,12 +1392,12 @@ RC TxnManager::Commit(){
     // bool result = isOnlyRead();
     bool result = m_occManager.IsReadOnly(this);
     if (this->m_accessMgr->m_rowCnt > 0 && !result){
-        uint64_t thread_id = GetThreadID();//随机分布
-        uint64_t index_pack = thread_id % kPackageNum;
-        uint64_t index_notify = thread_id % kNotifyNum;
+        uint64_t index_pack = GetIndexPack();
+        uint64_t index_notify = index_pack % kNotifyNum;
         uint64_t index_unique =  MOTAdaptor::IncLocalTxnIndex(index_pack);
         uint64_t cnt = 0;
         RC rc = RC_OK;
+        
         if(is_snap_isolation){
             if(!m_occManager.ValidateReadInMergeForSnap(this, local_ip_index)){
                 return RC_ABORT;
@@ -1385,24 +1408,30 @@ RC TxnManager::Commit(){
                 return RC_ABORT;
             }
         }
-        alloc:
-        ;
+        //插入失败不会令localchangeset 减1
         if(!MOTAdaptor::InsertTxntoLocalChangeSet(this, index_pack, index_unique)){
-            if(cnt == 0){ 
-                cnt = 1;
-                goto alloc;
-            }
-            MOT_LOG_INFO("*=*=*=*=*= InsertTxntoLocalChangeSet txn内存分配失败");
+            // MOT_LOG_INFO("txn_abort %llu ", GetStartEpoch());
             return RC_ABORT;
         }
         auto time1 = now_to_us();
-
+        cnt = 0;
+        // MOT_LOG_INFO("Commit Transaction %llu %llu %llu", GetStartEpoch(), GetCommitEpoch(), MOTAdaptor::GetLogicalEpoch());
         while(GetCommitEpoch() > MOTAdaptor::GetLogicalEpoch() || !MOTAdaptor::IsRecordCommitted()){
+            // if(cnt % 100 == 0) 
+            //     MOT_LOG_INFO("Commit Transaction %llu %llu %llu", GetStartEpoch(), GetCommitEpoch(), MOTAdaptor::GetLogicalEpoch());
+            // cnt ++;
             usleep(100);
         }
-
+        auto time3 = now_to_us();
+        this->SetBlockTime(time3 - time1);
         MOTAdaptor::IncLocalTxnCounters(index_pack);//此处得控制一下，发送出去的事务必须执行，由于调度导致在isRemoteExeced后加，出现问题
-        MOTAdaptor::IncLocalTxnExcCounters(index_pack);
+        if(GetCommitEpoch() == MOTAdaptor::GetLogicalEpoch())
+            MOTAdaptor::IncLocalTxnExcCounters(index_pack);
+        // else {
+        //     MOT_LOG_INFO("current epoch %llu, txn_epoch %llu", MOTAdaptor::GetLogicalEpoch(), GetStartEpoch());
+        // }
+        // wait_count.fetch_add(1);
+        // MOT_LOG_INFO("txn commit %llu", wait_count.load());
         // rc = m_occManager.ExecutionPhase(this, local_ip_index);
         rc = m_occManager.CommitPhase(this, local_ip_index);//此时该事务需要发送出去，验证失败只需减少本地事务计数器。
         MOTAdaptor::DecExeCounters(index_pack);
@@ -1419,21 +1448,59 @@ RC TxnManager::Commit(){
             // rc = m_occManager.CommitCheck(this, local_ip_index);
             // MOTAdaptor::Commit(this, index_pack);
         }
+        
         if(rc == RC_OK){
             MOTAdaptor::IncRecordCommitTxnCounters(index_pack);
             auto time2 = now_to_us();
             if(is_breakdown)
-                MOT_LOG_INFO("事务提交 commit epoch:%llu 用时:%llu", GetCommitEpoch(), time2 - time1);
+                MOT_LOG_INFO("事务提交 读写 commit epoch:%llu 用时:%llu 阻塞时间 %llu", GetCommitEpoch(), time2 - time1, GetBlockTime());
         }
         MOTAdaptor::DecComCounters(index_pack);
+        
+        if(rc == RC_ABORT && is_sync_exec == true) {
+            //由于在同步执行模式下，abort的事务会dec local_write_set[epoch][index]，导致logical进行判断本地事务完全进入执行阶段是出现问题
+            //baort后在fdw中的abort出会减ADD_NUM，导致减多了，这里需要加上 ADD_NUM
+            //这样localchangeset代表了发送出去的事务数量
+            // MOT_LOG_INFO("txn_abort_add_num %llu %llu", GetStartEpoch(), ADD_NUM);
+            MOTAdaptor::IncLocalChangeSetNum(GetStartEpoch(), GetIndexPack(), ADD_NUM);
+        }
+
         return rc;
     }
     else{
-        if(!m_occManager.ValidateReadInMerge(this, local_ip_index)){
-            return RC_ABORT;
+        // MOT_LOG_INFO("read only txn");
+        auto time1 = now_to_us();
+        if(is_snap_isolation){
+            if(!m_occManager.ValidateReadInMergeForSnap(this, local_ip_index)){
+                return RC_ABORT;
+            }
         }
+        else if(is_read_repeatable){
+            if(!m_occManager.ValidateReadInMerge(this, local_ip_index)){
+                return RC_ABORT;
+            }
+        }
+        if(is_sync_exec){
+            MOTAdaptor::DecLocalChangeSetNum(GetStartEpoch(), GetIndexPack(), ADD_NUM);
+        }
+        auto time2 = now_to_us();
+        if(is_breakdown)
+            MOT_LOG_INFO("事务提交 只读 commit epoch:%llu 用时:%llu 阻塞时间 %llu", GetCommitEpoch(), time2 - time1, GetBlockTime());
         return RC_OK;
     }
+
+    /**
+     * @brief 对于需要DecLocalChangeSet的地方： 这些地方不会产生写集 需要减去ADD_NUM
+     *      第一个是abort事务：分三种情况 
+     *          由客户baort 不会进入commit，直接在fdw中的abort中减ADD_NUM
+     *          进入commitabort的
+     *              写事务abort 由于写集发送，需要将写集发送中的1给加回来 然后在fdw中的abort中减ADD_NUM
+     *              读事务 在fdw中的abort中减ADD_NUM
+     *      第二个是只读事务
+     *          只读事务如果abort 则在fdw中的abort中减去ADD_NUM
+     *          成功执行的只读事务同样需要减去ADD_NUM，没有写集生成
+     * 
+     */
 }
 
 }  // namespace MOT

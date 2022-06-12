@@ -705,90 +705,91 @@ public:
     static uint64_t AddLogicalEpoch(){ return ++ logical_epoch;}
     static uint64_t GetLogicalEpoch(){ return logical_epoch;}
 
-    static uint64_t IncLocalTxnCounters(uint64_t index){ return local_txn_counters[index]->fetch_add(ADD_NUM);}
-    static uint64_t DecLocalTxnCounters(uint64_t index){ return local_txn_counters[index]->fetch_sub(ADD_NUM);}
-    static uint64_t DecExeCounters(uint64_t index){ return local_txn_counters[index]->fetch_sub(1);}
-    static uint64_t DecComCounters(uint64_t index){ return local_txn_counters[index]->fetch_sub(MOD_NUM);}
+    static uint64_t IncLocalTxnCounters(uint64_t index){ return local_txn_counters[index]->fetch_add(ADD_NUM, std::memory_order_release);}
+    static uint64_t DecLocalTxnCounters(uint64_t index){ return local_txn_counters[index]->fetch_sub(ADD_NUM, std::memory_order_release);}
+    static uint64_t DecExeCounters(uint64_t index){ return local_txn_counters[index]->fetch_sub(1, std::memory_order_release);}
+    static uint64_t DecComCounters(uint64_t index){ return local_txn_counters[index]->fetch_sub(MOD_NUM, std::memory_order_release);}
     static bool IsLocalTxnCountersExcEqualZero(){
         for(auto &i : local_txn_counters){
-            if( i->load() % static_cast<uint64_t>(1e10) != 0) return false;
+            if( i->load(std::memory_order_acquire) % static_cast<uint64_t>(1e10) != 0) return false;
         }
         return true;
     }
     static bool IsLocalTxnCountersComEqualZero(){
         for(auto &i : local_txn_counters){
-            if(i->load() != 0) return false;
+            if(i->load(std::memory_order_acquire) != 0) return false;
         }
         return true;
     }
     static uint64_t GetLocalTxnCounters(){
         uint64_t ans = 0;
         for(auto &i : local_txn_counters){
-            ans += i->load();
+            ans += i->load(std::memory_order_acquire);
         }
         return ans;
     }
 
-    static void SetLocalTxnExcCounters(uint64_t index, uint64_t value){ local_txn_exc_counters[index]->store(value);}
-    static uint64_t IncLocalTxnExcCounters(uint64_t index){ return local_txn_exc_counters[index]->fetch_add(1);}
+    static void SetLocalTxnExcCounters(uint64_t index, uint64_t value){ local_txn_exc_counters[index]->store(value, std::memory_order_release);}
+    static uint64_t IncLocalTxnExcCounters(uint64_t index){ return local_txn_exc_counters[index]->fetch_add(1, std::memory_order_release);}
+    static uint64_t DecLocalTxnExcCounters(uint64_t index){ return local_txn_exc_counters[index]->fetch_sub(1, std::memory_order_release);}
     static uint64_t GetLocalTxnExcCounters(){
         uint64_t ans = 0;
         for(auto &i : local_txn_exc_counters){
-            ans += i->load();
+            ans += i->load(std::memory_order_acquire);
         }
         return ans;
     }
 
-    static void SetRecordCommitTxnCounters(uint64_t index, uint64_t value){ record_commit_txn_counters[index]->store(value);}
-    static uint64_t IncRecordCommitTxnCounters(uint64_t index){ return record_commit_txn_counters[index]->fetch_add(1);}
+    static void SetRecordCommitTxnCounters(uint64_t index, uint64_t value){ record_commit_txn_counters[index]->store(value, std::memory_order_release);}
+    static uint64_t IncRecordCommitTxnCounters(uint64_t index){ return record_commit_txn_counters[index]->fetch_add(1, std::memory_order_release);}
     static uint64_t GetRecordCommitTxnCounters(){ 
         uint64_t ans = 0;
-        for(auto &i : record_commit_txn_counters) ans += i->load();
+        for(auto &i : record_commit_txn_counters) ans += i->load(std::memory_order_acquire);
         return ans;
     }
 
-    static void SetRecordCommittedTxnCounters(uint64_t index, uint64_t value){ record_committed_txn_counters[index]->store(value);}
-    static uint64_t IncRecordCommittedTxnCounters(uint64_t index){ return record_committed_txn_counters[index]->fetch_add(1);}
+    static void SetRecordCommittedTxnCounters(uint64_t index, uint64_t value){ record_committed_txn_counters[index]->store(value, std::memory_order_release);}
+    static uint64_t IncRecordCommittedTxnCounters(uint64_t index){ return record_committed_txn_counters[index]->fetch_add(1, std::memory_order_release);}
     static uint64_t GetRecordCommittedTxnCounters(){ 
         uint64_t ans = 0;
-        for(auto &i : record_committed_txn_counters) ans += i->load();
+        for(auto &i : record_committed_txn_counters) ans += i->load(std::memory_order_acquire);
         return ans;
     }
 
-    static uint64_t IncLocalTxnIndex(uint64_t index){ return local_txn_index[index]->fetch_add(1);}
+    static uint64_t IncLocalTxnIndex(uint64_t index){ return local_txn_index[index]->fetch_add(1, std::memory_order_release);}
 
-    static void SetRemoteMergedTxnCounters(uint64_t index, uint64_t value){ remote_merged_txn_counters[index]->store(value);}
-    static uint64_t IncRemoteMergedTxnCounters(uint64_t index){ return remote_merged_txn_counters[index]->fetch_add(1);}
+    static void SetRemoteMergedTxnCounters(uint64_t index, uint64_t value){ remote_merged_txn_counters[index]->store(value, std::memory_order_release);}
+    static uint64_t IncRemoteMergedTxnCounters(uint64_t index){ return remote_merged_txn_counters[index]->fetch_add(1, std::memory_order_release);}
     static uint64_t GetRemoteMergedTxnCounters(){ 
         uint64_t ans = 0;
-        for(auto &i : remote_merged_txn_counters) ans += i->load();
+        for(auto &i : remote_merged_txn_counters) ans += i->load(std::memory_order_acquire);
         return ans;
     }
 
-    static void SetRemoteCommitTxnCounters(uint64_t index, uint64_t value){ remote_commit_txn_counters[index]->store(value);}
-    static uint64_t IncRemoteCommitTxnCounters(uint64_t index){ return remote_commit_txn_counters[index]->fetch_add(1);}
+    static void SetRemoteCommitTxnCounters(uint64_t index, uint64_t value){ remote_commit_txn_counters[index]->store(value, std::memory_order_release);}
+    static uint64_t IncRemoteCommitTxnCounters(uint64_t index){ return remote_commit_txn_counters[index]->fetch_add(1, std::memory_order_release);}
     static uint64_t GetRemoteCommitTxnCounters(){ 
         uint64_t ans = 0;
-        for(auto &i : remote_commit_txn_counters) ans += i->load();
+        for(auto &i : remote_commit_txn_counters) ans += i->load(std::memory_order_acquire);
         return ans;
     }
 
-    static void SetRemoteCommittedTxnCounters(uint64_t index, uint64_t value){ remote_committed_txn_counters[index]->store(value);}
-    static uint64_t IncRemoteCommittedTxnCounters(uint64_t index){ return remote_committed_txn_counters[index]->fetch_add(1);}
+    static void SetRemoteCommittedTxnCounters(uint64_t index, uint64_t value){ remote_committed_txn_counters[index]->store(value, std::memory_order_release);}
+    static uint64_t IncRemoteCommittedTxnCounters(uint64_t index){ return remote_committed_txn_counters[index]->fetch_add(1, std::memory_order_release);}
     static uint64_t GetRemoteCommittedTxnCounters(){ 
         uint64_t ans = 0;
-        for(auto &i : remote_committed_txn_counters) ans += i->load();
+        for(auto &i : remote_committed_txn_counters) ans += i->load(std::memory_order_acquire);
         return ans;
     }
 
     static void LogicalEndEpoch(){
         for(int i = 0; i < (int)local_txn_counters.size(); i++){
-            local_txn_counters[i]->store(0);
-            local_txn_exc_counters[i]->store(0);
-            local_txn_index[i]->store(1);
-            remote_merged_txn_counters[i]->store(0);
-            remote_commit_txn_counters[i]->store(0);
-            remote_committed_txn_counters[i]->store(0);
+            local_txn_counters[i]->store(0, std::memory_order_release);
+            local_txn_exc_counters[i]->store(0, std::memory_order_release);
+            local_txn_index[i]->store(1, std::memory_order_release);
+            remote_merged_txn_counters[i]->store(0, std::memory_order_release);
+            remote_commit_txn_counters[i]->store(0, std::memory_order_release);
+            remote_committed_txn_counters[i]->store(0, std::memory_order_release);
         }
         remote_row_ptr_map.clear();
         insertSet.clear();
@@ -799,7 +800,9 @@ public:
     }
     
     static bool InsertTxntoLocalChangeSet(MOT::TxnManager* txMan, const uint64_t& index_pack, const uint64_t& index_unique);
-    static bool IncLocalChangeSetNum(uint64_t epoch, uint64_t &index_pack);
+    static bool TryIncLocalChangeSetNum(uint64_t epoch, uint64_t index_pack, uint64_t value);
+    static bool IncLocalChangeSetNum(uint64_t epoch, uint64_t index_pack, uint64_t value);
+    static bool DecLocalChangeSetNum(uint64_t epoch, uint64_t index_pack, uint64_t value);
     static bool InsertRowToSet(MOT::TxnManager* txMan, void* txn_void, const uint64_t& index_pack, const uint64_t& index_unique);
     static bool InsertTxnIntoRecordCommitQueue(MOT::TxnManager* txMan, void* txn_void, MOT::RC &rc);
     static void LocalTxnSafeExit(const uint64_t& index_pack, void* txn_void);

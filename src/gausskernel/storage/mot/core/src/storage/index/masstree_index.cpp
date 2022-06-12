@@ -191,6 +191,7 @@ IndexIterator* MasstreePrimaryIndex::Search(
 IndexIterator* MasstreePrimaryIndex::Search(
     char const* keybuf, uint32_t keylen, bool matchKey, bool forward, uint32_t pid, bool& found, bool passive) const
 {
+    TryRecordTimestamp(1, startExec); //ADDBY NEU HW
     IndexIterator* itr = nullptr;
 
     // Operation does not allocate memory from pools nor remove nodes. No need to set index's ptr

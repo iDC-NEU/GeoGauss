@@ -256,7 +256,8 @@ std::vector<std::string> send_ips;
 std::vector<uint64_t>send_ports;
 std::string kMasterIp, kPrivateIp;
 volatile bool is_stable_epoch_send = false, is_epoch_advanced_by_message = true, is_read_repeatable = true, is_breakdown = true, 
-    is_snap_isolation = true, is_cache_server_available = true, is_fault_tolerance_enable = false, is_protobuf_gzip = false, is_total_pack = false;
+    is_snap_isolation = true, is_cache_server_available = true, is_fault_tolerance_enable = false, is_protobuf_gzip = false, 
+    is_total_pack = false, is_sync_exec = false;
 
 void GenerateEpochThreads();
 void CkeckEpochThreadsI();
@@ -11570,6 +11571,9 @@ void GetServerInfo(){
 
     tinyxml2::XMLElement* is_protobuf_gzip_t = root->FirstChildElement("is_protobuf_gzip");
     is_protobuf_gzip = std::stoi(is_protobuf_gzip_t->GetText()) == 0 ? false : true;
+
+    tinyxml2::XMLElement* is_sync_exec_t = root->FirstChildElement("is_sync_exec");
+    is_sync_exec = std::stoi(is_sync_exec_t->GetText()) == 0 ? false : true;
 
     
     tinyxml2::XMLElement* notify_num = root->FirstChildElement("notify_num");

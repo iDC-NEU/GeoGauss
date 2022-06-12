@@ -98,6 +98,7 @@ extern uint64_t getRegisterValue(ExecContext* exec_context, int register_ref)
 uint64_t Instruction::Exec(ExecContext* exec_context)
 {
     TryRecordTimestamp(1, startExec);//ADDBY NEU HW
+    
 #ifdef MOT_JIT_DEBUG
     if (MOT_CHECK_LOG_LEVEL(MOT::LogLevel::LL_DEBUG)) {
         MOT_LOG_DEBUG("Executing instruction:");

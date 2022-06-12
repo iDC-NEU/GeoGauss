@@ -614,7 +614,29 @@ public:
         return startInMerge;
     }
     
+    void SetIndexPack(uint64_t value)
+    {
+        index_pack = value;
+    }
+    uint64_t GetIndexPack()
+    {
+        return index_pack;
+    }
+
+    void SetBlockTime(uint64_t value)
+    {
+        block_time = value;
+    }
+    uint64_t GetBlockTime()
+    {
+        return block_time;
+    }
+
     Key* GetTxnKey(MOT::Index* index, void* buf);
+    
+    void ClearEpochState() {
+        startEpoch = startLogicalEpoch = index_pack = CommitEpoch = block_time = 0;
+    }
 
 private:
 
@@ -622,7 +644,7 @@ private:
     /** @var timestamp for start and commit of the transaction. */
     // uint64_t startts;
     // uint64_t committs;
-    uint64_t startEpoch, startLogicalEpoch;
+    uint64_t startEpoch, startLogicalEpoch, index_pack, block_time;
     uint64_t CommitEpoch;
     bool startInMerge;
     uint64_t startTime;
