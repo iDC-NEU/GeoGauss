@@ -25,7 +25,6 @@
 #ifndef MOT_INTERNAL_H
 #define MOT_INTERNAL_H
 
-// #include "message.pb.h"
 #include <map>
 #include <string>
 #include "catalog_column_types.h"
@@ -83,8 +82,6 @@ extern void EpochRecordCommitThreadMain(uint64_t id);
 
 extern void EpochMessageSendThreadMain(uint64_t id);
 extern void EpochMessageListenThreadMain(uint64_t id);
-
-class EpochCache;
 
 namespace aum {
     class SpinLock {
@@ -881,5 +878,374 @@ inline void CleanQueryStatesOnError(MOT::TxnManager* txn)
 MOTFdwStateSt* InitializeFdwState(void* fdwState, List** fdwExpr, uint64_t exTableID);
 void* SerializeFdwState(MOTFdwStateSt* state);
 void ReleaseFdwState(MOTFdwStateSt* state);
+
+
+
+
+
+
+
+
+
+template<typename T>
+using BlockingConcurrentQueue =  moodycamel::BlockingConcurrentQueue<T>;
+// using BlockingConcurrentQueue = BlockingMPMCQueue<T>;
+// struct pack_params;
+// struct commit_thread_params;
+
+struct pack_thread_params {
+    uint64_t index;
+    uint64_t current_epoch;
+    std::shared_ptr<std::vector<std::shared_ptr<BlockingConcurrentQueue<std::string*>>>> local_change_set_txn_ptr_temp;
+    std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>> local_change_set_txn_num_ptr_temp;
+    pack_thread_params(uint64_t index, uint64_t ce, 
+        std::shared_ptr<std::vector<std::shared_ptr<BlockingConcurrentQueue<std::string*>>>> ptr1, 
+        std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>> ptr2): 
+        index(index), current_epoch(ce), local_change_set_txn_ptr_temp(ptr1), local_change_set_txn_num_ptr_temp(ptr2){}
+    pack_thread_params(){}
+};
+
+struct send_thread_params {
+    uint64_t current_epoch;
+    uint64_t tot;
+    std::string* merge_request_ptr;
+    send_thread_params(uint64_t ce, uint64_t tot_temp, std::string* ptr1):
+        current_epoch(ce), tot(tot_temp), merge_request_ptr(ptr1){}
+    send_thread_params(){}
+};
+
+
+class LocalWriteSet {
+public:
+    static uint64_t _max_length, _pack_num;
+    //当前epoch放入多少个txn
+    static std::vector<std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>> txn_num_ptrs;
+    //pack_thread取出了多少个 两者比较来判断是否发送epoch_end message
+    static std::vector<std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>> packd_txn_num_ptrs, write_abort_before_send_txn_num, 
+        write_abort_after_send_txn_num, total_abort_txn_num, read_abort_txn_num, read_committed_txn_num, write_committed_txn_num, 
+        read_total_txn_num, write_total_txn_num;
+
+    void Init(uint64_t pack_num, uint64_t length);
+    
+    
+    void PushBack(uint64_t epoch, std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>> ptr2, 
+        std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>> ptr3) {
+        auto epoch_mod = epoch % _max_length;
+        txn_num_ptrs[epoch_mod] = ptr2;
+        packd_txn_num_ptrs[epoch_mod] = ptr3;
+    }
+    
+    uint64_t LoadChangeSet(uint64_t epoch) {
+        uint64_t ans = 0, epoch_mod = epoch % _max_length;
+        for(int i = 0; i < (int)_pack_num; i ++)
+            ans += (*txn_num_ptrs[epoch_mod])[i]->load(std::memory_order_acquire);
+        return ans;
+    }
+
+
+    uint64_t LoadTotalAbortTxnNum(uint64_t epoch) {
+        uint64_t ans = 0, epoch_mod = epoch % _max_length;
+        for(int i = 0; i < (int)_pack_num; i ++)
+            ans += (*total_abort_txn_num[epoch_mod])[i]->load(std::memory_order_acquire);
+        return ans;
+    }
+
+    uint64_t LoadWriteAbortBeforeSendTxnNum(uint64_t epoch) {
+        uint64_t ans = 0, epoch_mod = epoch % _max_length;
+        for(int i = 0; i < (int)_pack_num; i ++)
+            ans += (*write_abort_before_send_txn_num[epoch_mod])[i]->load(std::memory_order_acquire);
+        return ans;
+    }
+
+    uint64_t LoadWriteAbortAfterSendTxnNum(uint64_t epoch) {
+        uint64_t ans = 0, epoch_mod = epoch % _max_length;
+        for(int i = 0; i < (int)_pack_num; i ++)
+            ans += (*write_abort_after_send_txn_num[epoch_mod])[i]->load(std::memory_order_acquire);
+        return ans;
+    }
+
+    uint64_t LoadWriteCommittedTxnNum(uint64_t epoch) {
+        uint64_t ans = 0, epoch_mod = epoch % _max_length;
+        for(int i = 0; i < (int)_pack_num; i ++)
+            ans += (*write_committed_txn_num[epoch_mod])[i]->load(std::memory_order_acquire);
+        return ans;
+    }
+
+    uint64_t LoadReadAbortTxnNum(uint64_t epoch) {
+        uint64_t ans = 0, epoch_mod = epoch % _max_length;
+        for(int i = 0; i < (int)_pack_num; i ++)
+            ans += (*read_abort_txn_num[epoch_mod])[i]->load(std::memory_order_acquire);
+        return ans;
+    }
+
+    int64_t LoadReadCommittedTxnNum(uint64_t epoch) {
+        uint64_t ans = 0, epoch_mod = epoch % _max_length;
+        for(int i = 0; i < (int)_pack_num; i ++)
+            ans += (*read_committed_txn_num[epoch_mod])[i]->load(std::memory_order_acquire);
+        return ans;
+    }
+
+    uint64_t LoadReadTotalTxnNum(uint64_t epoch) {
+        uint64_t ans = 0, epoch_mod = epoch % _max_length;
+        for(int i = 0; i < (int)_pack_num; i ++)
+            ans += (*read_total_txn_num[epoch_mod])[i]->load(std::memory_order_acquire);
+        return ans;
+    }
+
+    uint64_t LoadWriteTotalTxnNum(uint64_t epoch) {
+        uint64_t ans = 0, epoch_mod = epoch % _max_length;
+        for(int i = 0; i < (int)_pack_num; i ++)
+            ans += (*write_total_txn_num[epoch_mod])[i]->load(std::memory_order_acquire);
+        return ans;
+    }
+
+    uint64_t LoadPackedTxnNum(uint64_t epoch) {
+        uint64_t ans = 0, epoch_mod = epoch % _max_length;
+        for(int i = 0; i < (int)_pack_num; i ++)
+            ans += (*packd_txn_num_ptrs[epoch_mod])[i]->load(std::memory_order_acquire);
+        return ans;
+    }
+
+    uint64_t LoadShouldSendTxnNum(uint64_t epoch) {
+        if(is_sync_exec) {
+            // if(this->LoadChangeSet(epoch) < this->LoadReadCommittedTxnNum(epoch) - (this->LoadTotalAbortTxnNum(epoch) - this->LoadWriteAbortAfterSendTxnNum(epoch))) {
+            //     return this->LoadPackedTxnNum(epoch);
+            // }
+            return this->LoadChangeSet(epoch) - this->LoadReadCommittedTxnNum(epoch) - 
+                (this->LoadTotalAbortTxnNum(epoch) - this->LoadWriteAbortAfterSendTxnNum(epoch)) ;
+        }
+        else 
+            return this->LoadChangeSet(epoch);
+    }
+    uint64_t LoadShouldExecTxnNum(uint64_t epoch) {// 只在 is_sync_exec中使用
+        // if(this->LoadChangeSet(epoch) < this->LoadReadCommittedTxnNum(epoch) - (this->LoadTotalAbortTxnNum(epoch) - this->LoadWriteAbortAfterSendTxnNum(epoch))) {
+        //     return MOTAdaptor::GetLocalTxnExcCounters();
+        // }
+        return this->LoadChangeSet(epoch) - this->LoadReadCommittedTxnNum(epoch) - 
+            (this->LoadTotalAbortTxnNum(epoch) - this->LoadWriteAbortAfterSendTxnNum(epoch));
+    }
+
+    bool IsCurrentEpochFinished(uint64_t epoch) {
+        return ((this->LoadPackedTxnNum(epoch) >= this->LoadShouldSendTxnNum(epoch)) &&  epoch < MOTAdaptor::GetPhysicalEpoch());
+    }
+
+    bool TryAddNum(uint64_t epoch_num, uint64_t index, uint64_t value) {
+        (*(txn_num_ptrs[epoch_num % _max_length]))[index]->fetch_add(value, std::memory_order_release);
+        return true;
+        // if((*(txn_num_ptrs[epoch_num % _max_length]))[index]->fetch_add(value, std::memory_order_release) == 0
+        //     && epoch_num < MOTAdaptor::GetPhysicalEpoch() ){
+        //         (*(txn_num_ptrs[epoch_num % _max_length]))[index]->fetch_sub(value, std::memory_order_release);
+        //         return false;
+        //     }
+        // else {
+        //     // MOT_LOG_INFO("txn add num %llu %llu %llu", epoch_num, LoadChangeSet(epoch_num));
+        //     return true;
+        // }
+    }
+
+    bool AddNum(uint64_t epoch_num, uint64_t index, uint64_t value) {
+        (*(txn_num_ptrs[epoch_num % _max_length]))[index]->fetch_add(value, std::memory_order_release);
+        return true;
+    }
+
+    bool SubNum(uint64_t epoch_num, uint64_t index, uint64_t value) {
+        // MOT_LOG_INFO("txn sub num %llu %llu %llu", epoch_num, LoadChangeSet(epoch_num), value);
+        (*(txn_num_ptrs[epoch_num % _max_length]))[index]->fetch_sub(value, std::memory_order_release);
+        return true;
+    }
+
+    bool AddPackedNum(uint64_t epoch_num, uint64_t index, uint64_t value) {
+        (*(packd_txn_num_ptrs[epoch_num % _max_length]))[index]->fetch_add(value, std::memory_order_release);
+        return true;
+    }
+
+    bool SubPackedNum(uint64_t epoch_num, uint64_t index, uint64_t value) {
+        (*(packd_txn_num_ptrs[epoch_num % _max_length]))[index]->fetch_sub(value, std::memory_order_release);
+        return true;
+    }
+
+};
+
+class RemoteCache {
+public:    
+    static uint64_t _max_length, _pack_num;
+    static std::unique_ptr<std::atomic<uint64_t>> should_receive_pack_num, online_server_num;
+    static std::vector<std::unique_ptr<std::atomic<uint64_t>>> is_server_online;
+    static std::vector<std::vector<std::unique_ptr<std::atomic<uint64_t>>>> 
+        received_pack_num, received_txn_num, should_receive_txn_num;
+    static std::vector<std::unique_ptr<std::atomic<uint64_t>>> 
+        received_total_pack_num, received_total_txn_num;
+
+    void Init(uint64_t pack_num, uint64_t length);
+        // received_total_pack_num->fetch_add(value, std::memory_order_release);
+
+    
+    uint64_t AddShouldReceiveTxnNum(uint64_t epoch, uint64_t index, uint64_t value) {
+        return should_receive_txn_num[epoch % _max_length][index]->fetch_add(value, std::memory_order_release);
+    }
+    void StoreShouldReceiveTxnNum(uint64_t epoch, uint64_t index, uint64_t value) {
+        should_receive_txn_num[epoch % _max_length][index]->store(value, std::memory_order_release);
+    }
+    uint64_t GetShouldReceiveTxnNum(uint64_t epoch, uint64_t index) {
+        return should_receive_txn_num[epoch % _max_length][index]->load(std::memory_order_acquire);
+    }
+    uint64_t GetShouldReceiveTxnNum(uint64_t epoch) {
+        epoch %= _max_length;
+        uint64_t ans = 0;
+        for(int i = 0; i < (int)received_pack_num[epoch].size(); i++) {
+            if(received_pack_num[epoch][i]->load(std::memory_order_acquire) == 1)
+                ans += should_receive_txn_num[epoch][i]->load(std::memory_order_acquire);
+        }
+        return ans;
+    }
+
+    uint64_t AddReceivedPackNum(uint64_t epoch, uint64_t index, uint64_t value) {
+        return received_pack_num[epoch % _max_length][index]->fetch_add(value, std::memory_order_release);
+    }
+    void StoreReceivedPackNum(uint64_t epoch, uint64_t index, uint64_t value) {
+        received_pack_num[epoch % _max_length][index]->store(value, std::memory_order_release);
+    }
+    uint64_t GetReceivedPackNum(uint64_t epoch, uint64_t index) {
+        return received_pack_num[epoch % _max_length][index]->load(std::memory_order_acquire);
+    }
+    uint64_t GetReceivedPackNum(uint64_t epoch) {
+        epoch %= _max_length;
+        uint64_t ans = 0;
+        for(int i = 0; i < (int)received_pack_num[epoch].size(); i++) {
+            if(received_pack_num[epoch][i]->load(std::memory_order_acquire) == 1)
+                ans ++;
+        }
+        return ans;
+    }
+
+    uint64_t AddReceivedTxnNum(uint64_t epoch, uint64_t index, uint64_t value) {
+        return received_txn_num[epoch % _max_length][index]->fetch_add(value, std::memory_order_release);
+    }
+    void StoreReceivedTxnNum(uint64_t epoch, uint64_t index, uint64_t value) {
+        received_txn_num[epoch % _max_length][index]->store(value, std::memory_order_release);
+    }
+    uint64_t GetReceivedTxnNum(uint64_t epoch, uint64_t index) {
+        return received_txn_num[epoch % _max_length][index]->load(std::memory_order_acquire);
+    }
+    uint64_t GetReceivedTxnNum(uint64_t epoch) {
+        epoch %= _max_length;
+        uint64_t ans = 0;
+        for(int i = 0; i < (int)received_pack_num[epoch].size(); i++) {
+            if(received_pack_num[epoch][i]->load(std::memory_order_acquire) == 1)
+                ans += received_txn_num[epoch][i]->load(std::memory_order_acquire);
+        }
+        return ans;
+    }
+
+    uint64_t AddReceivedPackNumTotal(uint64_t epoch, uint64_t value) {
+        return received_total_pack_num[epoch % _max_length]->fetch_add(value, std::memory_order_release);
+    }
+    uint64_t GetReceivedPackNumTotal(uint64_t epoch) {
+        return received_total_pack_num[epoch % _max_length]->load(std::memory_order_acquire);
+    }
+    uint64_t AddReceivedTxnNumTotal(uint64_t epoch, uint64_t value) {
+        return received_total_txn_num[epoch % _max_length]->fetch_add(value, std::memory_order_release);
+    }
+    uint64_t GetReceivedTxnNumTotal(uint64_t epoch) {
+        return received_total_txn_num[epoch % _max_length]->load(std::memory_order_acquire);
+    }
+
+    uint64_t AddShouldReceivePackNum(uint64_t value) {
+        return should_receive_pack_num->fetch_add(value, std::memory_order_release);
+    }
+    uint64_t SubShouldReceivePackNum(uint64_t value) {
+        return should_receive_pack_num->fetch_sub(value, std::memory_order_release);
+    }
+    void StoreShouldReceivePackNum(uint64_t value) {
+        should_receive_pack_num->store(value, std::memory_order_release);
+    }
+    uint64_t GetShouldReceivePackNum() {
+        return should_receive_pack_num->load(std::memory_order_acquire);
+    }
+
+    uint64_t AddOnLineServerNum(uint64_t value) {
+        return online_server_num->fetch_add(value, std::memory_order_release);
+    }
+    uint64_t SubOnLineServerNum(uint64_t value) {
+        return online_server_num->fetch_sub(value, std::memory_order_release);
+    }
+    void StoreOnLineServerNum(uint64_t value) {
+        online_server_num->store(value, std::memory_order_release);
+    }
+    uint64_t GetOnLineServerNum() {
+        return online_server_num->load(std::memory_order_acquire);
+    }
+
+    
+    void Clear(uint64_t epoch) {
+        epoch %= _max_length;
+        for(int i = 0; i < (int)received_pack_num[epoch].size(); i++) {
+            received_pack_num[epoch][i]->store(0, std::memory_order_release);
+            received_txn_num[epoch][i]->store(0, std::memory_order_release);
+            should_receive_txn_num[epoch][i]->store(0, std::memory_order_release);
+        }
+        received_total_pack_num[epoch]->store(0, std::memory_order_release);
+        received_total_txn_num[epoch]->store(0, std::memory_order_release);
+    }
+
+    void SetServerOnLine(std::string ip) {
+        for(int i = 0; i < (int)kServerIp.size(); i++) {
+            if(ip == kServerIp[i]) {
+                is_server_online[i]->store(1, std::memory_order_release);
+            }
+        }
+    }
+
+    void SetServerOffLine(std::string ip) {
+        for(int i = 0; i < (int)kServerIp.size(); i++) {
+            if(ip == kServerIp[i]) {
+                is_server_online[i]->store(0, std::memory_order_release);
+            }
+        }
+    }
+
+    void SetServerOnLine(uint64_t index) {
+        is_server_online[index]->store(1, std::memory_order_release);
+    }
+
+    void SetServerOffLine(uint64_t index) {
+        is_server_online[index]->store(0, std::memory_order_release);
+    }
+
+    bool IsServerOnLine(uint64_t index) {
+        return (is_server_online[index]->load(std::memory_order_acquire) == 1);
+    }
+
+
+    
+
+    void ReceiveAMessage() {
+
+    }
+
+};
+
+class RegionCacheServerState{
+public:
+    static uint64_t _max_length;
+    static std::vector<std::unique_ptr<std::atomic<uint64_t>>>  received_epoch;
+
+    void Init(uint64_t pack_num, uint64_t length);
+    
+    bool IsCacheServerStored(uint64_t epoch) {
+        if(received_epoch[epoch % _max_length]->load(std::memory_order_acquire) == static_cast<uint64_t>(1)) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    void SetCacheServerStored(uint64_t epoch, uint64_t value) {
+        received_epoch[epoch % _max_length]->store(value, std::memory_order_release);
+    }
+
+};
+
 
 #endif  // MOT_INTERNAL_H

@@ -39,6 +39,7 @@
 #include "utilities.h"
 #include "mm_api.h"
 #include "../../../../fdw_adapter/src/mot_internal.h"//ADDBY NEU
+// #include "../../../../fdw_adapter/src/mot_internal.cpp"//ADDBY NEU
 #include "postmaster/postmaster.h"
 #include <cpuid.h>
 #include <sstream>
@@ -190,11 +191,9 @@ RC TxnManager::StartTransaction(uint64_t transactionId, int isolationLevel)
         SetIndexPack(GetThreadID() % kPackageNum);
         add_num:
         SetStartEpoch(MOTAdaptor::GetPhysicalEpoch());//ADDBY NEU
-        SetCommitEpoch(GetStartEpoch());
-        SetStartLogicalEpoch(MOTAdaptor::GetLogicalEpoch());
         // MOT_LOG_INFO("Start Transaction 1 %llu %llu", GetStartEpoch(), MOTAdaptor::GetLogicalEpoch());
         if(is_sync_exec) {
-            if(!MOTAdaptor::TryIncLocalChangeSetNum(GetStartEpoch(), GetIndexPack(), ADD_NUM)) goto add_num;
+            if(!MOTAdaptor::TryIncLocalChangeSetNum(GetStartEpoch(), GetIndexPack(), 1)) goto add_num;
             // MOT_LOG_INFO("==Start Transaction 1 %llu %llu", GetStartEpoch(), MOTAdaptor::GetLogicalEpoch());
             // uint64_t cnt = 0;
             while(GetStartEpoch() > MOTAdaptor::GetLogicalEpoch() || !MOTAdaptor::IsRecordCommitted()) {
@@ -205,6 +204,8 @@ RC TxnManager::StartTransaction(uint64_t transactionId, int isolationLevel)
                 // }
             }
         }
+        SetCommitEpoch(GetStartEpoch());
+        SetStartLogicalEpoch(MOTAdaptor::GetLogicalEpoch());
     }
     
     return RC_OK;
@@ -399,7 +400,6 @@ void TxnManager::Cleanup()
     ClearErrorStack();
     m_accessMgr->ClearTableCache();
     m_queryState.clear();
-    ClearEpochState();
 }
 
 void TxnManager::UndoInserts()
@@ -1353,6 +1353,7 @@ void TxnManager::CommitInternalII()
         // MOTAdaptor::Commit(this, GetIndexPack());
         while(!MOTAdaptor::IsRemoteRecordCommitted()) usleep(100);
     }
+    // ClearEpochState();
 }
 
 void TxnManager::CommitForRemote()
@@ -1385,122 +1386,191 @@ void TxnManager::CommitForRemote()
  * */
 std::atomic<int> wait_count(0);
 std::atomic<int> wait_count_commit(0);
-
+LocalWriteSet local_write_set2;
 RC TxnManager::Commit(){
-    // MOT_LOG_INFO("commit()");
+    MOT_LOG_INFO("epoch %llu commit()", GetStartEpoch());
     m_occManager.updateInsertSetSize(this);
-    // bool result = isOnlyRead();
     bool result = m_occManager.IsReadOnly(this);
-    if (this->m_accessMgr->m_rowCnt > 0 && !result){
-        uint64_t index_pack = GetIndexPack();
-        uint64_t index_notify = index_pack % kNotifyNum;
-        uint64_t index_unique =  MOTAdaptor::IncLocalTxnIndex(index_pack);
-        uint64_t cnt = 0;
-        RC rc = RC_OK;
-        
-        if(is_snap_isolation){
-            if(!m_occManager.ValidateReadInMergeForSnap(this, local_ip_index)){
+    uint64_t index_pack = GetIndexPack();
+    uint64_t index_notify = index_pack % kNotifyNum;
+    uint64_t index_unique =  MOTAdaptor::IncLocalTxnIndex(index_pack);
+    uint64_t cnt = 0;
+    RC rc = RC_OK;
+    if(is_sync_exec) {
+        /**
+         * @brief 对于需要DecLocalChangeSet的地方： 这些地方不会产生写集 需要减去1
+         *      第一个是abort事务：分三种情况 
+         *          由客户baort 不会进入commit，直接在fdw中的abort中减1
+         *          进入commitabort的
+         *              写事务abort 由于写集发送，需要将写集发送中的1给加回来 然后在fdw中的abort中减1
+         *              读事务 在fdw中的abort中减1
+         *      第二个是只读事务
+         *          只读事务如果abort 则在fdw中的abort中减去1
+         *          成功执行的只读事务同样需要减去1，没有写集生成
+         * 
+         */
+        if (this->m_accessMgr->m_rowCnt > 0 && !result){
+            (*local_write_set2.write_total_txn_num[(GetStartEpoch() % local_write_set2._max_length)])[GetIndexPack()]->fetch_add(1);
+            if(is_snap_isolation){
+                if(!m_occManager.ValidateReadInMergeForSnap(this, local_ip_index)){
+                    (*local_write_set2.write_abort_before_send_txn_num[(GetStartEpoch() % local_write_set2._max_length)])[GetIndexPack()]->fetch_add(1);
+                    return RC_ABORT;
+                }
+            }
+            else if(is_read_repeatable){
+                if(!m_occManager.ValidateReadInMerge(this, local_ip_index)){
+                    (*local_write_set2.write_abort_before_send_txn_num[(GetStartEpoch() % local_write_set2._max_length)])[GetIndexPack()]->fetch_add(1);
+                    return RC_ABORT;
+                }
+            }
+            if(!MOTAdaptor::InsertTxntoLocalChangeSet(this, index_pack, index_unique)){
+                    (*local_write_set2.write_abort_after_send_txn_num[(GetStartEpoch() % local_write_set2._max_length)])[GetIndexPack()]->fetch_add(1);
                 return RC_ABORT;
             }
-        }
-        else if(is_read_repeatable){
-            if(!m_occManager.ValidateReadInMerge(this, local_ip_index)){
-                return RC_ABORT;
-            }
-        }
-        //插入失败不会令localchangeset 减1
-        if(!MOTAdaptor::InsertTxntoLocalChangeSet(this, index_pack, index_unique)){
-            // MOT_LOG_INFO("txn_abort %llu ", GetStartEpoch());
-            return RC_ABORT;
-        }
-        auto time1 = now_to_us();
-        cnt = 0;
-        // MOT_LOG_INFO("Commit Transaction %llu %llu %llu", GetStartEpoch(), GetCommitEpoch(), MOTAdaptor::GetLogicalEpoch());
-        while(GetCommitEpoch() > MOTAdaptor::GetLogicalEpoch() || !MOTAdaptor::IsRecordCommitted()){
-            // if(cnt % 100 == 0) 
-            //     MOT_LOG_INFO("Commit Transaction %llu %llu %llu", GetStartEpoch(), GetCommitEpoch(), MOTAdaptor::GetLogicalEpoch());
-            // cnt ++;
-            usleep(100);
-        }
-        auto time3 = now_to_us();
-        this->SetBlockTime(time3 - time1);
-        MOTAdaptor::IncLocalTxnCounters(index_pack);//此处得控制一下，发送出去的事务必须执行，由于调度导致在isRemoteExeced后加，出现问题
-        if(GetCommitEpoch() == MOTAdaptor::GetLogicalEpoch())
-            MOTAdaptor::IncLocalTxnExcCounters(index_pack);
-        // else {
-        //     MOT_LOG_INFO("current epoch %llu, txn_epoch %llu", MOTAdaptor::GetLogicalEpoch(), GetStartEpoch());
-        // }
-        // wait_count.fetch_add(1);
-        // MOT_LOG_INFO("txn commit %llu", wait_count.load());
-        // rc = m_occManager.ExecutionPhase(this, local_ip_index);
-        rc = m_occManager.CommitPhase(this, local_ip_index);//此时该事务需要发送出去，验证失败只需减少本地事务计数器。
-        MOTAdaptor::DecExeCounters(index_pack);
-        
-        if (rc != RC_ABORT){    
-            while(!MOTAdaptor::IsRemoteExeced()) {
+            auto time1 = now_to_us();
+            cnt = 0;
+            // MOT_LOG_INFO("Commit Transaction %llu %llu %llu", GetStartEpoch(), GetCommitEpoch(), MOTAdaptor::GetLogicalEpoch());
+            while(GetCommitEpoch() > MOTAdaptor::GetLogicalEpoch() || !MOTAdaptor::IsRecordCommitted()){
+                // if(cnt % 100 == 0) 
+                //     MOT_LOG_INFO("Commit Transaction %llu %llu %llu", GetStartEpoch(), GetCommitEpoch(), MOTAdaptor::GetLogicalEpoch());
+                // cnt ++;
                 usleep(100);
             }
-            // MOTAdaptor::Merge(this, index_pack);
-            auto csn_temp = std::to_string(GetCommitSequenceNumber()) + ":" + std::to_string(local_ip_index);
-            if(MOTAdaptor::abort_transcation_csn_set.contain(csn_temp, csn_temp)){
-                rc = RC_ABORT;
+            auto time3 = now_to_us();
+            this->SetBlockTime(time3 - time1);
+            MOTAdaptor::IncLocalTxnCounters(index_pack);//此处得控制一下，发送出去的事务必须执行，由于调度导致在isRemoteExeced后加，出现问题
+            if(GetCommitEpoch() == MOTAdaptor::GetLogicalEpoch())
+                MOTAdaptor::IncLocalTxnExcCounters(index_pack);
+
+            rc = m_occManager.CommitPhase(this, local_ip_index);
+            MOTAdaptor::DecExeCounters(index_pack);
+            
+            if (rc != RC_ABORT){    
+                while(!MOTAdaptor::IsRemoteExeced()) {
+                    usleep(100);
+                }
+                auto csn_temp = std::to_string(GetCommitSequenceNumber()) + ":" + std::to_string(local_ip_index);
+                if(MOTAdaptor::abort_transcation_csn_set.contain(csn_temp, csn_temp)){
+                    rc = RC_ABORT;
+                }
             }
-            // rc = m_occManager.CommitCheck(this, local_ip_index);
-            // MOTAdaptor::Commit(this, index_pack);
+            
+            if(rc == RC_OK){
+                MOTAdaptor::IncRecordCommitTxnCounters(index_pack);
+                (*local_write_set2.write_committed_txn_num[(GetStartEpoch() % local_write_set2._max_length)])[GetIndexPack()]->fetch_add(1);
+                auto time2 = now_to_us();
+                if(is_breakdown)
+                    MOT_LOG_INFO("事务提交 读写 commit epoch:%llu 用时:%llu 阻塞时间 %llu", GetCommitEpoch(), time2 - time1, GetBlockTime());
+            }
+            MOTAdaptor::DecComCounters(index_pack);
+            
+            if(rc == RC_ABORT && is_sync_exec == true) {
+                //由于在同步执行模式下，abort的事务会dec local_write_set2[epoch][index]，导致logical进行判断本地事务完全进入执行阶段是出现问题
+                //baort后在fdw中的abort出会减1，导致减多了，这里需要加上 1
+                //这样localchangeset代表了发送出去的事务数量
+                // MOT_LOG_INFO("txn_abort_add_num %llu %llu", GetStartEpoch(), 1);
+                (*local_write_set2.write_abort_after_send_txn_num[(GetStartEpoch() % local_write_set2._max_length)])[GetIndexPack()]->fetch_add(1);
+                // MOTAdaptor::IncLocalChangeSetNum(GetStartEpoch(), GetIndexPack(), 1);
+            }
+
+            return rc;
         }
-        
-        if(rc == RC_OK){
-            MOTAdaptor::IncRecordCommitTxnCounters(index_pack);
+        else{
+            auto time1 = now_to_us();
+            (*local_write_set2.read_total_txn_num[(GetStartEpoch() % local_write_set2._max_length)])[GetIndexPack()]->fetch_add(1);
+            if(is_snap_isolation){
+                if(!m_occManager.ValidateReadInMergeForSnap(this, local_ip_index)){
+                    (*local_write_set2.read_abort_txn_num[(GetStartEpoch() % local_write_set2._max_length)])[GetIndexPack()]->fetch_add(1);
+
+                    return RC_ABORT;
+                }
+            }
+            else if(is_read_repeatable){
+                if(!m_occManager.ValidateReadInMerge(this, local_ip_index)){
+                    (*local_write_set2.read_abort_txn_num[(GetStartEpoch() % local_write_set2._max_length)])[GetIndexPack()]->fetch_add(1);
+                    return RC_ABORT;
+                }
+            }
+            (*local_write_set2.read_committed_txn_num[(GetStartEpoch() % local_write_set2._max_length)])[GetIndexPack()]->fetch_add(1);
+            // MOTAdaptor::DecLocalChangeSetNum(GetStartEpoch(), GetIndexPack(), 1);
             auto time2 = now_to_us();
-            if(is_breakdown)
-                MOT_LOG_INFO("事务提交 读写 commit epoch:%llu 用时:%llu 阻塞时间 %llu", GetCommitEpoch(), time2 - time1, GetBlockTime());
+            if(is_breakdown) {
+                MOT_LOG_INFO("事务提交 只读 commit epoch:%llu 用时:%llu 阻塞时间 %llu", GetCommitEpoch(), time2 - time1, GetBlockTime());
+            }
+            return RC_OK;
         }
-        MOTAdaptor::DecComCounters(index_pack);
-        
-        if(rc == RC_ABORT && is_sync_exec == true) {
-            //由于在同步执行模式下，abort的事务会dec local_write_set[epoch][index]，导致logical进行判断本地事务完全进入执行阶段是出现问题
-            //baort后在fdw中的abort出会减ADD_NUM，导致减多了，这里需要加上 ADD_NUM
-            //这样localchangeset代表了发送出去的事务数量
-            // MOT_LOG_INFO("txn_abort_add_num %llu %llu", GetStartEpoch(), ADD_NUM);
-            MOTAdaptor::IncLocalChangeSetNum(GetStartEpoch(), GetIndexPack(), ADD_NUM);
-        }
-
-        return rc;
     }
-    else{
-        // MOT_LOG_INFO("read only txn");
-        auto time1 = now_to_us();
-        if(is_snap_isolation){
-            if(!m_occManager.ValidateReadInMergeForSnap(this, local_ip_index)){
+    else {
+        if (this->m_accessMgr->m_rowCnt > 0 && !result){
+            if(is_snap_isolation){
+                if(!m_occManager.ValidateReadInMergeForSnap(this, local_ip_index)){
+                    return RC_ABORT;
+                }
+            }
+            else if(is_read_repeatable){
+                if(!m_occManager.ValidateReadInMerge(this, local_ip_index)){
+                    return RC_ABORT;
+                }
+            }
+            if(!MOTAdaptor::InsertTxntoLocalChangeSet(this, index_pack, index_unique)){
                 return RC_ABORT;
             }
-        }
-        else if(is_read_repeatable){
-            if(!m_occManager.ValidateReadInMerge(this, local_ip_index)){
-                return RC_ABORT;
+            auto time1 = now_to_us();
+            cnt = 0;
+            while(GetCommitEpoch() > MOTAdaptor::GetLogicalEpoch() || !MOTAdaptor::IsRecordCommitted()){
+                usleep(100);
             }
-        }
-        if(is_sync_exec){
-            MOTAdaptor::DecLocalChangeSetNum(GetStartEpoch(), GetIndexPack(), ADD_NUM);
-        }
-        auto time2 = now_to_us();
-        if(is_breakdown)
-            MOT_LOG_INFO("事务提交 只读 commit epoch:%llu 用时:%llu 阻塞时间 %llu", GetCommitEpoch(), time2 - time1, GetBlockTime());
-        return RC_OK;
-    }
+            auto time3 = now_to_us();
+            this->SetBlockTime(time3 - time1);
+            MOTAdaptor::IncLocalTxnCounters(index_pack);
+            MOTAdaptor::IncLocalTxnExcCounters(index_pack);
 
-    /**
-     * @brief 对于需要DecLocalChangeSet的地方： 这些地方不会产生写集 需要减去ADD_NUM
-     *      第一个是abort事务：分三种情况 
-     *          由客户baort 不会进入commit，直接在fdw中的abort中减ADD_NUM
-     *          进入commitabort的
-     *              写事务abort 由于写集发送，需要将写集发送中的1给加回来 然后在fdw中的abort中减ADD_NUM
-     *              读事务 在fdw中的abort中减ADD_NUM
-     *      第二个是只读事务
-     *          只读事务如果abort 则在fdw中的abort中减去ADD_NUM
-     *          成功执行的只读事务同样需要减去ADD_NUM，没有写集生成
-     * 
-     */
+            // rc = m_occManager.ExecutionPhase(this, local_ip_index);
+            rc = m_occManager.CommitPhase(this, local_ip_index);//此时该事务需要发送出去，验证失败只需减少本地事务计数器。
+            MOTAdaptor::DecExeCounters(index_pack);
+            
+            if (rc != RC_ABORT){    
+                while(!MOTAdaptor::IsRemoteExeced()) {
+                    usleep(100);
+                }
+                auto csn_temp = std::to_string(GetCommitSequenceNumber()) + ":" + std::to_string(local_ip_index);
+                if(MOTAdaptor::abort_transcation_csn_set.contain(csn_temp, csn_temp)){
+                    rc = RC_ABORT;
+                }
+                // rc = m_occManager.CommitCheck(this, local_ip_index);
+                // MOTAdaptor::Commit(this, index_pack);
+            }
+            
+            if(rc == RC_OK){
+                MOTAdaptor::IncRecordCommitTxnCounters(index_pack);
+                auto time2 = now_to_us();
+                if(is_breakdown)
+                    MOT_LOG_INFO("事务提交 读写 commit epoch:%llu 用时:%llu 阻塞时间 %llu", GetCommitEpoch(), time2 - time1, GetBlockTime());
+            }
+            MOTAdaptor::DecComCounters(index_pack);
+            
+
+            return rc;
+        }
+        else{
+            auto time1 = now_to_us();
+            if(is_snap_isolation){
+                if(!m_occManager.ValidateReadInMergeForSnap(this, local_ip_index)){
+                    return RC_ABORT;
+                }
+            }
+            else if(is_read_repeatable){
+                if(!m_occManager.ValidateReadInMerge(this, local_ip_index)){
+                    return RC_ABORT;
+                }
+            }
+            auto time2 = now_to_us();
+            if(is_breakdown) {
+                MOT_LOG_INFO("事务提交 只读 commit epoch:%llu 用时:%llu 阻塞时间 %llu", GetCommitEpoch(), time2 - time1, GetBlockTime());
+            }
+            return RC_OK;
+        }
+    }
 }
 
 }  // namespace MOT
