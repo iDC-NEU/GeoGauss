@@ -1543,7 +1543,6 @@ uint64_t GetThreadID(){
 uint64_t now_to_us_fdw(){
     return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
-LocalWriteSet local_write_set1;
 
 static void MOTXactCallback(XactEvent event, void* arg)
 {
@@ -1582,13 +1581,16 @@ static void MOTXactCallback(XactEvent event, void* arg)
         txn->SetStartEpoch(MOTAdaptor::GetPhysicalEpoch());//ADDBY NEU
         // MOT_LOG_INFO("Start Transaction 2 %llu %llu", txn->GetStartEpoch(), MOTAdaptor::GetLogicalEpoch());
         if(is_sync_exec) {
-            (*(local_write_set1.txn_num_ptrs[txn->GetStartEpoch() % local_write_set1._max_length]))[txn->GetIndexPack()]->fetch_add(1, std::memory_order_release);
+            (*(MOTAdaptor::txn_num_ptrs[txn->GetStartEpoch() % MOTAdaptor::_max_length]))[txn->GetIndexPack()]->fetch_add(1, std::memory_order_release);
             // if(!MOTAdaptor::TryIncLocalChangeSetNum(txn->GetStartEpoch(), txn->GetIndexPack(), 1)) goto add_num;
-            MOT_LOG_INFO("==Start Transaction 2 %llu %llu %llu", txn->GetStartEpoch(), MOTAdaptor::GetLogicalEpoch(), local_write_set1.LoadChangeSet(txn->GetStartEpoch()));
+            // MOT_LOG_INFO("==Start Transaction 2 %llu %llu %llu", txn->GetStartEpoch(), MOTAdaptor::GetLogicalEpoch(), MOTAdaptor::LoadChangeSet(txn->GetStartEpoch()));
             uint64_t cnt = 0;
             auto time1 = now_to_us_fdw();
             while(txn->GetStartEpoch() > MOTAdaptor::GetLogicalEpoch() || !MOTAdaptor::IsRecordCommitted()) {
-                usleep(100);
+                // if(cnt % 10 == 0)
+                //     MOTAdaptor::EnqueueEmpty(txn->GetIndexPack());
+                // cnt ++;
+                usleep(200);
                 // cnt ++;
                 // if(cnt % 100 == 0) {
                 //     MOT_LOG_INFO("Start Transaction 2 %llu %llu", txn->GetStartEpoch(), MOTAdaptor::GetLogicalEpoch());
@@ -1604,13 +1606,13 @@ static void MOTXactCallback(XactEvent event, void* arg)
     elog(DEBUG2, "xact_callback event %u, transaction state %u, tid %lu", event, txnState, tid);
 
     if (event == XACT_EVENT_START) {
-        MOT_LOG_INFO("XACT_EVENT_START");
+        // MOT_LOG_INFO("XACT_EVENT_START %llu", txn->GetStartEpoch());
         elog(DEBUG2, "XACT_EVENT_START, tid %lu", tid);
         if (txnState == MOT::TxnState::TXN_START) {
             // Double start!!!
-            MOT_LOG_INFO("XACT_EVENT_START ROLL_BACK");
+            // MOT_LOG_INFO("XACT_EVENT_START ROLL_BACK");
             if(is_sync_exec) {
-                (*local_write_set1.total_abort_txn_num[(txn->GetStartEpoch() % local_write_set1._max_length)])[txn->GetIndexPack()]->fetch_add(1);
+                (*MOTAdaptor::total_abort_txn_num[(txn->GetStartEpoch() % MOTAdaptor::_max_length)])[txn->GetIndexPack()]->fetch_add(1);
                 // MOTAdaptor::DecLocalChangeSetNum(txn->GetStartEpoch(), txn->GetIndexPack(), 1);
             }
             txn->ClearEpochState();
@@ -1620,7 +1622,7 @@ static void MOTXactCallback(XactEvent event, void* arg)
             txn->StartTransaction(tid, u_sess->utils_cxt.XactIsoLevel);
         }
     } else if (event == XACT_EVENT_COMMIT) {
-        MOT_LOG_INFO("XACT_EVENT_COMMIT");
+        // MOT_LOG_INFO("XACT_EVENT_COMMIT %llu", txn->GetStartEpoch());
         if (txnState == MOT::TxnState::TXN_END_TRANSACTION) {
             elog(DEBUG2, "XACT_EVENT_COMMIT, transaction already in end state, skipping, tid %lu", tid);
             return;
@@ -1657,7 +1659,7 @@ static void MOTXactCallback(XactEvent event, void* arg)
         }
         txn->SetTxnState(MOT::TxnState::TXN_COMMIT);
     } else if (event == XACT_EVENT_RECORD_COMMIT) {
-        MOT_LOG_INFO("XACT_EVENT_RECORD_COMMIT");
+        // MOT_LOG_INFO("XACT_EVENT_RECORD_COMMIT %llu", txn->GetStartEpoch());
         if (txnState == MOT::TxnState::TXN_END_TRANSACTION) {
             elog(DEBUG2, "XACT_EVENT_COMMIT, transaction already in end state, skipping, tid %lu", tid);
             return;
@@ -1679,7 +1681,7 @@ static void MOTXactCallback(XactEvent event, void* arg)
             // }
         }
     } else if (event == XACT_EVENT_END_TRANSACTION) {
-        MOT_LOG_INFO("XACT_EVENT_END_TRANSACTION");
+        // MOT_LOG_INFO("XACT_EVENT_END_TRANSACTION %llu", txn->GetStartEpoch());
         if (txnState == MOT::TxnState::TXN_END_TRANSACTION) {
             elog(DEBUG2, "XACT_EVENT_END_TRANSACTION, transaction already in end state, skipping, tid %lu", tid);
             return;
@@ -1697,7 +1699,7 @@ static void MOTXactCallback(XactEvent event, void* arg)
         //     //远端事务提交未完成，本地事务写完后等待。
         // }
     } else if (event == XACT_EVENT_PREPARE) {
-        MOT_LOG_INFO("XACT_EVENT_PREPARE");
+        // MOT_LOG_INFO("XACT_EVENT_PREPARE %llu", txn->GetStartEpoch());
         elog(DEBUG2, "XACT_EVENT_PREPARE, tid %lu", tid);
         rc = MOTAdaptor::Prepare();
         if (rc != MOT::RC_OK) {
@@ -1710,9 +1712,9 @@ static void MOTXactCallback(XactEvent event, void* arg)
         }
         txn->SetTxnState(MOT::TxnState::TXN_PREPARE);
     } else if (event == XACT_EVENT_ABORT) {
-        MOT_LOG_INFO("XACT_EVENT_ABORT");
+        // MOT_LOG_INFO("XACT_EVENT_ABORT %llu", txn->GetStartEpoch());
         if(is_sync_exec) {
-            (*local_write_set1.total_abort_txn_num[(txn->GetStartEpoch() % local_write_set1._max_length)])[txn->GetIndexPack()]->fetch_add(1);
+            (*MOTAdaptor::total_abort_txn_num[(txn->GetStartEpoch() % MOTAdaptor::_max_length)])[txn->GetIndexPack()]->fetch_add(1);
             // MOTAdaptor::DecLocalChangeSetNum(txn->GetStartEpoch(), txn->GetIndexPack(), 1);
         }
         elog(DEBUG2, "XACT_EVENT_ABORT, tid %lu", tid);
@@ -1720,7 +1722,7 @@ static void MOTXactCallback(XactEvent event, void* arg)
         txn->ClearEpochState();
         txn->SetTxnState(MOT::TxnState::TXN_ROLLBACK);
     } else if (event == XACT_EVENT_COMMIT_PREPARED) {
-        MOT_LOG_INFO("XACT_EVENT_COMMIT_PREPARED");
+        // MOT_LOG_INFO("XACT_EVENT_COMMIT_PREPARED %llu", txn->GetStartEpoch());
         if (txnState == MOT::TxnState::TXN_PREPARE) {
             elog(DEBUG2, "XACT_EVENT_COMMIT_PREPARED, tid %lu", tid);
             // Need to get the envelope CSN for cross transaction support.
@@ -1748,7 +1750,7 @@ static void MOTXactCallback(XactEvent event, void* arg)
         }
         txn->SetTxnState(MOT::TxnState::TXN_COMMIT);
     } else if (event == XACT_EVENT_ROLLBACK_PREPARED) {
-        MOT_LOG_INFO("XACT_EVENT_ROLLBACK_PREPARED");
+        // MOT_LOG_INFO("XACT_EVENT_ROLLBACK_PREPARED %llu", txn->GetStartEpoch());
         elog(DEBUG2, "XACT_EVENT_ROLLBACK_PREPARED, tid %lu", tid);
         if (txnState != MOT::TxnState::TXN_PREPARE) {
             elog(DEBUG2, "Rollback prepared and txn is not in prepare state, tid %lu", tid);
@@ -1756,7 +1758,7 @@ static void MOTXactCallback(XactEvent event, void* arg)
         MOTAdaptor::RollbackPrepared();
         txn->SetTxnState(MOT::TxnState::TXN_ROLLBACK);
     } else if (event == XACT_EVENT_PREROLLBACK_CLEANUP) {
-        MOT_LOG_INFO("XACT_EVENT_PREROLLBACK_CLEANUP");
+        // MOT_LOG_INFO("XACT_EVENT_PREROLLBACK_CLEANUP %llu", txn->GetStartEpoch());
         CleanQueryStatesOnError(txn);
     }
 }
