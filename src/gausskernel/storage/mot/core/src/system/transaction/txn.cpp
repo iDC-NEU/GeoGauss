@@ -1396,19 +1396,8 @@ RC TxnManager::Commit(){
     uint64_t index_unique =  MOTAdaptor::IncLocalTxnIndex(GetStartEpoch() % MOTAdaptor::max_length, index_pack);
     uint64_t cnt = 0;
     RC rc = RC_OK;
+    SetStartMOTCommitTime(now_to_us());
     if(is_sync_exec) {
-        /**
-         * @brief 对于需要DecLocalChangeSet的地方： 这些地方不会产生写集 需要减去1
-         *      第一个是abort事务：分三种情况 
-         *          由客户baort 不会进入commit，直接在fdw中的abort中减1
-         *          进入commitabort的
-         *              写事务abort 由于写集发送，需要将写集发送中的1给加回来 然后在fdw中的abort中减1
-         *              读事务 在fdw中的abort中减1
-         *      第二个是只读事务
-         *          只读事务如果abort 则在fdw中的abort中减去1
-         *          成功执行的只读事务同样需要减去1，没有写集生成
-         * 
-         */
         if (this->m_accessMgr->m_rowCnt > 0 && !result){
             // MOT_LOG_INFO("epoch %llu commit() write", GetStartEpoch());
             (*MOTAdaptor::write_total_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
@@ -1430,27 +1419,16 @@ RC TxnManager::Commit(){
             }
             auto time1 = now_to_us();
             cnt = 0;
-            // MOT_LOG_INFO("Commit Transaction %llu %llu %llu", GetStartEpoch(), GetCommitEpoch(), MOTAdaptor::GetLogicalEpoch());
             while(GetCommitEpoch() > MOTAdaptor::GetLogicalEpoch() || !MOTAdaptor::IsRecordCommitted()){
-                // if(cnt % 100 == 0) 
-                //     MOT_LOG_INFO("Commit Transaction %llu %llu %llu", GetStartEpoch(), GetCommitEpoch(), MOTAdaptor::GetLogicalEpoch());
-                // cnt ++;
                 usleep(100);
             }
             auto epoch_mod = GetCommitEpoch() % MOTAdaptor::max_length;
-            auto time3 = now_to_us();
-            this->SetBlockTime(time3 - time1);
-            MOTAdaptor::IncLocalTxnCounters(epoch_mod, index_pack);//此处得控制一下，发送出去的事务必须执行，由于调度导致在isRemoteExeced后加，出现问题
+            MOTAdaptor::IncLocalTxnCounters(epoch_mod, index_pack);
             MOTAdaptor::IncLocalTxnExcCounters(epoch_mod, index_pack);
-
             rc = m_occManager.CommitPhase(this, local_ip_index);
             MOTAdaptor::DecExeCounters(epoch_mod, index_pack);
-            
             if (rc != RC_ABORT){    
                 while(!MOTAdaptor::IsRemoteExeced()) {
-                    // if(cnt % 10 == 0)
-                    //     MOTAdaptor::EnqueueEmpty(index_pack);
-                    // cnt ++;
                     usleep(100);
                 }
                 auto csn_temp = std::to_string(GetCommitSequenceNumber()) + ":" + std::to_string(local_ip_index);
@@ -1461,33 +1439,26 @@ RC TxnManager::Commit(){
             
             if(rc == RC_OK){
                 MOTAdaptor::IncRecordCommitTxnCounters(epoch_mod, index_pack);
-                auto time2 = now_to_us();
-                if(is_breakdown)
-                    MOT_LOG_INFO("事务提交 读写 commit epoch:%llu 用时:%llu 阻塞时间 %llu", GetCommitEpoch(), time2 - time1, GetBlockTime());
-            }
-            MOTAdaptor::DecComCounters(epoch_mod, index_pack);
-            
-            if(rc == RC_ABORT) {
-                //由于在同步执行模式下，abort的事务会dec local_write_set2[epoch][index]，导致logical进行判断本地事务完全进入执行阶段是出现问题
-                //baort后在fdw中的abort出会减1，导致减多了，这里需要加上 1
-                //这样localchangeset代表了发送出去的事务数量
-                // MOT_LOG_INFO("txn_abort_add_num %llu %llu", GetStartEpoch(), 1);
-                (*MOTAdaptor::write_abort_after_send_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
+                (*MOTAdaptor::write_committed_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
+                if(is_breakdown) {
+                    auto time2 = now_to_us();
+                    MOT_LOG_INFO("事务提交 读写 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu",
+                        GetCommitEpoch(), GetStartMOTExecTime(), GetStartMOTCommitTime(), time2, GetBlockTime(),  ((GetStartMOTCommitTime() - GetStartMOTExecTime()) -(GetStartMOTExecTime() - GetBlockTime())), (time2 - GetStartMOTCommitTime()));
+                }
             }
             else {
-                (*MOTAdaptor::write_committed_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
+                (*MOTAdaptor::write_abort_after_send_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
             }
 
+            MOTAdaptor::DecComCounters(epoch_mod, index_pack);
             return rc;
         }
         else{
-            // MOT_LOG_INFO("epoch %llu commit() read", GetStartEpoch());
             (*MOTAdaptor::read_total_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
             auto time1 = now_to_us();
             if(is_snap_isolation){
                 if(!m_occManager.ValidateReadInMergeForSnap(this, local_ip_index)){
                     (*MOTAdaptor::read_abort_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
-
                     return RC_ABORT;
                 }
             }
@@ -1498,10 +1469,10 @@ RC TxnManager::Commit(){
                 }
             }
             (*MOTAdaptor::read_committed_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
-            // MOTAdaptor::DecLocalChangeSetNum(GetStartEpoch(), GetIndexPack(), 1);
-            auto time2 = now_to_us();
             if(is_breakdown) {
-                MOT_LOG_INFO("事务提交 只读 commit epoch:%llu 用时:%llu 阻塞时间 %llu", GetCommitEpoch(), time2 - time1, GetBlockTime());
+                auto time2 = now_to_us();
+                MOT_LOG_INFO("事务提交 读写 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu",
+                        GetCommitEpoch(), GetStartMOTExecTime(), GetStartMOTCommitTime(), time2, GetBlockTime(),  ((GetStartMOTCommitTime() - GetStartMOTExecTime()) -(GetStartMOTExecTime() - GetBlockTime())), (time2 - GetStartMOTCommitTime()));
             }
             return RC_OK;
         }
@@ -1533,7 +1504,7 @@ RC TxnManager::Commit(){
             MOTAdaptor::IncLocalTxnExcCounters(epoch_mod, index_pack);
 
             // rc = m_occManager.ExecutionPhase(this, local_ip_index);
-            rc = m_occManager.CommitPhase(this, local_ip_index);//此时该事务需要发送出去，验证失败只需减少本地事务计数器。
+            rc = m_occManager.CommitPhase(this, local_ip_index);
             MOTAdaptor::DecExeCounters(epoch_mod, index_pack);
             
             if (rc != RC_ABORT){    
@@ -1550,13 +1521,13 @@ RC TxnManager::Commit(){
             
             if(rc == RC_OK){
                 MOTAdaptor::IncRecordCommitTxnCounters(epoch_mod, index_pack);
-                auto time2 = now_to_us();
-                if(is_breakdown)
-                    MOT_LOG_INFO("事务提交 读写 commit epoch:%llu 用时:%llu 阻塞时间 %llu", GetCommitEpoch(), time2 - time1, GetBlockTime());
+                if(is_breakdown) {
+                    auto time2 = now_to_us();
+                    MOT_LOG_INFO("事务提交 读写 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu",
+                        GetCommitEpoch(), GetStartMOTExecTime(), GetStartMOTCommitTime(), time2, GetBlockTime(),  (GetStartMOTCommitTime() - GetStartMOTExecTime()), GetBlockTime(),  (time2 - GetStartMOTCommitTime() - GetBlockTime()));
+                }
             }
             MOTAdaptor::DecComCounters(epoch_mod, index_pack);
-            
-
             return rc;
         }
         else{
@@ -1571,9 +1542,10 @@ RC TxnManager::Commit(){
                     return RC_ABORT;
                 }
             }
-            auto time2 = now_to_us();
             if(is_breakdown) {
-                MOT_LOG_INFO("事务提交 只读 commit epoch:%llu 用时:%llu 阻塞时间 %llu", GetCommitEpoch(), time2 - time1, GetBlockTime());
+                auto time2 = now_to_us();
+                MOT_LOG_INFO("事务提交 读写 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu",
+                    GetCommitEpoch(), GetStartMOTExecTime(), GetStartMOTCommitTime(), time2, GetBlockTime(),  (GetStartMOTCommitTime() - GetStartMOTExecTime()), GetBlockTime(),  (time2 - GetStartMOTCommitTime() - GetBlockTime()));
             }
             return RC_OK;
         }

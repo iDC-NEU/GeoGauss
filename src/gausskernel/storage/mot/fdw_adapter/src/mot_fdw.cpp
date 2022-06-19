@@ -1577,6 +1577,8 @@ static void MOTXactCallback(XactEvent event, void* arg)
 
     if(txn->GetStartEpoch() == 0) {
         txn->SetIndexPack(GetThreadID() % kPackageNum);
+        auto time1 = now_to_us_fdw();
+        txn->SetStartMOTExecTime(time1);
         add_num:
         txn->SetStartEpoch(MOTAdaptor::GetPhysicalEpoch());//ADDBY NEU
         // MOT_LOG_INFO("Start Transaction 2 %llu %llu", txn->GetStartEpoch(), MOTAdaptor::GetLogicalEpoch());
@@ -1585,7 +1587,7 @@ static void MOTXactCallback(XactEvent event, void* arg)
             // if(!MOTAdaptor::TryIncLocalChangeSetNum(txn->GetStartEpoch(), txn->GetIndexPack(), 1)) goto add_num;
             // MOT_LOG_INFO("==Start Transaction 2 %llu %llu %llu", txn->GetStartEpoch(), MOTAdaptor::GetLogicalEpoch(), MOTAdaptor::LoadChangeSet(txn->GetStartEpoch()));
             uint64_t cnt = 0;
-            auto time1 = now_to_us_fdw();
+            
             while(txn->GetStartEpoch() > MOTAdaptor::GetLogicalEpoch() || !MOTAdaptor::IsRecordCommitted()) {
                 // if(cnt % 10 == 0)
                 //     MOTAdaptor::EnqueueEmpty(txn->GetIndexPack());

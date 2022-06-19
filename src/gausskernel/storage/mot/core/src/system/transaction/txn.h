@@ -632,11 +632,31 @@ public:
         return block_time;
     }
 
+    void SetStartMOTExecTime(uint64_t value)
+    {
+        mot_start_exec_time = value;
+    }
+    uint64_t GetStartMOTExecTime()
+    {
+        return mot_start_exec_time;
+    }
+
+    void SetStartMOTCommitTime(uint64_t value)
+    {
+        mot_start_commit_time = value;
+    }
+    uint64_t GetStartMOTCommitTime()
+    {
+        return mot_start_commit_time;
+    }
+
     Key* GetTxnKey(MOT::Index* index, void* buf);
     
     void ClearEpochState() {
-        startEpoch = startLogicalEpoch = index_pack = CommitEpoch = block_time = 0;
+        startEpoch = startLogicalEpoch = index_pack = CommitEpoch = block_time = mot_start_exec_time = mot_start_commit_time = 0;
     }
+
+
 
 private:
 
@@ -644,7 +664,7 @@ private:
     /** @var timestamp for start and commit of the transaction. */
     // uint64_t startts;
     // uint64_t committs;
-    uint64_t startEpoch, startLogicalEpoch, index_pack, block_time;
+    uint64_t startEpoch, startLogicalEpoch, index_pack, mot_start_exec_time, mot_start_commit_time, block_time;
     uint64_t CommitEpoch;
     bool startInMerge;
     uint64_t startTime;
