@@ -1442,8 +1442,8 @@ RC TxnManager::Commit(){
                 (*MOTAdaptor::write_committed_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
                 if(is_breakdown) {
                     auto time2 = now_to_us();
-                    MOT_LOG_INFO("事务提交 读写 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu MOTTotalTime %llu",
-                        GetCommitEpoch(), GetStartMOTExecTime(), GetStartMOTCommitTime(), time2, GetBlockTime(),  ((GetStartMOTCommitTime() - GetStartMOTExecTime()) -(GetStartMOTExecTime() - GetBlockTime())), time2 - GetStartMOTCommitTime(), time2 - GetStartMOTExecTime());
+                    MOT_LOG_INFO("事务提交 读写 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu MOTTotalTime %llu ZipTime %llu ZipSize %llu WriteSize %llu",
+                        GetCommitEpoch(), GetStartMOTExecTime(), GetStartMOTCommitTime(), time2, GetBlockTime(), ((GetStartMOTCommitTime() - GetStartMOTExecTime()) - GetBlockTime()), time2 - GetStartMOTCommitTime(), time2 - GetStartMOTExecTime(), GetZipTime(), GetZipSize(), GetWriteSize());
                 }
             }
             else {
@@ -1471,8 +1471,8 @@ RC TxnManager::Commit(){
             (*MOTAdaptor::read_committed_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
             if(is_breakdown) {
                 auto time2 = now_to_us();
-                MOT_LOG_INFO("事务提交 读写 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu MOTTotalTime %llu",
-                        GetCommitEpoch(), GetStartMOTExecTime(), GetStartMOTCommitTime(), time2, GetBlockTime(),  ((GetStartMOTCommitTime() - GetStartMOTExecTime()) -(GetStartMOTExecTime() - GetBlockTime())), time2 - GetStartMOTCommitTime(), time2 - GetStartMOTExecTime());
+                MOT_LOG_INFO("事务提交 只读 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu MOTTotalTime %llu ZipTime %llu ZipSize %llu WriteSize %llu",
+                        GetCommitEpoch(), GetStartMOTExecTime(), GetStartMOTCommitTime(), time2, GetBlockTime(), ((GetStartMOTCommitTime() - GetStartMOTExecTime()) - GetBlockTime()), time2 - GetStartMOTCommitTime(), time2 - GetStartMOTExecTime(), GetZipTime(), GetZipSize(), GetWriteSize());
             }
             return RC_OK;
         }
@@ -1523,8 +1523,8 @@ RC TxnManager::Commit(){
                 MOTAdaptor::IncRecordCommitTxnCounters(epoch_mod, index_pack);
                 if(is_breakdown) {
                     auto time2 = now_to_us();
-                    MOT_LOG_INFO("事务提交 读写 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu MOTTotalTime %llu",
-                        GetCommitEpoch(), GetStartMOTExecTime(), GetStartMOTCommitTime(), time2, GetBlockTime(),  (GetStartMOTCommitTime() - GetStartMOTExecTime()), GetBlockTime(),  (time2 - GetStartMOTCommitTime() - GetBlockTime()), time2 - GetStartMOTExecTime());
+                    MOT_LOG_INFO("事务提交 读写 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu MOTTotalTime %llu ZipTime %llu ZipSize %llu WriteSize %llu",
+                        GetCommitEpoch(), GetStartMOTExecTime(), GetStartMOTCommitTime(), time2, GetBlockTime(),  (GetStartMOTCommitTime() - GetStartMOTExecTime()), GetBlockTime(),  (time2 - GetStartMOTCommitTime() - GetBlockTime()), time2 - GetStartMOTExecTime(), GetZipTime(), GetZipSize(), GetWriteSize());
                 }
             }
             MOTAdaptor::DecComCounters(epoch_mod, index_pack);
@@ -1544,8 +1544,8 @@ RC TxnManager::Commit(){
             }
             if(is_breakdown) {
                 auto time2 = now_to_us();
-                MOT_LOG_INFO("事务提交 读写 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu MOTTotalTime %llu",
-                    GetCommitEpoch(), GetStartMOTExecTime(), GetStartMOTCommitTime(), time2, GetBlockTime(),  (GetStartMOTCommitTime() - GetStartMOTExecTime()), GetBlockTime(),  (time2 - GetStartMOTCommitTime() - GetBlockTime()), time2 - GetStartMOTExecTime());
+                MOT_LOG_INFO("事务提交 只读 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu MOTTotalTime %llu ZipTime %llu ZipSize %llu WriteSize %llu",
+                    GetCommitEpoch(), GetStartMOTExecTime(), GetStartMOTCommitTime(), time2, GetBlockTime(),  (GetStartMOTCommitTime() - GetStartMOTExecTime()), GetBlockTime(),  (time2 - GetStartMOTCommitTime() - GetBlockTime()), time2 - GetStartMOTExecTime(), GetZipTime(), GetZipSize(), GetWriteSize());
             }
             return RC_OK;
         }

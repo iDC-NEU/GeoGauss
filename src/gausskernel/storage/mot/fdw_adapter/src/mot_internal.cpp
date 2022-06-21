@@ -2576,6 +2576,7 @@ bool MOTAdaptor::InsertTxntoLocalChangeSet(MOT::TxnManager* txMan, const uint64_
         else {
             std::string* serialized_txn_str_ptr = new std::string();
             if(is_protobuf_gzip == true) {
+                auto time1 = now_to_us();
                 google::protobuf::io::GzipOutputStream::Options options;
                 options.format = google::protobuf::io::GzipOutputStream::GZIP;
                 options.compression_level = 9;
@@ -2583,9 +2584,13 @@ bool MOTAdaptor::InsertTxntoLocalChangeSet(MOT::TxnManager* txMan, const uint64_
                 google::protobuf::io::GzipOutputStream gzipStream(&outputStream, options);
                 txn->SerializeToZeroCopyStream(&gzipStream);
                 gzipStream.Close();
+                auto time2 = now_to_us();
+                txMan->SetZipSize(serialized_txn_str_ptr->size());
+                txMan->SetZipTime(time2 - time1);
             }
             else {
                 txn->SerializeToString(serialized_txn_str_ptr);
+                txMan->SetWriteSize(serialized_txn_str_ptr->size());
             }
             // MOT_LOG_INFO("=**= protobuf size %lu", serialized_txn_str_ptr->size());
             Enqueue(std::move(std::make_unique<pack_params>(serialized_txn_str_ptr, std::move(txn), txMan->GetCommitEpoch(), index_pack)), 
