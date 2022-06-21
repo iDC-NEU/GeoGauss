@@ -3040,10 +3040,11 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
         for(;;){
             //等所有上一个epoch 的事务写完 再开始下一个epoch
             cnt = 0;
-            while(MOTAdaptor::GetRecordCommittedTxnCounters(epoch_mod) != MOTAdaptor::GetRecordCommitTxnCounters(epoch_mod)) usleep(100);
+            while(MOTAdaptor::GetRecordCommittedTxnCounters(last_epoch_mod) != MOTAdaptor::GetRecordCommitTxnCounters(last_epoch_mod)) usleep(100);
             MOTAdaptor::SetRecordCommitted(true);
-            MOT_LOG_INFO("=上一个epoch所有事务写入完成 %llu, %llu %llu", MOTAdaptor::GetRecordCommittedTxnCounters(epoch_mod), 
-                MOTAdaptor::GetRecordCommitTxnCounters(epoch_mod), now_to_us());
+            total_commit_txn_num += MOTAdaptor::GetRecordCommitTxnCounters(last_epoch_mod);
+            MOT_LOG_INFO("===上一个epoch所有事务写入完成 %llu, %llu %llu total %llu ", MOTAdaptor::GetRecordCommittedTxnCounters(last_epoch_mod), 
+                MOTAdaptor::GetRecordCommitTxnCounters(last_epoch_mod), total_commit_txn_num, now_to_us());
 
             while(MOTAdaptor::GetPhysicalEpoch() <= MOTAdaptor::GetLogicalEpoch() + kDelayEpochNum) usleep(100);
             
@@ -3117,6 +3118,7 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
             MOTAdaptor::RemoteCacheClear(epoch_mod);//清空当前epoch的remote信息 为后面腾出空间 远端已经发送过来，不能清空下一个epoch的信息
             MOTAdaptor::ClearMergeEpochState();
             MOTAdaptor::AddLogicalEpoch();
+            last_epoch_mod = epoch_mod;
             epoch ++;
             epoch_mod = epoch % max_length;
             epoch_commit_time = commit_time = now_to_us();
