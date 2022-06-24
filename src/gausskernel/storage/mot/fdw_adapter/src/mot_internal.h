@@ -672,7 +672,7 @@ public:
     static std::vector<std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>> local_txn_counters, local_txn_exc_counters,
         local_txn_index,
         record_commit_txn_counters, record_committed_txn_counters, remote_merged_txn_counters, remote_commit_txn_counters, 
-        remote_committed_txn_counters;
+        remote_committed_txn_counters, limite_txn_num;
     static std::map<uint64_t, std::unique_ptr<std::vector<MOT::Row*>>> remote_row_ptr_map;
     static aum::concurrent_unordered_map<std::string, std::string, std::string> insertSet;
     static aum::concurrent_unordered_map<std::string, std::string, std::string> insertSetForCommit;
@@ -783,6 +783,15 @@ public:
         uint64_t ans = 0;
         epoch_mod %= max_length;
         for(int i = 0; i < (int)pack_num; i ++) ans += (*remote_committed_txn_counters[epoch_mod])[i]->load();
+        return ans;
+    }
+
+    static void SetLimiteTxnCounters(uint64_t epoch_mod, uint64_t index, uint64_t value){ (*limite_txn_num[epoch_mod % max_length])[index]->store(value);}
+    static uint64_t IncLimiteTxnCounters(uint64_t epoch_mod, uint64_t index){ return (*limite_txn_num[epoch_mod % max_length])[index]->fetch_add(1);}
+    static uint64_t GetLimiteTxnCounters(uint64_t epoch_mod){ 
+        uint64_t ans = 0;
+        epoch_mod %= max_length;
+        for(int i = 0; i < (int)pack_num; i ++) ans += (*limite_txn_num[epoch_mod])[i]->load();
         return ans;
     }
 
@@ -936,6 +945,10 @@ public:
         insertSetForCommit.clear();
         abort_transcation_csn_set.clear();
         remote_execed = false;
+        auto epoch = logical_epoch % max_length;
+        for(int i = 0; i <= (int)pack_num; i++) {
+            (*limite_txn_num[epoch])[i]->store(0);
+        }
     }
 
     static void ClearEpochState(uint64_t epoch_mod){

@@ -1580,7 +1580,17 @@ static void MOTXactCallback(XactEvent event, void* arg)
         auto time1 = now_to_us_fdw();
         txn->SetStartMOTExecTime(time1);
         add_num:
-        txn->SetStartEpoch(MOTAdaptor::GetPhysicalEpoch());//ADDBY NEU
+        if(is_limite_txn) {
+            auto epoch = MOTAdaptor::GetPhysicalEpoch();
+            while(MOTAdaptor::IncLimiteTxnCounters(epoch, 0) > kLimiteTxnNum) {
+                epoch ++;
+                if((epoch + 10) % MOTAdaptor::max_length == MOTAdaptor::GetLogicalEpoch() % MOTAdaptor::max_length) assert(false);
+            }
+            txn->SetStartEpoch(epoch);
+        }
+        else {
+            txn->SetStartEpoch(MOTAdaptor::GetPhysicalEpoch());//ADDBY NEU
+        }
         // MOT_LOG_INFO("Start Transaction 2 %llu %llu", txn->GetStartEpoch(), MOTAdaptor::GetLogicalEpoch());
         if(is_sync_exec) {
             (*(MOTAdaptor::txn_num_ptrs[txn->GetStartEpoch() % MOTAdaptor::_max_length]))[txn->GetIndexPack()]->fetch_add(1, std::memory_order_release);
@@ -1589,14 +1599,7 @@ static void MOTXactCallback(XactEvent event, void* arg)
             uint64_t cnt = 0;
             
             while(txn->GetStartEpoch() > MOTAdaptor::GetLogicalEpoch() || !MOTAdaptor::IsRecordCommitted()) {
-                // if(cnt % 10 == 0)
-                //     MOTAdaptor::EnqueueEmpty(txn->GetIndexPack());
-                // cnt ++;
                 usleep(200);
-                // cnt ++;
-                // if(cnt % 100 == 0) {
-                //     MOT_LOG_INFO("Start Transaction 2 %llu %llu", txn->GetStartEpoch(), MOTAdaptor::GetLogicalEpoch());
-                // }
             }
             txn->SetBlockTime(now_to_us_fdw() - time1);
         }

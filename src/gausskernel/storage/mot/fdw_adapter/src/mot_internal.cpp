@@ -2337,7 +2337,7 @@ std::vector<std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>
     MOTAdaptor::packd_txn_num_ptrs, MOTAdaptor::write_abort_before_send_txn_num, 
     MOTAdaptor::write_abort_after_send_txn_num, MOTAdaptor::total_abort_txn_num, MOTAdaptor::read_abort_txn_num, 
     MOTAdaptor::read_committed_txn_num, MOTAdaptor::write_committed_txn_num, 
-    MOTAdaptor::read_total_txn_num, MOTAdaptor::write_total_txn_num, MOTAdaptor::pack_txn_num;
+    MOTAdaptor::read_total_txn_num, MOTAdaptor::write_total_txn_num, MOTAdaptor::pack_txn_num, MOTAdaptor::limite_txn_num;
 
 // RemoteCache Static
 // uint64_t MOTAdaptor::_max_length = kCacheMaxLength, MOTAdaptor::_pack_num = kPackageNum;
@@ -2653,6 +2653,8 @@ void InitEpochTimerManager(){
     MOTAdaptor::write_total_txn_num.resize(MOTAdaptor::_max_length + 2);
     MOTAdaptor::pack_txn_num.resize(MOTAdaptor::_max_length + 2);
 
+    MOTAdaptor::limite_txn_num.resize(MOTAdaptor::_max_length + 2);
+
     for(int i = 0; i < (int)kCacheMaxLength; i ++) {
         MOTAdaptor::local_txn_counters[i] = std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
         MOTAdaptor::local_txn_exc_counters[i] = std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
@@ -2674,6 +2676,8 @@ void InitEpochTimerManager(){
         MOTAdaptor::read_total_txn_num[i] = std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
         MOTAdaptor::write_total_txn_num[i] = std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
         MOTAdaptor::pack_txn_num[i] = std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
+
+        MOTAdaptor::limite_txn_num[i] = std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
 
         MOTAdaptor::local_txn_counters[i]->resize(kPackageNum + 2);
         MOTAdaptor::local_txn_exc_counters[i]->resize(kPackageNum + 2);
@@ -2697,6 +2701,8 @@ void InitEpochTimerManager(){
         MOTAdaptor::write_total_txn_num[i]->resize(MOTAdaptor::_pack_num + 2);
         MOTAdaptor::pack_txn_num[i]->resize(MOTAdaptor::_pack_num + 2);
 
+        MOTAdaptor::limite_txn_num[i]->resize(MOTAdaptor::_pack_num + 2);
+
         for(int j = 0; j <= (int)kPackageNum; j++){
             (*MOTAdaptor::local_txn_counters[i])[j] = std::make_shared<std::atomic<uint64_t>>(0);
             (*MOTAdaptor::local_txn_exc_counters[i])[j] = std::make_shared<std::atomic<uint64_t>>(0);
@@ -2718,7 +2724,8 @@ void InitEpochTimerManager(){
             (*MOTAdaptor::read_total_txn_num[i])[j] = std::make_shared<std::atomic<uint64_t>>(0);
             (*MOTAdaptor::write_total_txn_num[i])[j] = std::make_shared<std::atomic<uint64_t>>(0);
             (*MOTAdaptor::pack_txn_num[i])[j] = std::make_shared<std::atomic<uint64_t>>(0);
-
+            
+            (*MOTAdaptor::limite_txn_num[i])[j] = std::make_shared<std::atomic<uint64_t>>(0);
 
         }
     }
@@ -2771,115 +2778,8 @@ void GenerateServerSendMessage(uint32_t type, uint32_t server_id, std::string ip
 }
 
 void GenerateSendTasks(uint64_t kPackageNum){
-    // auto ptr2 = std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
-    // ptr2->resize(kPackageNum + 2);
-    // auto ptr3 = std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
-    // ptr3->resize(kPackageNum + 2);
-    // for(int i = 0; i <= (int)kPackageNum; i++){
-    //     (*ptr2)[i] = std::make_shared<std::atomic<uint64_t>>(0);
-    //     (*ptr3)[i] = std::make_shared<std::atomic<uint64_t>>(0);
-    // }
-    // auto num = MOTAdaptor::GetPhysicalEpoch() + 1;
-    // MOTAdaptor::PushBack(num, ptr2, ptr3);
 }
 
-// void MOTAdaptor::Init(uint64_t pack_num, uint64_t length) {
-//     _pack_num = pack_num;
-//     _max_length = length;
-//     txn_num_ptrs.resize(_max_length + 2);
-//     packd_txn_num_ptrs.resize(_max_length + 2);
-//     write_abort_before_send_txn_num.resize(_max_length + 2);
-//     write_abort_after_send_txn_num.resize(_max_length + 2);
-//     write_committed_txn_num.resize(_max_length + 2);
-//     read_abort_txn_num.resize(_max_length + 2);
-//     read_committed_txn_num.resize(_max_length + 2);
-//     total_abort_txn_num.resize(_max_length + 2);
-//     read_total_txn_num.resize(_max_length + 2);
-//     write_total_txn_num.resize(_max_length + 2);
-//     pack_txn_num.resize(_max_length + 2);
-//     for(int i = 0; i <= (int)length; i++) {
-//         txn_num_ptrs[i] = std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
-//         packd_txn_num_ptrs[i] = std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
-//         write_abort_before_send_txn_num[i] = std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
-//         write_abort_after_send_txn_num[i] = std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
-//         write_committed_txn_num[i] = std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
-//         read_abort_txn_num[i] = std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
-//         read_committed_txn_num[i] = std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
-//         total_abort_txn_num[i] = std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
-//         read_total_txn_num[i] = std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
-//         write_total_txn_num[i] = std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
-//         pack_txn_num[i] = std::make_shared<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>();
-//         txn_num_ptrs[i]->resize(_pack_num + 2);
-//         packd_txn_num_ptrs[i]->resize(_pack_num + 2);
-//         write_abort_before_send_txn_num[i]->resize(_pack_num + 2);
-//         write_abort_after_send_txn_num[i]->resize(_pack_num + 2);
-//         write_committed_txn_num[i]->resize(_pack_num + 2);
-//         read_abort_txn_num[i]->resize(_pack_num + 2);
-//         read_committed_txn_num[i]->resize(_pack_num + 2);
-//         total_abort_txn_num[i]->resize(_pack_num + 2);
-//         read_total_txn_num[i]->resize(_pack_num + 2);
-//         write_total_txn_num[i]->resize(_pack_num + 2);
-//         pack_txn_num[i]->resize(_pack_num + 2);
-//         for(int j = 0; j <= (int)_pack_num; j++){
-//             (*txn_num_ptrs[i])[j] = std::make_shared<std::atomic<uint64_t>>(0);
-//             (*packd_txn_num_ptrs[i])[j] = std::make_shared<std::atomic<uint64_t>>(0);
-//             (*write_abort_before_send_txn_num[i])[j] = std::make_shared<std::atomic<uint64_t>>(0);
-//             (*write_abort_after_send_txn_num[i])[j] = std::make_shared<std::atomic<uint64_t>>(0);
-//             (*write_committed_txn_num[i])[j] = std::make_shared<std::atomic<uint64_t>>(0);
-//             (*read_abort_txn_num[i])[j] = std::make_shared<std::atomic<uint64_t>>(0);
-//             (*read_committed_txn_num[i])[j] = std::make_shared<std::atomic<uint64_t>>(0);
-//             (*total_abort_txn_num[i])[j] = std::make_shared<std::atomic<uint64_t>>(0);
-//             (*read_total_txn_num[i])[j] = std::make_shared<std::atomic<uint64_t>>(0);
-//             (*write_total_txn_num[i])[j] = std::make_shared<std::atomic<uint64_t>>(0);
-//             (*pack_txn_num[i])[j] = std::make_shared<std::atomic<uint64_t>>(0);
-//         }
-//     }
-// }
-
-// void MOTAdaptor::Init(uint64_t pack_num, uint64_t length) {
-//     _max_length = length;
-//     _pack_num = pack_num;
-//     received_total_pack_num.reserve(_max_length + 1); 
-//     received_total_txn_num.reserve(_max_length + 1);
-//     received_pack_num.reserve(_max_length + 1);
-//     received_txn_num.reserve(_max_length + 1);
-//     should_receive_txn_num.reserve(_max_length + 1);
-//     is_server_online.reserve(kServerNum + 2);
-//     online_server_num = std::make_unique<std::atomic<uint64_t>>(kServerNum);
-//     should_receive_pack_num= std::make_unique<std::atomic<uint64_t>>(kServerNum - 1);
-
-//     for(int i = 0; i <= static_cast<int>(_max_length); i ++){
-//         received_total_pack_num.emplace_back(std::make_unique<std::atomic<uint64_t>>(0));
-//         received_total_txn_num.emplace_back(std::make_unique<std::atomic<uint64_t>>(0));
-//         received_pack_num.emplace_back(std::vector<std::unique_ptr<std::atomic<uint64_t>>>(0));
-//         received_txn_num.emplace_back(std::vector<std::unique_ptr<std::atomic<uint64_t>>>(0));
-//         should_receive_txn_num.emplace_back(std::vector<std::unique_ptr<std::atomic<uint64_t>>>(0));
-//         for(int j = 0; j < (int)kServerIp.size() + 2; j++){
-//             received_pack_num[i].push_back(std::make_unique<std::atomic<uint64_t>>(0));
-//             received_txn_num[i].push_back(std::make_unique<std::atomic<uint64_t>>(0));
-//             should_receive_txn_num[i].push_back(std::make_unique<std::atomic<uint64_t>>(0));
-//         }
-//     }
-//     for(int j = 0; j < (int)kServerIp.size() + 2; j++) {
-//         is_server_online.push_back(std::make_unique<std::atomic<uint64_t>>(0));
-//     }
-//     for(int j = 0; j < (int)kServerNum; j++) {
-//         is_server_online[j]->store(1, std::memory_order_release);
-//     }
-// }
-
-
-// void MOTAdaptor::Init(uint64_t pack_num, uint64_t length) {
-//     _max_length = length;
-//     received_epoch.reserve(_max_length + 1);
-//     uint64_t val = 1;
-//     if(is_cache_server_available) {
-//         val = 0;
-//     }
-//     for(int i = 0; i <= static_cast<int>(_max_length); i ++) {
-//         received_epoch.emplace_back(std::make_unique<std::atomic<uint64_t>>(val));
-//     }
-// }
 
 
 
