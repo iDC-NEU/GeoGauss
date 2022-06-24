@@ -1472,7 +1472,7 @@ RC TxnManager::Commit(){
             if(is_breakdown) {
                 auto time2 = now_to_us();
                 MOT_LOG_INFO("事务提交 只读 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu MOTTotalTime %llu ZipTime %llu ZipSize %llu WriteSize %llu",
-                        GetCommitEpoch(), GetStartMOTExecTime(), GetStartMOTCommitTime(), time2, GetBlockTime(), ((GetStartMOTCommitTime() - GetStartMOTExecTime()) - GetBlockTime()), time2 - GetStartMOTCommitTime(), time2 - GetStartMOTExecTime(), GetZipTime(), GetZipSize(), GetWriteSize());/sync
+                        GetCommitEpoch(), GetStartMOTExecTime(), GetStartMOTCommitTime(), time2, GetBlockTime(), ((GetStartMOTCommitTime() - GetStartMOTExecTime()) - GetBlockTime()), time2 - GetStartMOTCommitTime(), time2 - GetStartMOTExecTime(), GetZipTime(), GetZipSize(), GetWriteSize());//sync
             }
             return RC_OK;
         }
