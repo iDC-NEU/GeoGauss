@@ -231,7 +231,7 @@ public:
         m_csnWord &= ~LATEST_VER_BIT;
     }
 
-private:
+public:
     /** @var Transaction identifier and meta data for locking and deleting a row. */
     volatile uint64_t m_csnWord;
 

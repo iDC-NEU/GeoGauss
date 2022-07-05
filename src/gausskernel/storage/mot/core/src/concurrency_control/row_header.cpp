@@ -140,28 +140,29 @@ void RowHeader::WriteChangesToRow(const Access* access, uint64_t csn)
         }
     }
 #endif
-    row->GetRowHeader()->Lock();
-    row->GetRowHeader()->LockStable();
     switch (type) {
         case WR:
             MOT_ASSERT(access->m_params.IsPrimarySentinel() == true);
             if(is_full_async_exec) {
                 if(row->GetRowHeader()->GetCSN() == csn && row->GetRowHeader()->GetServerId() == local_ip_index) {
+                    row->GetRowHeader()->Lock();
+                    row->GetRowHeader()->LockStable();
                     row->Copy(access->m_localRow);
+                    m_csnWord = (csn | LOCK_BIT);
                 }
             }
             else {
                 row->Copy(access->m_localRow);
+                m_csnWord = (csn | LOCK_BIT);
             }
             //ADDBY NEU
-            // m_csnWord = (csn | LOCK_BIT);
             break;
         case DEL:
             MOT_ASSERT(access->m_origSentinel->IsCommited() == true);
             if (access->m_params.IsPrimarySentinel()) {
-                m_csnWord = (csn | ABSENT_BIT | LATEST_VER_BIT);
+                // m_csnWord = (csn | ABSENT_BIT | LATEST_VER_BIT);
                 //ADDBY NEUP
-                // m_csnWord = (csn | LOCK_BIT | ABSENT_BIT | LATEST_VER_BIT);
+                m_csnWord = (csn | LOCK_BIT | ABSENT_BIT | LATEST_VER_BIT);
                 // and allow reuse of the original row
             }
             // Invalidate sentinel  - row is still locked!
@@ -178,8 +179,8 @@ void RowHeader::WriteChangesToRow(const Access* access, uint64_t csn)
                     access->m_auxRow->SetCommitSequenceNumber(csn);
                 } else {
                     //ADDBY NEU
-                    // m_csnWord = (csn | LOCK_BIT);
-                    m_csnWord = csn;
+                    m_csnWord = (csn | LOCK_BIT);
+                    // m_csnWord = csn;
                 }
             }
             break;
@@ -187,8 +188,6 @@ void RowHeader::WriteChangesToRow(const Access* access, uint64_t csn)
             break;
     }
     KeepStable();
-    row->GetRowHeader()->ReleaseStable();
-    row->GetRowHeader()->Release();
 }
 
 void RowHeader::Lock()

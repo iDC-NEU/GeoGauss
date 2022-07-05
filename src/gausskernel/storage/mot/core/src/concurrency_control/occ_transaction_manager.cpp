@@ -410,11 +410,21 @@ void OccTransactionManager::WriteChanges(TxnManager* txMan)
     }
     //ADDBY NEU
     // LockRows(txMan, m_rowsSetSize);
+    TxnOrderedSet_t& orderedSet = txMan->m_accessMgr->GetOrderedRowSet();
+    if(is_full_async_exec == false)
+        for (const auto& raPair : orderedSet) {
+            const Access* access = raPair.second;
+            Row* row = access->GetRowFromHeader();
+            AccessType type = access->m_type;
+            if (type == RD) {
+                continue;
+            }
+            row->GetRowHeader()->Lock();
+            row->GetRowHeader()->LockStable();
+        }
 
     // Stable rows for checkpoint needs to be created (copied from original row) before modifying the global rows.
     ApplyWrite(txMan);
-
-    TxnOrderedSet_t& orderedSet = txMan->m_accessMgr->GetOrderedRowSet();
 
     // Update CSN with all relevant information on global rows
     // For deletes invalidate sentinels - rows still locked!
@@ -486,6 +496,35 @@ void OccTransactionManager::WriteChanges(TxnManager* txMan)
     }
 
     CleanRowsFromIndexes(txMan);
+
+    if(is_full_async_exec == false) {
+         for (const auto& raPair : orderedSet) {
+            const Access* access = raPair.second;
+            Row* row = access->GetRowFromHeader();
+            AccessType type = access->m_type;
+            if (type == RD) {
+                continue;
+            }
+            row->GetRowHeader()->ReleaseStable();
+            row->GetRowHeader()->Release();
+        }
+    }
+    else {
+        auto csn = txMan->GetCommitSequenceNumber();
+        for (const auto& raPair : orderedSet) {
+            const Access* access = raPair.second;
+            Row* row = access->GetRowFromHeader();
+            AccessType type = access->m_type;
+            if (type == RD) {
+                continue;
+            }
+            if(row->GetRowHeader()->GetCSN() == csn && row->GetRowHeader()->GetServerId() == local_ip_index) {
+                row->GetRowHeader()->ReleaseStable();
+                row->GetRowHeader()->Release();
+            }
+        }
+    }
+
 }
 
 void OccTransactionManager::CleanRowsFromIndexes(TxnManager* txMan)
