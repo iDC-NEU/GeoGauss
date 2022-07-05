@@ -55,6 +55,8 @@
 #include "neu_concurrency_tools/readerwriterqueue.h"
 #include <vector>
 #include <typeinfo>
+#include <random>
+#include <stdlib.h>
 // #include <semaphore.h>
 
 using std::map;
@@ -669,6 +671,7 @@ private:
 
 public:
     static uint64_t max_length, pack_num;
+    static std::default_random_engine random_mot;
     static std::vector<std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>> local_txn_counters, local_txn_exc_counters,
         local_txn_index,
         record_commit_txn_counters, record_committed_txn_counters, remote_merged_txn_counters, remote_commit_txn_counters, 
@@ -960,6 +963,9 @@ public:
             (*remote_merged_txn_counters[epoch_mod])[i]->store(0);
             (*remote_commit_txn_counters[epoch_mod])[i]->store(0);
             (*remote_committed_txn_counters[epoch_mod])[i]->store(0);
+            
+            (*record_commit_txn_counters[epoch_mod])[i]->store(0);
+            (*record_committed_txn_counters[epoch_mod])[i]->store(0);
 
             (*txn_num_ptrs[epoch_mod])[i]->store(0);
             (*packd_txn_num_ptrs[epoch_mod])[i]->store(0);

@@ -212,16 +212,12 @@ public:
     bool ValidateReadInMergeForSnap(TxnManager * txMan, uint32_t server_id);
     void recoverRowHeader(TxnManager * txMax, uint32_t server_id);
     bool ValidateAndSetWriteSet(TxnManager *txMan, uint32_t server_id);
-    bool ValidateAndSetWriteSetII(TxnManager *txMan, uint32_t server_id);
-    bool ValidateWriteSetII(TxnManager *txMan, uint32_t server_id);
-    bool ValidateWriteSetIIForCommit(TxnManager *txMan, uint32_t server_id);
+    bool ValidateWriteSetForCommit(TxnManager *txMan, uint32_t server_id);
+    bool ValidateWriteSet(TxnManager *txMan, uint32_t server_id);
     void updateInsertSetSize(TxnManager * txMan);
 
-    RC ExecutionPhase(TxnManager *txMan, uint32_t server_id);
     RC CommitPhase(TxnManager *txMan, uint32_t server_id);
     RC CommitCheck(TxnManager *txMan, uint32_t server_id);
-    // RC PreCommitPhase(TxnManager* tx);
-
     ///
 
 };

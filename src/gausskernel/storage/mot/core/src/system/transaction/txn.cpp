@@ -44,6 +44,9 @@
 #include <cpuid.h>
 #include <sstream>
 #include "utils/timestamp.h"
+#include <random>
+#include <stdlib.h>
+
 namespace MOT {
 DECLARE_LOGGER(TxnManager, System);
 
@@ -1396,9 +1399,12 @@ RC TxnManager::Commit(){
     uint64_t index_unique =  MOTAdaptor::IncLocalTxnIndex(GetStartEpoch() % MOTAdaptor::max_length, index_pack);
     uint64_t cnt = 0;
     RC rc = RC_OK;
-    uint64_t num = wait_count.fetch_add(1);
-    if(num % 100 < kDelayRatio)
-        usleep(kDelayTime);
+    if(kDelayRatio > 0) {
+        std::default_random_engine random;
+        random.seed(time(0));
+        if(random() % 100 < kDelayRatio)
+            usleep(kDelayTime);
+    }
     SetStartMOTCommitTime(now_to_us());
 
     if(is_full_async_exec) {
@@ -1578,8 +1584,6 @@ RC TxnManager::Commit(){
                 if(MOTAdaptor::abort_transcation_csn_set.contain(csn_temp, csn_temp)){
                     rc = RC_ABORT;
                 }
-                // rc = m_occManager.CommitCheck(this, local_ip_index);
-                // MOTAdaptor::Commit(this, index_pack);
             }
             
             if(rc == RC_OK){

@@ -120,6 +120,7 @@ private:
      */
     void WriteChangesToRow(const Access* access, uint64_t csn);
 
+public:
     /** @brief Locks the row. */
     void Lock();
 
@@ -244,7 +245,6 @@ private:
 
 public:
 ///ADDBY NEU
-    bool ValidateAndSetWrite(uint64_t m_csn, uint64_t start_epoch, uint64_t commit_epoch, uint32_t server_id);
     bool ValidateAndSetWriteForCommit(uint64_t m_csn, uint64_t start_epoch, uint64_t commit_epoch, uint32_t server_id);
 
     bool IsStableLocked() const
@@ -266,20 +266,6 @@ public:
         }
 #endif
     }
-
-//         void Release()
-//     {
-//         MOT_ASSERT(m_csnWord & LOCK_BIT);
-// #if defined(__GNUC__) && (defined(__x86_64__) || defined(__i386__))
-//         m_csnWord = m_csnWord & (~LOCK_BIT);
-// #else
-//         uint64_t v = m_csnWord;
-//         while (!__sync_bool_compare_and_swap(&m_csnWord, v, (v & ~LOCK_BIT))) {
-//             PAUSE
-//             v = m_csnWord;
-//         }
-// #endif
-//     }
 
     uint64_t GetStableCSN() const
     {
@@ -364,23 +350,6 @@ public:
     uint64_t GetCSN_1() const
     {
         return (m_csnWord & CSN_BITS);
-    }
-
-    void Lock_1();
-
-    /** @brief Unlocks the row. */
-    void Release_1()
-    {
-        MOT_ASSERT(m_csnWord & LOCK_BIT);
-#if defined(__GNUC__) && (defined(__x86_64__) || defined(__i386__))
-        m_csnWord = m_csnWord & (~LOCK_BIT);
-#else
-        uint64_t v = m_csnWord;
-        while (!__sync_bool_compare_and_swap(&m_csnWord, v, (v & ~LOCK_BIT))) {
-            PAUSE
-            v = m_csnWord;
-        }
-#endif
     }
 
     bool ValidateReadI(TransactionId tid, uint32_t server_id) const;

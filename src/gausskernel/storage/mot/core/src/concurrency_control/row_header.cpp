@@ -36,6 +36,7 @@
 namespace MOT {
 DECLARE_LOGGER(RowHeader, ConcurrenyControl);
 
+///ADDBY NEU
 RC RowHeader::GetLocalCopy(
     TxnAccess* txn, AccessType type, Row* localRow, const Row* origRow, TransactionId& lastTid) const
 {
@@ -44,13 +45,14 @@ RC RowHeader::GetLocalCopy(
     uint64_t v2 = 1;
 
     // concurrent update/delete after delete is not allowed - abort current transaction
-    if ((m_csnWord & ABSENT_BIT) && type != AccessType::INS) {
+    // if ((m_csnWord & ABSENT_BIT) && type != AccessType::INS) {
+    if ((stable_csnWord & ABSENT_BIT) && type != AccessType::INS) {
         return RC_ABORT;
     }
 
     while (v2 != v) {
         // contend for exclusive access
-        v = m_csnWord;
+        v = stable_csnWord;
         while (v & LOCK_BIT) {
             if (sleepTime > LOCK_TIME_OUT) {
                 sleepTime = LOCK_TIME_OUT;
@@ -61,14 +63,14 @@ RC RowHeader::GetLocalCopy(
                 sleepTime = sleepTime << 1;
             }
 
-            v = m_csnWord;
+            v = stable_csnWord;
         }
         // No need to copy new-row.
         if (type != AccessType::INS) {  // get current row contents (not required during insertion of new row)
             localRow->Copy(origRow);
         }
         COMPILER_BARRIER
-        v2 = m_csnWord;
+        v2 = stable_csnWord;
     }
     if ((v & ABSENT_BIT) && (v & LATEST_VER_BIT)) {
         return RC_ABORT;
@@ -77,7 +79,7 @@ RC RowHeader::GetLocalCopy(
 
     if (type == AccessType::INS) {
         // ROW ALREADY COMMITED
-        if ((m_csnWord & (ABSENT_BIT)) == 0) {
+        if ((stable_csnWord & (ABSENT_BIT)) == 0) {
             return RC_ABORT;
         }
         lastTid &= (~ABSENT_BIT);
@@ -139,14 +141,12 @@ void RowHeader::WriteChangesToRow(const Access* access, uint64_t csn)
     }
 #endif
     row->GetRowHeader()->Lock();
-    if(is_full_async_exec == false)
-        KeepStable();
+    row->GetRowHeader()->LockStable();
     switch (type) {
         case WR:
             MOT_ASSERT(access->m_params.IsPrimarySentinel() == true);
             if(is_full_async_exec) {
                 if(row->GetRowHeader()->GetCSN() == csn && row->GetRowHeader()->GetServerId() == local_ip_index) {
-                    KeepStable();
                     row->Copy(access->m_localRow);
                 }
             }
@@ -186,6 +186,8 @@ void RowHeader::WriteChangesToRow(const Access* access, uint64_t csn)
         default:
             break;
     }
+    KeepStable();
+    row->GetRowHeader()->ReleaseStable();
     row->GetRowHeader()->Release();
 }
 
@@ -196,71 +198,6 @@ void RowHeader::Lock()
         PAUSE
         v = m_csnWord;
     }
-}
-
-void RowHeader::Lock_1()
-{
-    uint64_t v = m_csnWord;
-    while ((v & LOCK_BIT) || !__sync_bool_compare_and_swap(&m_csnWord, v, v | LOCK_BIT)) {
-        PAUSE
-        v = m_csnWord;
-    }
-}
-
-
-///ADDBY NEU
-bool RowHeader::ValidateAndSetWrite(uint64_t m_csn, uint64_t start_epoch, uint64_t commit_epoch, uint32_t server_id) {//只有本地事务，server id相同
-    /// get the lock first
-    LockStable();
-    bool result = true;
-    if(commit_epoch > GetStableCommitEpoch()) { // the first transaction in current epoch, direct write is okP
-        SetStableCSN(m_csn);
-        SetStableStartEpoch(start_epoch);
-        SetStableCommitEpoch(commit_epoch);
-        SetStableServerId(server_id);
-    } 
-    else if(commit_epoch == GetStableCommitEpoch()){
-        if( start_epoch > GetStableStartEpoch()) { // current transaction is the shorter transaction, win
-            // std::string str = std::to_string(GetStableCSN()) + ":" + std::to_string(GetStableServerId());
-            // MOTAdaptor::abort_transcation_csn_set.insert(str, str);
-            SetStableCSN(m_csn);
-            SetStableStartEpoch(start_epoch);
-            SetStableServerId(server_id);
-        } 
-        else if(start_epoch == GetStableStartEpoch()){ // current transaction is the longer transaction, failed
-            if(m_csn > GetStableCSN()) { // current transaction commit later, abort
-                result = false;
-            }
-            else if(m_csn == GetStableCSN()) {
-                if(server_id > GetStableServerId()){
-                    result = false;
-                }
-                else if(server_id == GetStableServerId() ){
-                    //do nothing
-                }
-                else{
-                    // std::string str = std::to_string(GetStableCSN()) + ":" + std::to_string(GetStableServerId());
-                    // MOTAdaptor::abort_transcation_csn_set.insert(str, str);
-                    SetStableServerId(server_id);
-                }
-            } 
-            else { // current transaction commit earlier, commit
-                // std::string str = std::to_string(GetStableCSN()) + ":" + std::to_string(GetStableServerId());
-                // MOTAdaptor::abort_transcation_csn_set.insert(str, str);
-                SetStableCSN(m_csn);
-                SetStableServerId(server_id);
-            } 
-        } 
-        else {
-            result = false;
-        }
-    }
-    else{
-        result = false;
-    }
-    /// release the lock
-    ReleaseStable();
-    return result;
 }
 
 void RowHeader::LockStable()

@@ -2321,6 +2321,7 @@ volatile bool
     MOTAdaptor::is_current_epoch_abort = false;
 volatile uint64_t 
     MOTAdaptor::logical_epoch = 1, MOTAdaptor::physical_epoch = 0, epoch_commit_time = 0;
+std::default_random_engine MOTAdaptor::random_mot;
 uint64_t MOTAdaptor::max_length = 0, MOTAdaptor::pack_num = 0;
 std::vector<std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>> 
     MOTAdaptor::local_txn_counters, MOTAdaptor::local_txn_exc_counters, MOTAdaptor::local_txn_index, 
@@ -2601,6 +2602,8 @@ void InitEpochTimerManager(){
     //==========Cache===============
     MOTAdaptor::max_length = max_length = kCacheMaxLength;
     MOTAdaptor::pack_num = kPackageNum;
+    MOTAdaptor::random_mot.seed(now_to_us());
+    srand(time(0));
     txn_queue_ptrs.resize(kPackageNum + 2);
     txn_queues.resize(kPackageNum + 2);
     for(int i = 0; i <= (int)kPackageNum; i++) {
@@ -3451,10 +3454,6 @@ void EpochMergeThreadMain(uint64_t id){
                 MOTAdaptor::AddReceivedPackNumTotal(message_epoch_mod, 1);
                 for(int i = 0; i < merge_ptr->txn_size(); i ++) {
                     txn_ptr = std::make_unique<merge::MergeRequest_Transaction>(merge_ptr->txn(i));
-                    // *(txn_ptr) = std::move(merge_ptr->txn(i));
-                    // message_epoch_id = txn_ptr->commitepoch();
-                    // server_id = txn_ptr->server_id();
-                    // message_epoch_mod = message_epoch_id % max_length;
                     message_cache[message_epoch_mod][server_id]->push(std::move(txn_ptr));
                     MOTAdaptor::AddReceivedTxnNum(message_epoch_mod, server_id, 1);
                     MOTAdaptor::AddReceivedTxnNumTotal(message_epoch_mod, 1);
@@ -3645,7 +3644,8 @@ void EpochCommitThreadMain(uint64_t id){//validate
                     key->CpKey((uint8_t*)row.key().c_str(),KeyLength);
                     if(op_type == 0 || op_type == 2) {
                         localRow = (*row_vector_ptr)[j];
-                        localRow->GetRowHeader()->Lock_1();
+                        localRow->GetRowHeader()->Lock();
+                        localRow->GetRowHeader()->LockStable();
                         if(is_full_async_exec) {
                             if(localRow->GetRowHeader()->GetCSN_1() == csn && localRow->GetRowHeader()->GetServerId() == server_id) {
                                 if(op_type == 2)
@@ -3657,11 +3657,9 @@ void EpochCommitThreadMain(uint64_t id){//validate
                                         localRow->SetValueVariable_1(col.id(),col.value().c_str(),col.value().length());
                                     }
                                 }
-                                localRow->GetRowHeader()->KeepStable();
                             }
                         }
                         else {
-                            localRow->GetRowHeader()->KeepStable();
                             if(op_type == 2)
                                 localRow->GetPrimarySentinel()->SetDirty();
                             else{
@@ -3672,7 +3670,9 @@ void EpochCommitThreadMain(uint64_t id){//validate
                                 }
                             }
                         }
-                        localRow->GetRowHeader()->Release_1();
+                        localRow->GetRowHeader()->KeepStable();
+                        localRow->GetRowHeader()->ReleaseStable();
+                        localRow->GetRowHeader()->Release();
                     }
                     else{
                         new_row = table->CreateNewRow();

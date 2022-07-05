@@ -650,45 +650,18 @@ void OccTransactionManager::recoverRowHeader(TxnManager * txMan, uint32_t server
     }
 }
 
-bool OccTransactionManager::ValidateAndSetWriteSet(TxnManager *txMan, uint32_t server_id)//Execution Phases
+RC OccTransactionManager::CommitPhase(TxnManager *txMan, uint32_t server_id)
 {
-    TxnOrderedSet_t &orderedSet = txMan->m_accessMgr->GetOrderedRowSet();
-    bool result = true;
-    std::string table_name, key, key_temp, csn_temp, csn_result;
-    uint64_t currentCSN;
-    MOT::Key* key_ptr;
-    void* buf; 
-    currentCSN = txMan->GetCommitSequenceNumber();
-    csn_temp = std::to_string(currentCSN) + ":" + std::to_string(server_id);
-    for (const auto &raPair : orderedSet){
-        const Access *ac = raPair.second;
-        if (ac->m_type == RD){
-            continue;
-        }
-        else if(ac->m_type == INS) {
-            table_name = ac->m_localInsertRow->GetTable()->GetLongTableName();
-            key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan, buf);
-            if(key_ptr == nullptr) assert(false);
-            key = key_ptr->GetKeyStr();
-            key_temp = table_name + key;
-            if(!MOTAdaptor::insertSet.insert(key_temp, csn_temp, &csn_result)){
-                result = false;
-            }
-            MOTAdaptor::abort_transcation_csn_set.insert(csn_result, csn_result);
-            // MOT::MemSessionFree(buf);
-            // delete buf;
-        }
-        else{
-            if(!ac->GetRowFromHeader()->m_rowHeader.ValidateAndSetWrite(txMan->GetCommitSequenceNumber(), txMan->GetStartEpoch(), txMan->GetCommitEpoch(), server_id))
-                result = false;
-        }
-        if(result == false) break;
+    bool result = ValidateAndSetWriteSet(txMan, server_id);
+    if (result) {
+        return RC::RC_OK;
     }
-    if(result == false) MOTAdaptor::abort_transcation_csn_set.insert(csn_temp, csn_temp);
-    return result;
+    //是否需要进行recovery
+    // recoverRowHeader(txMan,server_id);//txn abort, need to recover the RowHeader
+    return RC::RC_ABORT;
 }
 
-bool OccTransactionManager::ValidateAndSetWriteSetII(TxnManager *txMan, uint32_t server_id)//Commit Phase set csn again
+bool OccTransactionManager::ValidateAndSetWriteSet(TxnManager *txMan, uint32_t server_id)//Commit Phase set csn
 {
     TxnOrderedSet_t &orderedSet = txMan->m_accessMgr->GetOrderedRowSet();
     bool result = true;
@@ -744,40 +717,15 @@ bool OccTransactionManager::ValidateAndSetWriteSetII(TxnManager *txMan, uint32_t
     return result;
 }
 
-bool OccTransactionManager::ValidateWriteSetII(TxnManager *txMan, uint32_t server_id){
-    std::string table_name, key, key_temp, csn_temp;
-    csn_temp = std::to_string(txMan->GetCommitSequenceNumber())+ ":" + std::to_string(server_id);
-    TxnOrderedSet_t &orderedSet = txMan->m_accessMgr->GetOrderedRowSet();
-    for (const auto &raPair : orderedSet)
-    {
-        const Access *ac = raPair.second;
-        if (ac->m_type == RD or !ac->m_params.IsPrimarySentinel()){
-            continue;
-        }
-        else if(ac->m_type == INS){
-            table_name = ac->m_localInsertRow->GetTable()->GetLongTableName();
-            void* buf;
-            MOT::Key* key_ptr = ac->m_localInsertRow->GetTable()->BuildKeyByRow(ac->m_localInsertRow, txMan, buf);
-            if(key_ptr == nullptr) assert(false);
-            // MOT::Key* key_ptr = txMan->GetTxnKey(ac->m_localInsertRow->GetTable()->GetPrimaryIndex());
-            key = key_ptr->GetKeyStr();
-            key_temp = table_name + key_ptr->GetKeyStr();
-            // MOT::MemSessionFree(buf);
-            if(MOTAdaptor::insertSet.contain(key_temp, csn_temp) == false){
-                return false;
-            }
-        }
-        else{
-            MOT::RowHeader& row_header = ac->GetRowFromHeader()->m_rowHeader;
-            if(!row_header.ValidateWrite(txMan->GetCommitSequenceNumber()))
-            // if(!ac->GetRowFromHeader()->m_rowHeader.ValidateWrite(txMan->GetCommitSequenceNumber()))
-                return false;
-        }
+RC OccTransactionManager::CommitCheck(TxnManager *txMan, uint32_t server_id){ //not use
+    bool result = ValidateWriteSetForCommit(txMan, server_id);
+    if (result){
+        return RC::RC_OK;
     }
-    return true;
+    return RC::RC_ABORT;
 }
 
-bool OccTransactionManager::ValidateWriteSetIIForCommit(TxnManager *txMan, uint32_t server_id){
+bool OccTransactionManager::ValidateWriteSetForCommit(TxnManager *txMan, uint32_t server_id){ //not use
     std::string table_name, key, key_temp, csn_temp;
     MOT::Key* key_ptr;
     void* buf;
@@ -802,45 +750,10 @@ bool OccTransactionManager::ValidateWriteSetIIForCommit(TxnManager *txMan, uint3
         else{
             MOT::RowHeader& row_header = ac->GetRowFromHeader()->m_rowHeader;
             if(row_header.GetStableCSN() != txMan->GetCommitSequenceNumber()  || row_header.GetStableServerId() != server_id)
-            // if(!ac->GetRowFromHeader()->m_rowHeader.ValidateWrite(txMan->GetCommitSequenceNumber()))
                 return false;
         }
     }
     return true;
-}
-
-RC OccTransactionManager::ExecutionPhase(TxnManager *txMan, uint32_t server_id)
-{
-
-    // if(rowCount == 0) return RC::RC_OK;
-
-    bool result = ValidateAndSetWriteSet(txMan, server_id);
-    if (result) {
-        return RC::RC_OK;
-    }
-    //是否需要进行recovery
-    // recoverRowHeader(txMan,server_id);//txn abort, need to recover the RowHeader
-    return RC::RC_ABORT;
-}
-
-RC OccTransactionManager::CommitPhase(TxnManager *txMan, uint32_t server_id)
-{
-    bool result = ValidateAndSetWriteSetII(txMan, server_id);
-    if (result) {
-        return RC::RC_OK;
-    }
-    //是否需要进行recovery
-    // recoverRowHeader(txMan,server_id);//txn abort, need to recover the RowHeader
-    return RC::RC_ABORT;
-}
-
-RC OccTransactionManager::CommitCheck(TxnManager *txMan, uint32_t server_id){
-    // bool result = ValidateWriteSetII(txMan, server_id);
-    bool result = ValidateWriteSetIIForCommit(txMan, server_id);
-    if (result){
-        return RC::RC_OK;
-    }
-    return RC::RC_ABORT;
 }
 
 void OccTransactionManager::updateInsertSetSize(TxnManager * txMan){
