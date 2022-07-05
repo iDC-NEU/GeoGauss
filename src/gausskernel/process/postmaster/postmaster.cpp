@@ -251,7 +251,7 @@ volatile uint64_t kServerNum = 1;
 uint64_t kPortNum = 1, kPackageNum = 1, kNotifyNum = 1, kBatchNum = 1, kNotifyThreadNum = 1, kPackThreadNum = 4, kSendThreadNum = 1, 
     kListenThreadNum = 1, kUnseriThreadNum = 1, kUnpackThreadNum = 1, kMergeThreadNum = 1, kCommitThreadNum = 1, kRecordCommitThreadNum = 1, kSendMessageNum = 1, kReceiveMessageNum = 1, 
     kSleepTime = 1, local_ip_index = 0, kCacheMaxLength = 200000, kDelayEpochNum = 0, kServerTimeOut_us = 700000, kRaftTimeOut_us = 500000, kLimiteTxnNum = 20,
-    kStartCheckStateNum = 1000000, kDelayTime = 0;
+    kStartCheckStateNum = 1000000, kDelayTime = 0, kDelayRatio = 0;
 std::vector<std::string> send_ips;
 std::vector<uint64_t>send_ports;
 std::string kMasterIp, kPrivateIp;
@@ -11586,6 +11586,10 @@ void GetServerInfo(){
 
     tinyxml2::XMLElement* delay_time = root->FirstChildElement("delay_time");
     kDelayTime = std::stoull(delay_time->GetText());
+
+    tinyxml2::XMLElement* delay_ratio = root->FirstChildElement("delay_ratio");
+    kDelayRatio = std::stoull(delay_ratio->GetText());
+    
 
     
     tinyxml2::XMLElement* notify_num = root->FirstChildElement("notify_num");

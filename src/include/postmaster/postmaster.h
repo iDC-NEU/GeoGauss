@@ -23,7 +23,8 @@ extern std::vector<uint64_t> port;
 extern volatile uint64_t kServerNum;
 extern uint64_t kPortNum, kPackageNum, kNotifyNum, kBatchNum, kNotifyThreadNum, kPackThreadNum, kSendThreadNum, 
     kListenThreadNum, kUnseriThreadNum, kUnpackThreadNum, kMergeThreadNum, kCommitThreadNum, kRecordCommitThreadNum, kSendMessageNum, kReceiveMessageNum, 
-    kSleepTime, local_ip_index, kCacheMaxLength, kDelayEpochNum, kServerTimeOut_us, kRaftTimeOut_us, kStartCheckStateNum, kLimiteTxnNum, kDelayTime;
+    kSleepTime, local_ip_index, kCacheMaxLength, kDelayEpochNum, kServerTimeOut_us, kRaftTimeOut_us, kStartCheckStateNum, kLimiteTxnNum, kDelayTime,
+    kDelayRatio;
 extern std::vector<std::string> send_ips;
 extern std::vector<uint64_t>send_ports;
 extern std::string kMasterIp, kPrivateIp;

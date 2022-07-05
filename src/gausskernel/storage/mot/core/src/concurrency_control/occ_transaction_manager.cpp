@@ -578,7 +578,7 @@ void OccTransactionManager::CleanUp()
 //ADDBY NEU
 
 bool OccTransactionManager::ValidateReadInMerge(TxnManager * txMan, uint32_t server_id){
-    if(txMan->GetStartLogicalEpoch() == MOTAdaptor::GetLogicalEpoch()) return true;
+    if(txMan->GetStartLogicalEpoch() == MOTAdaptor::GetLogicalEpoch() && is_full_async_exec == false) return true;
     TxnOrderedSet_t &orderedSet = txMan->m_accessMgr->GetOrderedRowSet();
     bool result = true;
     for (const auto &raPair : orderedSet)
@@ -597,7 +597,7 @@ bool OccTransactionManager::ValidateReadInMerge(TxnManager * txMan, uint32_t ser
 }
 bool OccTransactionManager::ValidateReadInMergeForSnap(TxnManager * txMan, uint32_t server_id){
     auto start_logical_epoch = txMan->GetStartLogicalEpoch(); 
-    if(start_logical_epoch == MOTAdaptor::GetLogicalEpoch()) return true;
+    if(start_logical_epoch == MOTAdaptor::GetLogicalEpoch() && is_full_async_exec == false) return true;
     TxnOrderedSet_t &orderedSet = txMan->m_accessMgr->GetOrderedRowSet();
     bool result = true;
     for (const auto &raPair : orderedSet)

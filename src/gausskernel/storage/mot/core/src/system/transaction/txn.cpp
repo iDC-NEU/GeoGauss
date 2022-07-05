@@ -1396,7 +1396,9 @@ RC TxnManager::Commit(){
     uint64_t index_unique =  MOTAdaptor::IncLocalTxnIndex(GetStartEpoch() % MOTAdaptor::max_length, index_pack);
     uint64_t cnt = 0;
     RC rc = RC_OK;
-    usleep(kDelayTime);
+    uint64_t num = wait_count.fetch_add(1);
+    if(num % 100 < kDelayRatio)
+        usleep(kDelayTime);
     SetStartMOTCommitTime(now_to_us());
 
     if(is_full_async_exec) {
