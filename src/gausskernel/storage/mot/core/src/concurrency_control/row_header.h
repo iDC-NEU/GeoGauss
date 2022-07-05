@@ -361,6 +361,28 @@ public:
         return stable_server_id;
     }
 
+    uint64_t GetCSN_1() const
+    {
+        return (m_csnWord & CSN_BITS);
+    }
+
+    void Lock_1();
+
+    /** @brief Unlocks the row. */
+    void Release_1()
+    {
+        MOT_ASSERT(m_csnWord & LOCK_BIT);
+#if defined(__GNUC__) && (defined(__x86_64__) || defined(__i386__))
+        m_csnWord = m_csnWord & (~LOCK_BIT);
+#else
+        uint64_t v = m_csnWord;
+        while (!__sync_bool_compare_and_swap(&m_csnWord, v, (v & ~LOCK_BIT))) {
+            PAUSE
+            v = m_csnWord;
+        }
+#endif
+    }
+
     bool ValidateReadI(TransactionId tid, uint32_t server_id) const;
     bool ValidateReadForSnap(TransactionId tid, uint64_t start_epoch, uint32_t server_id) const;
 private:

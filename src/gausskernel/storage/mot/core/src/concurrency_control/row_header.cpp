@@ -138,11 +138,21 @@ void RowHeader::WriteChangesToRow(const Access* access, uint64_t csn)
         }
     }
 #endif
-    KeepStable();
+    row->GetRowHeader()->Lock();
+    if(is_full_async_exec == false)
+        KeepStable();
     switch (type) {
         case WR:
             MOT_ASSERT(access->m_params.IsPrimarySentinel() == true);
-            row->Copy(access->m_localRow);
+            if(is_full_async_exec) {
+                if(row->GetRowHeader()->GetCSN() == csn && row->GetRowHeader()->GetServerId() == local_ip_index) {
+                    KeepStable();
+                    row->Copy(access->m_localRow);
+                }
+            }
+            else {
+                row->Copy(access->m_localRow);
+            }
             //ADDBY NEU
             // m_csnWord = (csn | LOCK_BIT);
             break;
@@ -150,6 +160,7 @@ void RowHeader::WriteChangesToRow(const Access* access, uint64_t csn)
             MOT_ASSERT(access->m_origSentinel->IsCommited() == true);
             if (access->m_params.IsPrimarySentinel()) {
                 m_csnWord = (csn | ABSENT_BIT | LATEST_VER_BIT);
+                //ADDBY NEUP
                 // m_csnWord = (csn | LOCK_BIT | ABSENT_BIT | LATEST_VER_BIT);
                 // and allow reuse of the original row
             }
@@ -175,6 +186,7 @@ void RowHeader::WriteChangesToRow(const Access* access, uint64_t csn)
         default:
             break;
     }
+    row->GetRowHeader()->Release();
 }
 
 void RowHeader::Lock()
@@ -186,7 +198,14 @@ void RowHeader::Lock()
     }
 }
 
-
+void RowHeader::Lock_1()
+{
+    uint64_t v = m_csnWord;
+    while ((v & LOCK_BIT) || !__sync_bool_compare_and_swap(&m_csnWord, v, v | LOCK_BIT)) {
+        PAUSE
+        v = m_csnWord;
+    }
+}
 
 
 ///ADDBY NEU
@@ -255,47 +274,64 @@ void RowHeader::LockStable()
 
 bool RowHeader::ValidateAndSetWriteForCommit(uint64_t m_csn, uint64_t start_epoch, uint64_t commit_epoch, uint32_t server_id) {
     /// get the lock first
-    Lock();
-    bool result = true;
-    if(commit_epoch > GetCommitEpoch()) { // the first transaction in current epoch, direct write is ok
-        SetCSN(m_csn);
-        SetStartEpoch(start_epoch);
-        SetCommitEpoch(commit_epoch);
-    } 
-    else if(commit_epoch == GetCommitEpoch()){
-        if(GetStartEpoch() < start_epoch) { // current transaction is the shorter transaction, win
-            std::string str = std::to_string(GetCSN()) + ":" + std::to_string(GetServerId());
-            MOTAdaptor::abort_transcation_csn_set.insert(str, str);
+    if(is_full_async_exec) {
+        Lock();
+        if(GetCSN() < m_csn) {
+            SetCSN(m_csn);
+        }
+        else if(GetCSN() == m_csn && server_id < GetStableServerId()) {
+            SetServerId(server_id);
+        }
+        else {
+
+        }
+        Release();
+        return true;
+    }
+    else {
+        Lock();
+        bool result = true;
+        if(commit_epoch > GetCommitEpoch()) { // the first transaction in current epoch, direct write is ok
             SetCSN(m_csn);
             SetStartEpoch(start_epoch);
-        } else if(GetStartEpoch() > start_epoch){ // current transaction is the longer transaction, failed
-            result = false;
-        } else {
-            if(GetCSN() < m_csn) { // current transaction commit later, abort
-                result = false;
-            } else if(GetCSN() > m_csn) { // current transaction commit earlier, commit
+            SetCommitEpoch(commit_epoch);
+        } 
+        else if(commit_epoch == GetCommitEpoch()){
+            if(GetStartEpoch() < start_epoch) { // current transaction is the shorter transaction, win
                 std::string str = std::to_string(GetCSN()) + ":" + std::to_string(GetServerId());
                 MOTAdaptor::abort_transcation_csn_set.insert(str, str);
                 SetCSN(m_csn);
-            } else {// csn equals, startEpoch equal, endEpoch equal, 
-                if(server_id > GetStableServerId()){
+                SetStartEpoch(start_epoch);
+            } else if(GetStartEpoch() > start_epoch){ // current transaction is the longer transaction, failed
+                result = false;
+            } else {
+                if(GetCSN() < m_csn) { // current transaction commit later, abort
                     result = false;
-                }
-                else if(server_id == GetStableServerId() ){
-                    //do nothing
-                }
-                else{
+                } else if(GetCSN() > m_csn) { // current transaction commit earlier, commit
                     std::string str = std::to_string(GetCSN()) + ":" + std::to_string(GetServerId());
                     MOTAdaptor::abort_transcation_csn_set.insert(str, str);
-                    SetServerId(server_id);
+                    SetCSN(m_csn);
+                } else {// csn equals, startEpoch equal, endEpoch equal, 
+                    if(server_id > GetStableServerId()){
+                        result = false;
+                    }
+                    else if(server_id == GetStableServerId() ){
+                        //do nothing
+                    }
+                    else{
+                        std::string str = std::to_string(GetCSN()) + ":" + std::to_string(GetServerId());
+                        MOTAdaptor::abort_transcation_csn_set.insert(str, str);
+                        SetServerId(server_id);
+                    }
                 }
             }
         }
+        else result = false;
+        /// release the lock
+        Release();
+        return result;
     }
-    else result = false;
-    /// release the lock
-    Release();
-    return result;
+    
 }
 ///
 

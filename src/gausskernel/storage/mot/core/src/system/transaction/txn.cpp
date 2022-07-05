@@ -1396,7 +1396,68 @@ RC TxnManager::Commit(){
     uint64_t index_unique =  MOTAdaptor::IncLocalTxnIndex(GetStartEpoch() % MOTAdaptor::max_length, index_pack);
     uint64_t cnt = 0;
     RC rc = RC_OK;
+    usleep(kDelayTime);
     SetStartMOTCommitTime(now_to_us());
+
+    if(is_full_async_exec) {
+        if (this->m_accessMgr->m_rowCnt > 0 && !result){
+            (*MOTAdaptor::write_total_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
+            if(is_snap_isolation){
+                if(!m_occManager.ValidateReadInMergeForSnap(this, local_ip_index)){
+                    (*MOTAdaptor::write_abort_before_send_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
+                    return RC_ABORT;
+                }
+            }
+            else if(is_read_repeatable){
+                if(!m_occManager.ValidateReadInMerge(this, local_ip_index)){
+                    (*MOTAdaptor::write_abort_before_send_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
+                    return RC_ABORT;
+                }
+            }
+            if(!MOTAdaptor::InsertTxntoLocalChangeSet(this, index_pack, index_unique)){// 当生成txn失败时abort，为send_before_abort，enqueue必定成功，否则assert
+                    (*MOTAdaptor::write_abort_before_send_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
+                return RC_ABORT;
+            }
+            auto time1 = now_to_us();
+            auto epoch_mod = GetCommitEpoch() % MOTAdaptor::max_length;
+            m_occManager.CommitPhase(this, local_ip_index);
+            
+            if(rc == RC_OK){
+                MOTAdaptor::IncRecordCommitTxnCounters(epoch_mod, index_pack);
+                (*MOTAdaptor::write_committed_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
+                if(is_breakdown) {
+                    auto time2 = now_to_us();
+                    MOT_LOG_INFO("full async 事务提交 读写 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu MOTTotalTime %llu ZipTime %llu ZipSize %llu WriteSize %llu",
+                        GetCommitEpoch(), GetStartMOTExecTime(), GetStartMOTCommitTime(), time2, GetBlockTime(), ((GetStartMOTCommitTime() - GetStartMOTExecTime()) - GetBlockTime()), time2 - GetStartMOTCommitTime(), time2 - GetStartMOTExecTime(), GetZipTime(), GetZipSize(), GetWriteSize());//sync
+                }
+            }
+            return RC_OK;
+        }
+        else{
+            (*MOTAdaptor::read_total_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
+            auto time1 = now_to_us();
+            if(is_snap_isolation){
+                if(!m_occManager.ValidateReadInMergeForSnap(this, local_ip_index)){
+                    (*MOTAdaptor::read_abort_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
+                    return RC_ABORT;
+                }
+            }
+            else if(is_read_repeatable){
+                if(!m_occManager.ValidateReadInMerge(this, local_ip_index)){
+                    (*MOTAdaptor::read_abort_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
+                    return RC_ABORT;
+                }
+            }
+            (*MOTAdaptor::read_committed_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
+            if(is_breakdown) {
+                auto time2 = now_to_us();
+                MOT_LOG_INFO("full async 事务提交 只读 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu MOTTotalTime %llu ZipTime %llu ZipSize %llu WriteSize %llu",
+                        GetCommitEpoch(), GetStartMOTExecTime(), GetStartMOTCommitTime(), time2, GetBlockTime(), ((GetStartMOTCommitTime() - GetStartMOTExecTime()) - GetBlockTime()), time2 - GetStartMOTCommitTime(), time2 - GetStartMOTExecTime(), GetZipTime(), GetZipSize(), GetWriteSize());//sync
+            }
+            return RC_OK;
+        }
+    }
+
     if(is_sync_exec) {
         if (this->m_accessMgr->m_rowCnt > 0 && !result){
             // MOT_LOG_INFO("epoch %llu commit() write", GetStartEpoch());
@@ -1442,7 +1503,7 @@ RC TxnManager::Commit(){
                 (*MOTAdaptor::write_committed_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
                 if(is_breakdown) {
                     auto time2 = now_to_us();
-                    MOT_LOG_INFO("事务提交 读写 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu MOTTotalTime %llu ZipTime %llu ZipSize %llu WriteSize %llu",
+                    MOT_LOG_INFO("sync 事务提交 读写 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu MOTTotalTime %llu ZipTime %llu ZipSize %llu WriteSize %llu",
                         GetCommitEpoch(), GetStartMOTExecTime(), GetStartMOTCommitTime(), time2, GetBlockTime(), ((GetStartMOTCommitTime() - GetStartMOTExecTime()) - GetBlockTime()), time2 - GetStartMOTCommitTime(), time2 - GetStartMOTExecTime(), GetZipTime(), GetZipSize(), GetWriteSize());//sync
                 }
             }
@@ -1471,7 +1532,7 @@ RC TxnManager::Commit(){
             (*MOTAdaptor::read_committed_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
             if(is_breakdown) {
                 auto time2 = now_to_us();
-                MOT_LOG_INFO("事务提交 只读 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu MOTTotalTime %llu ZipTime %llu ZipSize %llu WriteSize %llu",
+                MOT_LOG_INFO("sync 事务提交 只读 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu MOTTotalTime %llu ZipTime %llu ZipSize %llu WriteSize %llu",
                         GetCommitEpoch(), GetStartMOTExecTime(), GetStartMOTCommitTime(), time2, GetBlockTime(), ((GetStartMOTCommitTime() - GetStartMOTExecTime()) - GetBlockTime()), time2 - GetStartMOTCommitTime(), time2 - GetStartMOTExecTime(), GetZipTime(), GetZipSize(), GetWriteSize());//sync
             }
             return RC_OK;
@@ -1523,7 +1584,7 @@ RC TxnManager::Commit(){
                 MOTAdaptor::IncRecordCommitTxnCounters(epoch_mod, index_pack);
                 if(is_breakdown) {
                     auto time2 = now_to_us();
-                    MOT_LOG_INFO("事务提交 读写 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu MOTTotalTime %llu ZipTime %llu ZipSize %llu WriteSize %llu",
+                    MOT_LOG_INFO("async 事务提交 读写 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu MOTTotalTime %llu ZipTime %llu ZipSize %llu WriteSize %llu",
                         GetCommitEpoch(), GetStartMOTExecTime(), GetStartMOTCommitTime(), time2, GetBlockTime(), (GetStartMOTCommitTime() - GetStartMOTExecTime()), (time2 - GetStartMOTCommitTime() - GetBlockTime()), time2 - GetStartMOTExecTime(), GetZipTime(), GetZipSize(), GetWriteSize());
                 }
             }
@@ -1544,7 +1605,7 @@ RC TxnManager::Commit(){
             }
             if(is_breakdown) {
                 auto time2 = now_to_us();
-                MOT_LOG_INFO("事务提交 只读 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu MOTTotalTime %llu ZipTime %llu ZipSize %llu WriteSize %llu",
+                MOT_LOG_INFO("async 事务提交 只读 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu MOTTotalTime %llu ZipTime %llu ZipSize %llu WriteSize %llu",
                     GetCommitEpoch(), GetStartMOTExecTime(), GetStartMOTCommitTime(), time2, GetBlockTime(), (GetStartMOTCommitTime() - GetStartMOTExecTime()), (time2 - GetStartMOTCommitTime() - GetBlockTime()), time2 - GetStartMOTExecTime(), GetZipTime(), GetZipSize(), GetWriteSize());
             }
             return RC_OK;

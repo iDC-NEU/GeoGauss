@@ -2560,17 +2560,6 @@ bool MOTAdaptor::InsertTxntoLocalChangeSet(MOT::TxnManager* txMan, const uint64_
             Enqueue(std::move(std::make_unique<pack_params>(nullptr, std::move(txn), txMan->GetCommitEpoch(), index_pack)), 
                 std::move(std::make_unique<pack_params>(nullptr, nullptr, 0, 0)),
                 txMan->GetCommitEpoch(), index_pack);
-            // if(txn_queues[index_pack]->enqueue(std::move(std::make_unique<pack_params>(nullptr, std::move(txn), txMan->GetCommitEpoch(), index_pack)))) {
-            //     // if(txn_queue.enqueue(std::move(std::make_unique<pack_params>(nullptr, nullptr, 0, 0)))) {
-            //     //     //do nothing
-            //     // } 
-            //     // else {
-            //     //     assert(false);
-            //     // }
-            // } 
-            // else {
-            //     assert(false);
-            // }
             txn = nullptr;
         }
         else {
@@ -2596,17 +2585,6 @@ bool MOTAdaptor::InsertTxntoLocalChangeSet(MOT::TxnManager* txMan, const uint64_
             Enqueue(std::move(std::make_unique<pack_params>(serialized_txn_str_ptr, std::move(txn), txMan->GetCommitEpoch(), index_pack)), 
                 std::move(std::make_unique<pack_params>(nullptr, nullptr, 0, 0)),
                 txMan->GetCommitEpoch(), index_pack);
-            // if(txn_queues[index_pack]->enqueue(std::move(std::make_unique<pack_params>(serialized_txn_str_ptr, std::move(txn), txMan->GetCommitEpoch(), index_pack)))) {
-            //     // if(txn_queue.enqueue(std::move(std::make_unique<pack_params>(nullptr, nullptr, 0, 0)))) {
-            //     //     // do nothing
-            //     // } 
-            //     // else {
-            //     //     assert(false);
-            //     // }
-            // } 
-            // else {
-            //     assert(false);
-            // }
             txn = nullptr;
         }
         
@@ -2850,6 +2828,19 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
 
     if(is_cache_server_available)
         cache_server_available = 0;
+
+    if(is_full_async_exec) {
+        last_epoch_mod = 1;
+        for(;;) {
+            total_commit_txn_num += MOTAdaptor::GetRecordCommitTxnCounters(last_epoch_mod);
+            MOT_LOG_INFO("===事务写入完成 %llu, %llu %llu total %llu ", MOTAdaptor::GetRecordCommittedTxnCounters(last_epoch_mod), 
+                MOTAdaptor::GetRecordCommitTxnCounters(last_epoch_mod), total_commit_txn_num, now_to_us());
+            OUTPUTLOG("=等待本地事务进入commit完成" , epoch_mod);
+            usleep(1000000);
+            MOTAdaptor::ClearMergeEpochState();
+        }
+    }
+    
     if(is_sync_exec) {
         for(;;) {
             //等所有上一个epoch 的事务写完 再开始下一个epoch
@@ -3051,6 +3042,13 @@ void EpochPhysicalTimerManagerThreadMain(uint64_t id){
     epoch_commit_time = commit_time = now_to_us();
     is_epoch_advance_started.store(true);
     uint64_t epoch = MOTAdaptor::GetPhysicalEpoch(), epoch_mod = MOTAdaptor::GetPhysicalEpoch();
+    if(is_full_async_exec) {
+        OUTPUTLOG("====开始 异步执行" , MOTAdaptor::GetLogicalEpoch());
+        for(;;) {
+            usleep(1000000);
+        }
+    }
+
     if(is_epoch_advanced_by_message){
         while(!MOTAdaptor::IsTimerStop()){
             OUTPUTLOG("====开始一个Physiacal Epoch, physical info" , MOTAdaptor::GetLogicalEpoch());
@@ -3352,7 +3350,27 @@ void EpochListenThreadMain(uint64_t id){
         socket_listen.connect("tcp://" +kServerIp[i] + ":5557");
         MOT_LOG_INFO("线程开始工作 ListenThread %s", ("tcp://" +kServerIp[i] + ":5557").c_str());
     }
+    if(is_full_async_exec) {
+        for (;;) {
+            std::unique_ptr<zmq::message_t> message_ptr = std::make_unique<zmq::message_t>();
+            socket_listen.recv(&(*message_ptr));//防止上次遗留消息造成message cache出现问题
+            if(init_ok.load() == true){
+                if(!listen_message_queue.enqueue(std::move(message_ptr))) assert(false);
+                if(!listen_message_queue.enqueue(std::move(std::make_unique<zmq::message_t>()))) assert(false); //防止moodycamel取不出
+                // MOT_LOG_INFO("接收一条消息");
+                break;
+            }
+        }
 
+        for(;;) {
+            std::unique_ptr<zmq::message_t> message_ptr = std::make_unique<zmq::message_t>();
+            socket_listen.recv(&(*message_ptr));
+            if(!listen_message_queue.enqueue(std::move(message_ptr))) assert(false);
+            if(!listen_message_queue.enqueue(std::move(std::make_unique<zmq::message_t>()))) assert(false); //防止moodycamel取不出
+            // MOT_LOG_INFO("接收一条消息");
+        }
+    }
+    
     for (;;) {
         std::unique_ptr<zmq::message_t> message_ptr = std::make_unique<zmq::message_t>();
         socket_listen.recv(&(*message_ptr));//防止上次遗留消息造成message cache出现问题
@@ -3472,7 +3490,13 @@ void EpochMergeThreadMain(uint64_t id){
                     // MOT_LOG_INFO("收到一个txn: %llu, epoch: %llu, pack num %llu, txn num: %llu,  %llu", 
                     //     txn_ptr->server_id(), message_epoch_id, MOTAdaptor::GetReceivedTxnNum(message_epoch_mod),
                     //     MOTAdaptor::GetShouldReceiveTxnNum(message_epoch_mod), now_to_us());
-                    message_cache[message_epoch_mod][server_id]->push(std::move(txn_ptr));
+                    if(is_full_async_exec) {
+                        merge_queue.enqueue(std::move(txn_ptr));
+                        merge_queue.enqueue(nullptr);
+                    }
+                    else {
+                        message_cache[message_epoch_mod][server_id]->push(std::move(txn_ptr));
+                    }
                     MOTAdaptor::AddReceivedTxnNum(message_epoch_mod, server_id, 1);
                     MOTAdaptor::AddReceivedTxnNumTotal(message_epoch_mod, 1);
                 }
@@ -3598,9 +3622,10 @@ void EpochCommitThreadMain(uint64_t id){//validate
             if(txn_ptr == nullptr) {
                 continue;
             }
-            while(!MOTAdaptor::IsRemoteExeced()) {
-                usleep(100);
-            }
+            if(is_full_async_exec == false)
+                while(!MOTAdaptor::IsRemoteExeced()) {
+                    usleep(100);
+                }
 
             csn = txn_ptr->csn();
             server_id = txn_ptr->server_id();
@@ -3620,17 +3645,34 @@ void EpochCommitThreadMain(uint64_t id){//validate
                     key->CpKey((uint8_t*)row.key().c_str(),KeyLength);
                     if(op_type == 0 || op_type == 2) {
                         localRow = (*row_vector_ptr)[j];
-                        localRow->GetRowHeader()->KeepStable();
-                        if(op_type == 2)
-                            localRow->GetPrimarySentinel()->SetDirty();
-                        else{
-                            // localRow->CopyData((uint8_t*)row.data().c_str(),table->GetTupleSize());
-
-                            for (int k=0; k < row.column_size(); k++){
-                                const auto &col = row.column(k);
-                                localRow->SetValueVariable_1(col.id(),col.value().c_str(),col.value().length());
+                        localRow->GetRowHeader()->Lock_1();
+                        if(is_full_async_exec) {
+                            if(localRow->GetRowHeader()->GetCSN_1() == csn && localRow->GetRowHeader()->GetServerId() == server_id) {
+                                if(op_type == 2)
+                                    localRow->GetPrimarySentinel()->SetDirty();
+                                else{
+                                    // localRow->CopyData((uint8_t*)row.data().c_str(),table->GetTupleSize());
+                                    for (int k=0; k < row.column_size(); k++){
+                                        const auto &col = row.column(k);
+                                        localRow->SetValueVariable_1(col.id(),col.value().c_str(),col.value().length());
+                                    }
+                                }
+                                localRow->GetRowHeader()->KeepStable();
                             }
                         }
+                        else {
+                            localRow->GetRowHeader()->KeepStable();
+                            if(op_type == 2)
+                                localRow->GetPrimarySentinel()->SetDirty();
+                            else{
+                                // localRow->CopyData((uint8_t*)row.data().c_str(),table->GetTupleSize());
+                                for (int k=0; k < row.column_size(); k++){
+                                    const auto &col = row.column(k);
+                                    localRow->SetValueVariable_1(col.id(),col.value().c_str(),col.value().length());
+                                }
+                            }
+                        }
+                        localRow->GetRowHeader()->Release_1();
                     }
                     else{
                         new_row = table->CreateNewRow();

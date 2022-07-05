@@ -251,13 +251,13 @@ volatile uint64_t kServerNum = 1;
 uint64_t kPortNum = 1, kPackageNum = 1, kNotifyNum = 1, kBatchNum = 1, kNotifyThreadNum = 1, kPackThreadNum = 4, kSendThreadNum = 1, 
     kListenThreadNum = 1, kUnseriThreadNum = 1, kUnpackThreadNum = 1, kMergeThreadNum = 1, kCommitThreadNum = 1, kRecordCommitThreadNum = 1, kSendMessageNum = 1, kReceiveMessageNum = 1, 
     kSleepTime = 1, local_ip_index = 0, kCacheMaxLength = 200000, kDelayEpochNum = 0, kServerTimeOut_us = 700000, kRaftTimeOut_us = 500000, kLimiteTxnNum = 20,
-    kStartCheckStateNum = 1000000;
+    kStartCheckStateNum = 1000000, kDelayTime = 0;
 std::vector<std::string> send_ips;
 std::vector<uint64_t>send_ports;
 std::string kMasterIp, kPrivateIp;
 volatile bool is_stable_epoch_send = false, is_epoch_advanced_by_message = true, is_read_repeatable = true, is_breakdown = true, 
     is_snap_isolation = true, is_cache_server_available = true, is_fault_tolerance_enable = false, is_protobuf_gzip = false, 
-    is_total_pack = false, is_sync_exec = false, is_limite_txn = false;
+    is_total_pack = false, is_sync_exec = false, is_limite_txn = false, is_full_async_exec = false;
 
 void GenerateEpochThreads();
 void CkeckEpochThreadsI();
@@ -11580,6 +11580,12 @@ void GetServerInfo(){
 
     tinyxml2::XMLElement* limite_txn_num = root->FirstChildElement("limite_txn_num");
     kLimiteTxnNum = std::stoull(limite_txn_num->GetText());
+
+    tinyxml2::XMLElement* is_full_async_exec_t = root->FirstChildElement("is_full_async_exec");
+    is_full_async_exec = std::stoull(is_full_async_exec_t->GetText()) == 0 ? false : true;
+
+    tinyxml2::XMLElement* delay_time = root->FirstChildElement("delay_time");
+    kDelayTime = std::stoull(delay_time->GetText());
 
     
     tinyxml2::XMLElement* notify_num = root->FirstChildElement("notify_num");
