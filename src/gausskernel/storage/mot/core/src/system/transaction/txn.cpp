@@ -1548,17 +1548,21 @@ RC TxnManager::Commit(){
     }
     else {
         if (this->m_accessMgr->m_rowCnt > 0 && !result){
+            (*MOTAdaptor::write_total_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
             if(is_snap_isolation){
                 if(!m_occManager.ValidateReadInMergeForSnap(this, local_ip_index)){
+                    (*MOTAdaptor::write_abort_before_send_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
                     return RC_ABORT;
                 }
             }
             else if(is_read_repeatable){
                 if(!m_occManager.ValidateReadInMerge(this, local_ip_index)){
+                    (*MOTAdaptor::write_abort_before_send_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
                     return RC_ABORT;
                 }
             }
             if(!MOTAdaptor::InsertTxntoLocalChangeSet(this, index_pack, index_unique)){
+                (*MOTAdaptor::write_abort_before_send_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
                 return RC_ABORT;
             }
             auto time1 = now_to_us();
@@ -1576,7 +1580,7 @@ RC TxnManager::Commit(){
             rc = m_occManager.CommitPhase(this, local_ip_index);
             MOTAdaptor::DecExeCounters(epoch_mod, index_pack);
             
-            if (rc != RC_ABORT){    
+            if(rc != RC_ABORT){    
                 while(!MOTAdaptor::IsRemoteExeced()) {
                     usleep(100);
                 }
@@ -1584,31 +1588,42 @@ RC TxnManager::Commit(){
                 if(MOTAdaptor::abort_transcation_csn_set.contain(csn_temp, csn_temp)){
                     rc = RC_ABORT;
                 }
+                if(m_occManager.CommitCheck(this, local_ip_index) == RC_ABORT) {
+                    rc = RC_ABORT;
+                }
             }
             
             if(rc == RC_OK){
                 MOTAdaptor::IncRecordCommitTxnCounters(epoch_mod, index_pack);
+                (*MOTAdaptor::write_committed_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
                 if(is_breakdown) {
                     auto time2 = now_to_us();
                     MOT_LOG_INFO("async 事务提交 读写 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu MOTTotalTime %llu ZipTime %llu ZipSize %llu WriteSize %llu",
                         GetCommitEpoch(), GetStartMOTExecTime(), GetStartMOTCommitTime(), time2, GetBlockTime(), (GetStartMOTCommitTime() - GetStartMOTExecTime()), (time2 - GetStartMOTCommitTime() - GetBlockTime()), time2 - GetStartMOTExecTime(), GetZipTime(), GetZipSize(), GetWriteSize());
                 }
             }
+            else {
+                (*MOTAdaptor::write_abort_after_send_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
+            }
             MOTAdaptor::DecComCounters(epoch_mod, index_pack);
             return rc;
         }
         else{
             auto time1 = now_to_us();
+            (*MOTAdaptor::read_total_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
             if(is_snap_isolation){
                 if(!m_occManager.ValidateReadInMergeForSnap(this, local_ip_index)){
+                    (*MOTAdaptor::read_abort_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
                     return RC_ABORT;
                 }
             }
             else if(is_read_repeatable){
                 if(!m_occManager.ValidateReadInMerge(this, local_ip_index)){
+                    (*MOTAdaptor::read_abort_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
                     return RC_ABORT;
                 }
             }
+            (*MOTAdaptor::read_committed_txn_num[(GetStartEpoch() % MOTAdaptor::_max_length)])[GetIndexPack()]->fetch_add(1);
             if(is_breakdown) {
                 auto time2 = now_to_us();
                 MOT_LOG_INFO("async 事务提交 只读 epoch:%llu StartMOTExecTime %llu StartMOTCommitTime %llu ValidateFinishTime %llu BlockTime %llu MOTExecTime %llu MOTValidateTime %llu MOTTotalTime %llu ZipTime %llu ZipSize %llu WriteSize %llu",

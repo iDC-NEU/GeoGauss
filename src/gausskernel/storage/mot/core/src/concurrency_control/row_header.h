@@ -352,6 +352,14 @@ public:
         return (m_csnWord & CSN_BITS);
     }
 
+    void Setcsn(uint64_t v) {
+        csn = v;
+    }
+
+    uint64_t Getcsn() {
+        return csn;
+    }
+
     bool ValidateReadI(TransactionId tid, uint32_t server_id) const;
     bool ValidateReadForSnap(TransactionId tid, uint64_t start_epoch, uint32_t server_id) const;
 private:
@@ -360,6 +368,7 @@ private:
     volatile uint32_t server_id = 0;
 
     volatile uint64_t stable_csnWord;
+    volatile uint64_t csn;
     volatile uint64_t stable_commitEpoch = 0;
     volatile uint64_t stable_startEpoch = 0;
     volatile uint32_t stable_server_id = 0;

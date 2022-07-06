@@ -86,6 +86,11 @@
 
 using merge::MergeRequest;
 
+/** @define masks for CSN word   */
+#define CSN_BITS 0x1FFFFFFFFFFFFFFFUL
+
+#define STATUS_BITS 0xE000000000000000UL
+
 #define IS_CHAR_TYPE(oid) (oid == VARCHAROID || oid == BPCHAROID || oid == TEXTOID || oid == CLOBOID || oid == BYTEAOID)
 #define IS_INT_TYPE(oid)                                                                                           \
     (oid == BOOLOID || oid == CHAROID || oid == INT8OID || oid == INT2OID || oid == INT4OID || oid == FLOAT4OID || \
@@ -3612,6 +3617,7 @@ void EpochCommitThreadMain(uint64_t id){//validate
     uint32_t server_id = 0;
     int KeyLength;
     void* buf;
+    int flag = 0;
     // bool sleep_flag = false;
     while(!init_ok.load()) usleep(100);
     for(;;){
@@ -3627,10 +3633,44 @@ void EpochCommitThreadMain(uint64_t id){//validate
                 }
 
             csn = txn_ptr->csn();
+            uint64_t csn_tmp = (((csn & STATUS_BITS) | (csn & CSN_BITS)) & CSN_BITS);
             server_id = txn_ptr->server_id();
             epoch_mod = txn_ptr->commitepoch() % MOTAdaptor::max_length;
             csn_temp = std::to_string(csn) + ":" + std::to_string(server_id);
-            if(!MOTAdaptor::abort_transcation_csn_set.contain(csn_temp, csn_temp)){
+            flag = 0;
+            if(MOTAdaptor::abort_transcation_csn_set.contain(csn_temp, csn_temp)){
+                flag ++;
+            }
+            for(int j = 0; j < txn_ptr->row_size(); j++){
+                const auto& row = txn_ptr->row(j);
+                table = MOTAdaptor::m_engine->GetTableManager()->GetTable(row.tablename());
+                MOT_ASSERT(table != nullptr);
+                op_type = row.type();
+                if(op_type == 0 || op_type == 2) {
+                    localRow = (*row_vector_ptr)[j];
+                    if(localRow->GetRowHeader()->GetCSN_1() != csn_tmp || localRow->GetRowHeader()->GetServerId() != server_id){
+                        flag ++;
+                        break;
+                    }
+                }
+                else {
+                    KeyLength = txn_ptr->row(j).key().length();
+                    buf = MOT::MemSessionAlloc(KeyLength);
+                    if(buf == nullptr) Assert(false);
+                    key = new (buf) MOT::Key(KeyLength);
+                    key->CpKey((uint8_t*)txn_ptr->row(j).key().c_str(),KeyLength);
+                    key_str = key->GetKeyStr();
+
+                    table_name = txn_ptr->row(j).tablename();
+                    key_temp = "" + table_name + key_str;
+                    MOT::MemSessionFree(buf);
+                    if(MOTAdaptor::insertSetForCommit.contain(key_temp, csn_temp) == false){
+                        flag ++;
+                        break;
+                    }
+                }
+            }
+            if(flag == 0){
                 MOTAdaptor::IncRecordCommitTxnCounters(epoch_mod, index_pack);
                 txn_manager->CleanTxn();
                 if(is_full_async_exec == false) {
@@ -3642,7 +3682,7 @@ void EpochCommitThreadMain(uint64_t id){//validate
                         if(op_type == 0 || op_type == 2) {
                             localRow = (*row_vector_ptr)[j];
                             localRow->GetRowHeader()->Lock();
-                            localRow->GetRowHeader()->LockStable();
+                            localRow->GetRowHeader()->LockStable();     
                         }
                     }
                 }
@@ -3722,7 +3762,7 @@ void EpochCommitThreadMain(uint64_t id){//validate
                         op_type = row.type();
                         if(op_type == 0 || op_type == 2) {
                             localRow = (*row_vector_ptr)[j];
-                            if(localRow->GetRowHeader()->GetCSN_1() == csn && localRow->GetRowHeader()->GetServerId() == server_id) {
+                            if(localRow->GetRowHeader()->GetStableCSN() == csn && localRow->GetRowHeader()->GetStableServerId() == server_id) {
                                 localRow->GetRowHeader()->ReleaseStable();
                                 localRow->GetRowHeader()->Release();
                             }

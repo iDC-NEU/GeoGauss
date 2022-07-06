@@ -769,6 +769,7 @@ bool OccTransactionManager::ValidateWriteSetForCommit(TxnManager *txMan, uint32_
     MOT::Key* key_ptr;
     void* buf;
     csn_temp = std::to_string(txMan->GetCommitSequenceNumber())+ ":" + std::to_string(server_id);
+    uint64_t csn_tmp = (((txMan->GetCommitSequenceNumber() & STATUS_BITS) | (txMan->GetCommitSequenceNumber() & CSN_BITS)) & CSN_BITS);
     TxnOrderedSet_t &orderedSet = txMan->m_accessMgr->GetOrderedRowSet();
     for (const auto &raPair : orderedSet)
     {
@@ -788,8 +789,10 @@ bool OccTransactionManager::ValidateWriteSetForCommit(TxnManager *txMan, uint32_
         }
         else{
             MOT::RowHeader& row_header = ac->GetRowFromHeader()->m_rowHeader;
-            if(row_header.GetStableCSN() != txMan->GetCommitSequenceNumber()  || row_header.GetStableServerId() != server_id)
+            if(row_header.GetCSN() != csn_tmp  || row_header.GetServerId() != server_id) {
+                // MOT_LOG_INFO("abort %llu %llu %llu", row_header.GetCSN(), csn_tmp, row_header.Getcsn());
                 return false;
+            }
         }
     }
     return true;

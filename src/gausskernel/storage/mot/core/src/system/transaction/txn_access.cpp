@@ -307,6 +307,7 @@ Access* TxnAccess::GetNewRowAccess(const Row* row, AccessType type, RC& rc)
         }
 
         rc = row->GetRow(type, this, ac->m_localRow, last_tid);
+        if(rc == RC_ABORT) MOT_LOG_INFO("read row failed");
         if (__builtin_expect(rc != RC_OK, 0)) {
             if (rc != RC_ABORT) {  // do not log error if aborted due to cc conflict
                 MOT_REPORT_ERROR(MOT_ERROR_INTERNAL, "Access Row", "Failed to get row");

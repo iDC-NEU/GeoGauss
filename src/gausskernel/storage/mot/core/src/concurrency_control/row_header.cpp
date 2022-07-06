@@ -229,15 +229,19 @@ bool RowHeader::ValidateAndSetWriteForCommit(uint64_t m_csn, uint64_t start_epoc
         bool result = true;
         if(commit_epoch > GetCommitEpoch()) { // the first transaction in current epoch, direct write is ok
             SetCSN(m_csn);
+            // Setcsn(m_csn);
             SetStartEpoch(start_epoch);
             SetCommitEpoch(commit_epoch);
+            SetServerId(server_id);
         } 
         else if(commit_epoch == GetCommitEpoch()){
             if(GetStartEpoch() < start_epoch) { // current transaction is the shorter transaction, win
                 std::string str = std::to_string(GetCSN()) + ":" + std::to_string(GetServerId());
                 MOTAdaptor::abort_transcation_csn_set.insert(str, str);
                 SetCSN(m_csn);
+                // Setcsn(m_csn);
                 SetStartEpoch(start_epoch);
+                SetServerId(server_id);
             } else if(GetStartEpoch() > start_epoch){ // current transaction is the longer transaction, failed
                 result = false;
             } else {
@@ -247,6 +251,8 @@ bool RowHeader::ValidateAndSetWriteForCommit(uint64_t m_csn, uint64_t start_epoc
                     std::string str = std::to_string(GetCSN()) + ":" + std::to_string(GetServerId());
                     MOTAdaptor::abort_transcation_csn_set.insert(str, str);
                     SetCSN(m_csn);
+                    // Setcsn(m_csn);
+                    SetServerId(server_id);
                 } else {// csn equals, startEpoch equal, endEpoch equal, 
                     if(server_id > GetStableServerId()){
                         result = false;
