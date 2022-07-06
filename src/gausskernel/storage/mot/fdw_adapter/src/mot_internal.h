@@ -914,6 +914,7 @@ public:
     }
 
     static bool IsCurrentEpochFinished(uint64_t epoch) {
+        usleep(200);
         return ((LoadPackedTxnNum(epoch) >= LoadShouldSendTxnNum(epoch)) &&  epoch < MOTAdaptor::GetPhysicalEpoch());
     }
 

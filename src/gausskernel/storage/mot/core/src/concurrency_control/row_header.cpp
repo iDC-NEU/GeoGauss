@@ -143,18 +143,9 @@ void RowHeader::WriteChangesToRow(const Access* access, uint64_t csn)
     switch (type) {
         case WR:
             MOT_ASSERT(access->m_params.IsPrimarySentinel() == true);
-            if(is_full_async_exec) {
-                if(row->GetRowHeader()->GetCSN() == csn && row->GetRowHeader()->GetServerId() == local_ip_index) {
-                    row->GetRowHeader()->Lock();
-                    row->GetRowHeader()->LockStable();
-                    row->Copy(access->m_localRow);
-                    m_csnWord = (csn | LOCK_BIT);
-                }
-            }
-            else {
-                row->Copy(access->m_localRow);
-                m_csnWord = (csn | LOCK_BIT);
-            }
+            row->Copy(access->m_localRow);
+            m_csnWord = (csn | LOCK_BIT);
+            // m_csnWord = csn;
             //ADDBY NEU
             break;
         case DEL:
@@ -214,6 +205,7 @@ bool RowHeader::ValidateAndSetWriteForCommit(uint64_t m_csn, uint64_t start_epoc
         Lock();
         if(GetCSN() < m_csn) {
             SetCSN(m_csn);
+            SetServerId(server_id);
         }
         else if(GetCSN() == m_csn && server_id < GetStableServerId()) {
             SetServerId(server_id);
@@ -229,7 +221,6 @@ bool RowHeader::ValidateAndSetWriteForCommit(uint64_t m_csn, uint64_t start_epoc
         bool result = true;
         if(commit_epoch > GetCommitEpoch()) { // the first transaction in current epoch, direct write is ok
             SetCSN(m_csn);
-            // Setcsn(m_csn);
             SetStartEpoch(start_epoch);
             SetCommitEpoch(commit_epoch);
             SetServerId(server_id);
@@ -239,8 +230,8 @@ bool RowHeader::ValidateAndSetWriteForCommit(uint64_t m_csn, uint64_t start_epoc
                 std::string str = std::to_string(GetCSN()) + ":" + std::to_string(GetServerId());
                 MOTAdaptor::abort_transcation_csn_set.insert(str, str);
                 SetCSN(m_csn);
-                // Setcsn(m_csn);
                 SetStartEpoch(start_epoch);
+                SetCommitEpoch(commit_epoch);
                 SetServerId(server_id);
             } else if(GetStartEpoch() > start_epoch){ // current transaction is the longer transaction, failed
                 result = false;
@@ -251,18 +242,22 @@ bool RowHeader::ValidateAndSetWriteForCommit(uint64_t m_csn, uint64_t start_epoc
                     std::string str = std::to_string(GetCSN()) + ":" + std::to_string(GetServerId());
                     MOTAdaptor::abort_transcation_csn_set.insert(str, str);
                     SetCSN(m_csn);
-                    // Setcsn(m_csn);
+                    SetStartEpoch(start_epoch);
+                    SetCommitEpoch(commit_epoch);
                     SetServerId(server_id);
                 } else {// csn equals, startEpoch equal, endEpoch equal, 
-                    if(server_id > GetStableServerId()){
+                    if(server_id > GetServerId()){
                         result = false;
                     }
-                    else if(server_id == GetStableServerId() ){
+                    else if(server_id == GetServerId() ){
                         //do nothing
                     }
                     else{
                         std::string str = std::to_string(GetCSN()) + ":" + std::to_string(GetServerId());
                         MOTAdaptor::abort_transcation_csn_set.insert(str, str);
+                        SetCSN(m_csn);
+                        SetStartEpoch(start_epoch);
+                        SetCommitEpoch(commit_epoch);
                         SetServerId(server_id);
                     }
                 }

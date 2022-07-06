@@ -2449,6 +2449,7 @@ bool Enqueue(std::unique_ptr<pack_params> && ptr, std::unique_ptr<pack_params> &
     index = 0;
     if(txn_queue_ptrs[index]->enqueue(std::move(ptr))) {
         if(txn_queue_ptrs[index]->enqueue(std::move(ptr1))) {
+            txn_queue_ptrs[index]->enqueue(nullptr);
             return true;
         }
         else {
@@ -2808,6 +2809,7 @@ void OUTPUTLOG(string s, uint64_t epoch_mod){
     total_abort %llu read_total %llu \
     write_total %llu total %llu \
     pack_txn %llu packed_txn %llu\
+    record_commit %llu record_committed %llu\
     time %llu", 
     s.c_str(),
     MOTAdaptor::GetPhysicalEpoch(), MOTAdaptor::GetLogicalEpoch(), 
@@ -2822,6 +2824,7 @@ void OUTPUTLOG(string s, uint64_t epoch_mod){
     MOTAdaptor::LoadTotalAbortTxnNum(epoch_mod), MOTAdaptor::LoadReadTotalTxnNum(epoch_mod), 
     MOTAdaptor::LoadWriteTotalTxnNum(epoch_mod), MOTAdaptor::LoadChangeSet(epoch_mod),
     MOTAdaptor::LoadPackTxnNum(epoch_mod), MOTAdaptor::LoadPackedTxnNum(epoch_mod),
+    MOTAdaptor::GetRecordCommitTxnCounters(epoch_mod), MOTAdaptor::GetRecordCommittedTxnCounters(epoch_mod),
     now_to_us());
 }
 
@@ -2853,11 +2856,11 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
         for(;;) {
             //等所有上一个epoch 的事务写完 再开始下一个epoch
             cnt = 0;
-            while(MOTAdaptor::GetRecordCommittedTxnCounters(last_epoch_mod) != MOTAdaptor::GetRecordCommitTxnCounters(last_epoch_mod)) usleep(100);
-            MOTAdaptor::SetRecordCommitted(true);
-            total_commit_txn_num += MOTAdaptor::GetRecordCommitTxnCounters(last_epoch_mod);
-            MOT_LOG_INFO("===上一个epoch所有事务写入完成 %llu, %llu %llu total %llu ", MOTAdaptor::GetRecordCommittedTxnCounters(last_epoch_mod), 
-                MOTAdaptor::GetRecordCommitTxnCounters(last_epoch_mod), total_commit_txn_num, now_to_us());
+            // while(MOTAdaptor::GetRecordCommittedTxnCounters(last_epoch_mod) != MOTAdaptor::GetRecordCommitTxnCounters(last_epoch_mod)) usleep(100);
+            // MOTAdaptor::SetRecordCommitted(true);
+            // total_commit_txn_num += MOTAdaptor::GetRecordCommitTxnCounters(last_epoch_mod);
+            // MOT_LOG_INFO("===上一个epoch所有事务写入完成 %llu, %llu %llu total %llu ", MOTAdaptor::GetRecordCommittedTxnCounters(last_epoch_mod), 
+            //     MOTAdaptor::GetRecordCommitTxnCounters(last_epoch_mod), total_commit_txn_num, now_to_us());
 
             while(MOTAdaptor::GetPhysicalEpoch() <= MOTAdaptor::GetLogicalEpoch() + kDelayEpochNum) usleep(100);
             
@@ -2925,7 +2928,14 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
             
             // ============= 结束处理 ==================
             //远端事务已经写完，不写完无法开始下一个logical epoch
+
+            while(MOTAdaptor::GetRecordCommittedTxnCounters(epoch_mod) != MOTAdaptor::GetRecordCommitTxnCounters(epoch_mod)) usleep(100);
+            MOTAdaptor::SetRecordCommitted(true);
+            total_commit_txn_num += MOTAdaptor::GetRecordCommitTxnCounters(epoch_mod);
+            MOT_LOG_INFO("===epoch所有事务写入完成 %llu, %llu %llu total %llu ", MOTAdaptor::GetRecordCommittedTxnCounters(epoch_mod), 
+                MOTAdaptor::GetRecordCommitTxnCounters(epoch_mod), total_commit_txn_num, now_to_us());
             OUTPUTLOG("==================完成一个Epoch的合并" , epoch_mod);
+
             MOTAdaptor::RemoteCacheClear(epoch_mod);
             MOTAdaptor::ClearMergeEpochState();
             MOTAdaptor::AddLogicalEpoch();
@@ -2939,11 +2949,6 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
         for(;;){
             //等所有上一个epoch 的事务写完 再开始下一个epoch
             cnt = 0;
-            while(MOTAdaptor::GetRecordCommittedTxnCounters(last_epoch_mod) != MOTAdaptor::GetRecordCommitTxnCounters(last_epoch_mod)) usleep(100);
-            MOTAdaptor::SetRecordCommitted(true);
-            total_commit_txn_num += MOTAdaptor::GetRecordCommitTxnCounters(last_epoch_mod);
-            MOT_LOG_INFO("===上一个epoch所有事务写入完成 %llu, %llu %llu total %llu ", MOTAdaptor::GetRecordCommittedTxnCounters(last_epoch_mod), 
-                MOTAdaptor::GetRecordCommitTxnCounters(last_epoch_mod), total_commit_txn_num, now_to_us());
 
             while(MOTAdaptor::GetPhysicalEpoch() <= MOTAdaptor::GetLogicalEpoch() + kDelayEpochNum) usleep(100);
             
@@ -3011,6 +3016,12 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
             }
             remote_received_txn_num = MOTAdaptor::GetReceivedTxnNum(epoch_mod);
             
+
+            while(MOTAdaptor::GetRecordCommittedTxnCounters(epoch_mod) != MOTAdaptor::GetRecordCommitTxnCounters(epoch_mod)) usleep(100);
+            MOTAdaptor::SetRecordCommitted(true);
+            total_commit_txn_num += MOTAdaptor::GetRecordCommitTxnCounters(epoch_mod);
+            MOT_LOG_INFO("===epoch所有事务写入完成 %llu, %llu %llu total %llu ", MOTAdaptor::GetRecordCommittedTxnCounters(epoch_mod), 
+                MOTAdaptor::GetRecordCommitTxnCounters(epoch_mod), total_commit_txn_num, now_to_us());
             OUTPUTLOG("==================完成一个Epoch的合并" , epoch_mod);
             // ============= 结束处理 ==================
             //远端事务已经写完，不写完无法开始下一个logical epoch
@@ -3177,6 +3188,7 @@ void PackMergeRequest(uint64_t id){
         for(int i = 0; i < (int)kPackageNum; i++) {
             index = (index + 1) % kPackageNum;
             while(TryDequeue(pack_param, index)) {
+                if(pack_param == nullptr) continue;
             // while(txn_queue.try_dequeue(pack_param)) {    
                 current_epoch = pack_param->epoch;
                 q[current_epoch % kPackThreadNum].enqueue(std::move(pack_param));
@@ -3207,12 +3219,13 @@ void EpochPackThreadMain(uint64_t id){
     bool sleep_flag = false;
     while(!init_ok.load()) usleep(100);
     if(is_total_pack) PackMergeRequest(id);
-    if(id == 0 && kServerNum > 1) {
+    if(id == 0) {
         while(true){
             sleep_flag = true;
             for(int i = 0; i < (int)kPackageNum; i++) {
                 index = (index + 1) % kPackageNum;
                 if(TryDequeue(pack_param, index)) {
+                    if(pack_param == nullptr) continue;
                 // if(txn_queue.try_dequeue(pack_param)) { 
                     if(kServerNum == 1) continue;
                     current_epoch = pack_param->epoch;
@@ -3262,6 +3275,7 @@ void EpochPackThreadMain(uint64_t id){
             for(int i = 0; i < (int)kPackageNum; i++) {
                 index = (index + 1) % kPackageNum;
                 if(TryDequeue(pack_param, index)) {
+                    if(pack_param == nullptr) continue;
                 // if(txn_queue.try_dequeue(pack_param)) { 
                     if(kServerNum == 1) continue;
                     current_epoch = pack_param->epoch;
@@ -3585,6 +3599,7 @@ void EpochMergeThreadMain(uint64_t id){
                 if(commit_txn_queue_struct.enqueue(std::make_unique<commit_thread_params>(std::move(txn_ptr), std::move(row_vector_ptr)))){
                     MOTAdaptor::IncRemoteCommitTxnCounters(epoch_mod, index_pack);
                     if(!commit_txn_queue_struct.enqueue(std::make_unique<commit_thread_params>(nullptr, nullptr))) Assert(false); //防止moodycamel取不出
+                    if(!commit_txn_queue_struct.enqueue(nullptr)) Assert(false);
                 }
                 else{
                     MOT_LOG_INFO("Merge 放入队列失败 ");
@@ -3622,6 +3637,7 @@ void EpochCommitThreadMain(uint64_t id){//validate
     while(!init_ok.load()) usleep(100);
     for(;;){
         if(commit_txn_queue_struct.try_dequeue(params)) {
+            if(params == nullptr) continue;
             txn_ptr = std::move(params->txn);
             row_vector_ptr = std::move(params->row_vector);
             if(txn_ptr == nullptr) {
@@ -3633,7 +3649,7 @@ void EpochCommitThreadMain(uint64_t id){//validate
                 }
 
             csn = txn_ptr->csn();
-            uint64_t csn_tmp = (((csn & STATUS_BITS) | (csn & CSN_BITS)) & CSN_BITS);
+            // uint64_t csn_tmp = (((csn & STATUS_BITS) | (csn & CSN_BITS)) & CSN_BITS);
             server_id = txn_ptr->server_id();
             epoch_mod = txn_ptr->commitepoch() % MOTAdaptor::max_length;
             csn_temp = std::to_string(csn) + ":" + std::to_string(server_id);
@@ -3648,7 +3664,7 @@ void EpochCommitThreadMain(uint64_t id){//validate
                 op_type = row.type();
                 if(op_type == 0 || op_type == 2) {
                     localRow = (*row_vector_ptr)[j];
-                    if(localRow->GetRowHeader()->GetCSN_1() != csn_tmp || localRow->GetRowHeader()->GetServerId() != server_id){
+                    if(localRow->GetRowHeader()->GetCSN_1() != csn || localRow->GetRowHeader()->GetServerId() != server_id){
                         flag ++;
                         break;
                     }
@@ -3673,6 +3689,8 @@ void EpochCommitThreadMain(uint64_t id){//validate
             if(flag == 0){
                 MOTAdaptor::IncRecordCommitTxnCounters(epoch_mod, index_pack);
                 txn_manager->CleanTxn();
+                std::map<MOT::Row*, bool> lock_map;
+                lock_map.clear();
                 if(is_full_async_exec == false) {
                     for(int j = 0; j < txn_ptr->row_size(); j++){
                         const auto& row = txn_ptr->row(j);
@@ -3681,8 +3699,18 @@ void EpochCommitThreadMain(uint64_t id){//validate
                         op_type = row.type();
                         if(op_type == 0 || op_type == 2) {
                             localRow = (*row_vector_ptr)[j];
-                            localRow->GetRowHeader()->Lock();
-                            localRow->GetRowHeader()->LockStable();     
+                            if(lock_map[localRow] == false) {//可能存在两次写入同一行
+                                if(is_full_async_exec == true && localRow->GetRowHeader()->GetCSN() == csn 
+                                    && localRow->GetRowHeader()->GetServerId() == local_ip_index) {   
+                                    localRow->GetRowHeader()->Lock();
+                                    localRow->GetRowHeader()->LockStable();
+                                }
+                                else {
+                                    localRow->GetRowHeader()->Lock();
+                                    localRow->GetRowHeader()->LockStable();
+                                }
+                                lock_map[localRow] = true;
+                            }   
                         }
                     }
                 }
@@ -3693,10 +3721,10 @@ void EpochCommitThreadMain(uint64_t id){//validate
                     op_type = row.type();
                     if(op_type == 0 || op_type == 2) {
                         localRow = (*row_vector_ptr)[j];
+                        // localRow->GetRowHeader()->Lock();
+                        // localRow->GetRowHeader()->LockStable();
                         if(is_full_async_exec) {
                             if(localRow->GetRowHeader()->GetCSN_1() == csn && localRow->GetRowHeader()->GetServerId() == server_id) {
-                                localRow->GetRowHeader()->Lock();
-                                localRow->GetRowHeader()->LockStable();
                                 if(op_type == 2) {
                                     localRow->GetPrimarySentinel()->SetDirty();
                                     localRow->GetRowHeader()->m_csnWord = (csn | LOCK_BIT | ABSENT_BIT | LATEST_VER_BIT);
@@ -3727,6 +3755,8 @@ void EpochCommitThreadMain(uint64_t id){//validate
                             }
                         }
                         localRow->GetRowHeader()->KeepStable();
+                        // localRow->GetRowHeader()->ReleaseStable();
+                        // localRow->GetRowHeader()->Release();
                     }
                     else{
                         new_row = table->CreateNewRow();
@@ -3740,36 +3770,31 @@ void EpochCommitThreadMain(uint64_t id){//validate
                 }
 
                 txn_manager->CommitForRemote(); //for insert     lock and release lock
-
-                if(is_full_async_exec == false) {
-                    for(int j = 0; j < txn_ptr->row_size(); j++){
-                        const auto& row = txn_ptr->row(j);
-                        table = MOTAdaptor::m_engine->GetTableManager()->GetTable(row.tablename());
-                        MOT_ASSERT(table != nullptr);
-                        op_type = row.type();
-                        if(op_type == 0 || op_type == 2) {
-                            localRow = (*row_vector_ptr)[j];
-                            localRow->GetRowHeader()->ReleaseStable();
-                            localRow->GetRowHeader()->Release();
-                        }
-                    }
-                }
-                else {
-                    for(int j = 0; j < txn_ptr->row_size(); j++){
-                        const auto& row = txn_ptr->row(j);
-                        table = MOTAdaptor::m_engine->GetTableManager()->GetTable(row.tablename());
-                        MOT_ASSERT(table != nullptr);
-                        op_type = row.type();
-                        if(op_type == 0 || op_type == 2) {
-                            localRow = (*row_vector_ptr)[j];
-                            if(localRow->GetRowHeader()->GetStableCSN() == csn && localRow->GetRowHeader()->GetStableServerId() == server_id) {
+                for(int j = 0; j < txn_ptr->row_size(); j++){
+                    const auto& row = txn_ptr->row(j);
+                    table = MOTAdaptor::m_engine->GetTableManager()->GetTable(row.tablename());
+                    MOT_ASSERT(table != nullptr);
+                    op_type = row.type();
+                    if(op_type == 0 || op_type == 2) {
+                        localRow = (*row_vector_ptr)[j];
+                        if(lock_map[localRow] == true) {
+                            if(is_full_async_exec == true && localRow->GetRowHeader()->GetCSN() == csn 
+                                && localRow->GetRowHeader()->GetServerId() == local_ip_index) {
                                 localRow->GetRowHeader()->ReleaseStable();
                                 localRow->GetRowHeader()->Release();
                             }
+                            else {
+                                localRow->GetRowHeader()->ReleaseStable();
+                                localRow->GetRowHeader()->Release();
+                            }
+                            lock_map[localRow] = false;
                         }
                     }
                 }
                 MOTAdaptor::IncRecordCommittedTxnCounters(epoch_mod, index_pack);
+            }
+            else {
+
             }
             MOTAdaptor::IncRemoteCommittedTxnCounters(epoch_mod, index_pack);
         }

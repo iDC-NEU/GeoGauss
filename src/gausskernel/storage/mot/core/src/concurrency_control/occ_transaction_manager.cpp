@@ -410,6 +410,9 @@ void OccTransactionManager::WriteChanges(TxnManager* txMan)
     }
     //ADDBY NEU
     // LockRows(txMan, m_rowsSetSize);
+    std::map<MOT::Row*, bool> lock_map;
+    lock_map.clear();
+    auto csn = txMan->GetCommitSequenceNumber();
     TxnOrderedSet_t& orderedSet = txMan->m_accessMgr->GetOrderedRowSet();
     if(is_full_async_exec == false)
         for (const auto& raPair : orderedSet) {
@@ -419,8 +422,18 @@ void OccTransactionManager::WriteChanges(TxnManager* txMan)
             if (type == RD) {
                 continue;
             }
-            row->GetRowHeader()->Lock();
-            row->GetRowHeader()->LockStable();
+            if(lock_map[row] == false) {
+                if(is_full_async_exec == true && row->GetRowHeader()->GetCSN() == csn
+                    && row->GetRowHeader()->GetServerId() == local_ip_index){
+                    row->GetRowHeader()->Lock();
+                    row->GetRowHeader()->LockStable();
+                }
+                else {
+                    row->GetRowHeader()->Lock();
+                    row->GetRowHeader()->LockStable();
+                } 
+                lock_map[row] = true;
+            }
         }
 
     // Stable rows for checkpoint needs to be created (copied from original row) before modifying the global rows.
@@ -496,32 +509,25 @@ void OccTransactionManager::WriteChanges(TxnManager* txMan)
     }
 
     CleanRowsFromIndexes(txMan);
-
-    if(is_full_async_exec == false) {
-         for (const auto& raPair : orderedSet) {
-            const Access* access = raPair.second;
-            Row* row = access->GetRowFromHeader();
-            AccessType type = access->m_type;
-            if (type == RD) {
-                continue;
-            }
-            row->GetRowHeader()->ReleaseStable();
-            row->GetRowHeader()->Release();
+        
+    for (const auto& raPair : orderedSet) {
+        const Access* access = raPair.second;
+        Row* row = access->GetRowFromHeader();
+        AccessType type = access->m_type;
+        if (type == RD) {
+            continue;
         }
-    }
-    else {
-        auto csn = txMan->GetCommitSequenceNumber();
-        for (const auto& raPair : orderedSet) {
-            const Access* access = raPair.second;
-            Row* row = access->GetRowFromHeader();
-            AccessType type = access->m_type;
-            if (type == RD) {
-                continue;
-            }
-            if(row->GetRowHeader()->GetCSN() == csn && row->GetRowHeader()->GetServerId() == local_ip_index) {
+        if(lock_map[row] == true) {
+            if(is_full_async_exec == true && row->GetRowHeader()->GetCSN() == csn 
+                && row->GetRowHeader()->GetServerId() == local_ip_index) {
                 row->GetRowHeader()->ReleaseStable();
                 row->GetRowHeader()->Release();
             }
+            else {
+                row->GetRowHeader()->ReleaseStable();
+                row->GetRowHeader()->Release();
+            }
+            lock_map[row] = false;
         }
     }
 
@@ -769,7 +775,7 @@ bool OccTransactionManager::ValidateWriteSetForCommit(TxnManager *txMan, uint32_
     MOT::Key* key_ptr;
     void* buf;
     csn_temp = std::to_string(txMan->GetCommitSequenceNumber())+ ":" + std::to_string(server_id);
-    uint64_t csn_tmp = (((txMan->GetCommitSequenceNumber() & STATUS_BITS) | (txMan->GetCommitSequenceNumber() & CSN_BITS)) & CSN_BITS);
+    uint64_t csn_tmp = txMan->GetCommitSequenceNumber();
     TxnOrderedSet_t &orderedSet = txMan->m_accessMgr->GetOrderedRowSet();
     for (const auto &raPair : orderedSet)
     {
