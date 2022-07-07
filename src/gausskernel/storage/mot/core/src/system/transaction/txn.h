@@ -576,7 +576,7 @@ public:
 public:
     void CommitInternalII();//ADDBY NEU
     bool isOnlyRead();
-    void CommitForRemote();
+    void CommitForRemote(uint64_t server_id);
     RC ValidateOcc();
     bool localMergeValidate(uint64_t csn);
 

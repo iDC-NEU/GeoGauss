@@ -403,7 +403,7 @@ void OccTransactionManager::ApplyWrite(TxnManager* txMan)
     }
 }
 
-void OccTransactionManager::WriteChanges(TxnManager* txMan)
+void OccTransactionManager::WriteChanges(TxnManager* txMan, uint64_t server_id)
 {
     if (m_writeSetSize == 0 && m_insertSetSize == 0) {
         return;
@@ -414,27 +414,26 @@ void OccTransactionManager::WriteChanges(TxnManager* txMan)
     lock_map.clear();
     auto csn = txMan->GetCommitSequenceNumber();
     TxnOrderedSet_t& orderedSet = txMan->m_accessMgr->GetOrderedRowSet();
-    if(is_full_async_exec == false)
-        for (const auto& raPair : orderedSet) {
-            const Access* access = raPair.second;
-            Row* row = access->GetRowFromHeader();
-            AccessType type = access->m_type;
-            if (type == RD) {
-                continue;
-            }
-            if(lock_map[row] == false) {
-                if(is_full_async_exec == true && row->GetRowHeader()->GetCSN() == csn
-                    && row->GetRowHeader()->GetServerId() == local_ip_index){
-                    row->GetRowHeader()->Lock();
-                    row->GetRowHeader()->LockStable();
-                }
-                else {
-                    row->GetRowHeader()->Lock();
-                    row->GetRowHeader()->LockStable();
-                } 
-                lock_map[row] = true;
-            }
+    for (const auto& raPair : orderedSet) {
+        const Access* access = raPair.second;
+        Row* row = access->GetRowFromHeader();
+        AccessType type = access->m_type;
+        if (type == RD) {
+            continue;
         }
+        if(lock_map[row] == false) {
+            if(is_full_async_exec == true && row->GetRowHeader()->GetCSN() == csn
+                && row->GetRowHeader()->GetServerId() == server_id){
+                row->GetRowHeader()->Lock();
+                row->GetRowHeader()->LockStable();
+            }
+            else {
+                row->GetRowHeader()->Lock();
+                row->GetRowHeader()->LockStable();
+            } 
+            lock_map[row] = true;
+        }
+    }
 
     // Stable rows for checkpoint needs to be created (copied from original row) before modifying the global rows.
     ApplyWrite(txMan);
@@ -443,7 +442,7 @@ void OccTransactionManager::WriteChanges(TxnManager* txMan)
     // For deletes invalidate sentinels - rows still locked!
     for (const auto& raPair : orderedSet) {
         const Access* access = raPair.second;
-        access->GetRowFromHeader()->m_rowHeader.WriteChangesToRow(access, txMan->GetCommitSequenceNumber());
+        access->GetRowFromHeader()->m_rowHeader.WriteChangesToRow(access, txMan->GetCommitSequenceNumber(), server_id);
     }
 
     // Treat Inserts
@@ -519,7 +518,7 @@ void OccTransactionManager::WriteChanges(TxnManager* txMan)
         }
         if(lock_map[row] == true) {
             if(is_full_async_exec == true && row->GetRowHeader()->GetCSN() == csn 
-                && row->GetRowHeader()->GetServerId() == local_ip_index) {
+                && row->GetRowHeader()->GetServerId() == server_id) {
                 row->GetRowHeader()->ReleaseStable();
                 row->GetRowHeader()->Release();
             }

@@ -289,7 +289,7 @@ void TxnManager::CommitInternal()
 
     // first write to redo log, then write changes
     m_redoLog.Commit();
-    m_occManager.WriteChanges(this);
+    m_occManager.WriteChanges(this, 0);
 
     if (GetGlobalConfiguration().m_enableCheckpoint) {
         GetCheckpointManager()->EndCommit(this);
@@ -343,7 +343,7 @@ void TxnManager::CommitPrepared()
 
     // first write to redo log, then write changes
     m_redoLog.CommitPrepared();
-    m_occManager.WriteChanges(this);
+    m_occManager.WriteChanges(this, 0);
 
     if (GetGlobalConfiguration().m_enableCheckpoint) {
         GetCheckpointManager()->EndCommit(this);
@@ -1341,7 +1341,7 @@ void TxnManager::CommitInternalII()
     
     //不写log
     m_redoLog.Commit();
-    m_occManager.WriteChanges(this);
+    m_occManager.WriteChanges(this, 0);
     
     if (GetGlobalConfiguration().m_enableCheckpoint) {
         GetCheckpointManager()->EndCommit(this);
@@ -1360,14 +1360,14 @@ void TxnManager::CommitInternalII()
     // ClearEpochState();
 }
 
-void TxnManager::CommitForRemote()
+void TxnManager::CommitForRemote(uint64_t server_id)
 {
     m_occManager.updateInsertSetSize(this);
     // MOT_LOG_INFO("m_occManager.IsReadOnly(this) %u", m_occManager.IsReadOnly(this));
     // 对远端事务的update无法进行统计 未添加进入txnmanager中
     // CommitInternalII();
     m_redoLog.Commit();
-    m_occManager.WriteChanges(this);
+    m_occManager.WriteChanges(this, server_id);
 
     if (GetGlobalConfiguration().m_enableCheckpoint) {
         GetCheckpointManager()->EndCommit(this);

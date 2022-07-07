@@ -3691,27 +3691,23 @@ void EpochCommitThreadMain(uint64_t id){//validate
                 txn_manager->CleanTxn();
                 std::map<MOT::Row*, bool> lock_map;
                 lock_map.clear();
-                if(is_full_async_exec == false) {
-                    for(int j = 0; j < txn_ptr->row_size(); j++){
-                        const auto& row = txn_ptr->row(j);
-                        table = MOTAdaptor::m_engine->GetTableManager()->GetTable(row.tablename());
-                        MOT_ASSERT(table != nullptr);
-                        op_type = row.type();
-                        if(op_type == 0 || op_type == 2) {
-                            localRow = (*row_vector_ptr)[j];
-                            if(lock_map[localRow] == false) {//可能存在两次写入同一行
-                                if(is_full_async_exec == true && localRow->GetRowHeader()->GetCSN() == csn 
-                                    && localRow->GetRowHeader()->GetServerId() == local_ip_index) {   
-                                    localRow->GetRowHeader()->Lock();
-                                    localRow->GetRowHeader()->LockStable();
-                                }
-                                else {
-                                    localRow->GetRowHeader()->Lock();
-                                    localRow->GetRowHeader()->LockStable();
-                                }
-                                lock_map[localRow] = true;
-                            }   
-                        }
+                for(int j = 0; j < txn_ptr->row_size(); j++){
+                    const auto& row = txn_ptr->row(j);
+                    op_type = row.type();
+                    if(op_type == 0 || op_type == 2) {
+                        localRow = (*row_vector_ptr)[j];
+                        if(lock_map[localRow] == false) {//可能存在两次写入同一行
+                            if(is_full_async_exec == true && localRow->GetRowHeader()->GetCSN() == csn 
+                                && localRow->GetRowHeader()->GetServerId() == server_id) {   
+                                localRow->GetRowHeader()->Lock();
+                                localRow->GetRowHeader()->LockStable();
+                            }
+                            else {
+                                localRow->GetRowHeader()->Lock();
+                                localRow->GetRowHeader()->LockStable();
+                            }
+                            lock_map[localRow] = true;
+                        }   
                     }
                 }
                 for(int j = 0; j < txn_ptr->row_size(); j++){
@@ -3721,8 +3717,6 @@ void EpochCommitThreadMain(uint64_t id){//validate
                     op_type = row.type();
                     if(op_type == 0 || op_type == 2) {
                         localRow = (*row_vector_ptr)[j];
-                        // localRow->GetRowHeader()->Lock();
-                        // localRow->GetRowHeader()->LockStable();
                         if(is_full_async_exec) {
                             if(localRow->GetRowHeader()->GetCSN_1() == csn && localRow->GetRowHeader()->GetServerId() == server_id) {
                                 if(op_type == 2) {
@@ -3755,8 +3749,6 @@ void EpochCommitThreadMain(uint64_t id){//validate
                             }
                         }
                         localRow->GetRowHeader()->KeepStable();
-                        // localRow->GetRowHeader()->ReleaseStable();
-                        // localRow->GetRowHeader()->Release();
                     }
                     else{
                         new_row = table->CreateNewRow();
@@ -3769,17 +3761,15 @@ void EpochCommitThreadMain(uint64_t id){//validate
                     }
                 }
 
-                txn_manager->CommitForRemote(); //for insert     lock and release lock
+                txn_manager->CommitForRemote(server_id); //for insert     lock and release lock
                 for(int j = 0; j < txn_ptr->row_size(); j++){
                     const auto& row = txn_ptr->row(j);
-                    table = MOTAdaptor::m_engine->GetTableManager()->GetTable(row.tablename());
-                    MOT_ASSERT(table != nullptr);
                     op_type = row.type();
                     if(op_type == 0 || op_type == 2) {
                         localRow = (*row_vector_ptr)[j];
                         if(lock_map[localRow] == true) {
                             if(is_full_async_exec == true && localRow->GetRowHeader()->GetCSN() == csn 
-                                && localRow->GetRowHeader()->GetServerId() == local_ip_index) {
+                                && localRow->GetRowHeader()->GetServerId() == server_id) {
                                 localRow->GetRowHeader()->ReleaseStable();
                                 localRow->GetRowHeader()->Release();
                             }

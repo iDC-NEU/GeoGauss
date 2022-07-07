@@ -120,7 +120,7 @@ bool RowHeader::ValidateReadForSnap(TransactionId tid, uint64_t start_epoch, uin
 }
 
 
-void RowHeader::WriteChangesToRow(const Access* access, uint64_t csn)
+void RowHeader::WriteChangesToRow(const Access* access, uint64_t csn, uint64_t server_id)
 {
     Row* row = access->GetRowFromHeader();
     AccessType type = access->m_type;
@@ -143,8 +143,16 @@ void RowHeader::WriteChangesToRow(const Access* access, uint64_t csn)
     switch (type) {
         case WR:
             MOT_ASSERT(access->m_params.IsPrimarySentinel() == true);
-            row->Copy(access->m_localRow);
-            m_csnWord = (csn | LOCK_BIT);
+            if(is_full_async_exec) {
+                if(row->GetRowHeader()->GetCSN() == csn && row->GetRowHeader()->GetServerId() == server_id) {
+                    row->Copy(access->m_localRow);
+                    m_csnWord = (csn | LOCK_BIT);
+                }
+            }
+            else {
+                row->Copy(access->m_localRow);
+                m_csnWord = (csn | LOCK_BIT);
+            }
             // m_csnWord = csn;
             //ADDBY NEU
             break;

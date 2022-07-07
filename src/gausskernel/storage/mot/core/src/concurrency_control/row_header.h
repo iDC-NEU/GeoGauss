@@ -118,7 +118,7 @@ private:
      * @param access Container for the row
      * @param csn Commit Serial Number
      */
-    void WriteChangesToRow(const Access* access, uint64_t csn);
+    void WriteChangesToRow(const Access* access, uint64_t csn, uint64_t server_id);
 
 public:
     /** @brief Locks the row. */

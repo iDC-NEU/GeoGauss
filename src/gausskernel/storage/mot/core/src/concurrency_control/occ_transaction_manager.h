@@ -90,7 +90,7 @@ public:
      * release the locks associated with all the write access items.
      * @param txMan The committing transaction.
      */
-    void WriteChanges(TxnManager* txMan);
+    void WriteChanges(TxnManager* txMan, uint64_t server_id);
 
     /** @brief remove all deleted keys from the global indices   */
     void CleanRowsFromIndexes(TxnManager* txMan);
