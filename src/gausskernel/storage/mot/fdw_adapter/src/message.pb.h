@@ -47,7 +47,7 @@ struct TableStruct_message_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[6]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[26]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -55,54 +55,134 @@ struct TableStruct_message_2eproto {
 };
 extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_message_2eproto;
 namespace merge {
-class MergeRequest;
-class MergeRequestDefaultTypeInternal;
-extern MergeRequestDefaultTypeInternal _MergeRequest_default_instance_;
-class MergeRequest_Transaction;
-class MergeRequest_TransactionDefaultTypeInternal;
-extern MergeRequest_TransactionDefaultTypeInternal _MergeRequest_Transaction_default_instance_;
-class MergeRequest_Transaction_Row;
-class MergeRequest_Transaction_RowDefaultTypeInternal;
-extern MergeRequest_Transaction_RowDefaultTypeInternal _MergeRequest_Transaction_Row_default_instance_;
-class MergeRequest_Transaction_Row_Column;
-class MergeRequest_Transaction_Row_ColumnDefaultTypeInternal;
-extern MergeRequest_Transaction_Row_ColumnDefaultTypeInternal _MergeRequest_Transaction_Row_Column_default_instance_;
+class ChangeServerStateRequest;
+class ChangeServerStateRequestDefaultTypeInternal;
+extern ChangeServerStateRequestDefaultTypeInternal _ChangeServerStateRequest_default_instance_;
+class ChangeServerStateResponse;
+class ChangeServerStateResponseDefaultTypeInternal;
+extern ChangeServerStateResponseDefaultTypeInternal _ChangeServerStateResponse_default_instance_;
+class EpochReplicationAck;
+class EpochReplicationAckDefaultTypeInternal;
+extern EpochReplicationAckDefaultTypeInternal _EpochReplicationAck_default_instance_;
+class ForwardEpochRequest;
+class ForwardEpochRequestDefaultTypeInternal;
+extern ForwardEpochRequestDefaultTypeInternal _ForwardEpochRequest_default_instance_;
+class KeyMasterMetadata;
+class KeyMasterMetadataDefaultTypeInternal;
+extern KeyMasterMetadataDefaultTypeInternal _KeyMasterMetadata_default_instance_;
+class LookupMasterRequest;
+class LookupMasterRequestDefaultTypeInternal;
+extern LookupMasterRequestDefaultTypeInternal _LookupMasterRequest_default_instance_;
+class LookupMasterResponse;
+class LookupMasterResponseDefaultTypeInternal;
+extern LookupMasterResponseDefaultTypeInternal _LookupMasterResponse_default_instance_;
+class MasterMetadata;
+class MasterMetadataDefaultTypeInternal;
+extern MasterMetadataDefaultTypeInternal _MasterMetadata_default_instance_;
+class Message;
+class MessageDefaultTypeInternal;
+extern MessageDefaultTypeInternal _Message_default_instance_;
+class Ping;
+class PingDefaultTypeInternal;
+extern PingDefaultTypeInternal _Ping_default_instance_;
+class Pong;
+class PongDefaultTypeInternal;
+extern PongDefaultTypeInternal _Pong_default_instance_;
+class RaftAcceptRequest;
+class RaftAcceptRequestDefaultTypeInternal;
+extern RaftAcceptRequestDefaultTypeInternal _RaftAcceptRequest_default_instance_;
+class RaftAcceptResponse;
+class RaftAcceptResponseDefaultTypeInternal;
+extern RaftAcceptResponseDefaultTypeInternal _RaftAcceptResponse_default_instance_;
+class RaftCommitRequest;
+class RaftCommitRequestDefaultTypeInternal;
+extern RaftCommitRequestDefaultTypeInternal _RaftCommitRequest_default_instance_;
+class RaftCommitResponse;
+class RaftCommitResponseDefaultTypeInternal;
+extern RaftCommitResponseDefaultTypeInternal _RaftCommitResponse_default_instance_;
+class RaftPropose;
+class RaftProposeDefaultTypeInternal;
+extern RaftProposeDefaultTypeInternal _RaftPropose_default_instance_;
+class Request;
+class RequestDefaultTypeInternal;
+extern RequestDefaultTypeInternal _Request_default_instance_;
+class Response;
+class ResponseDefaultTypeInternal;
+extern ResponseDefaultTypeInternal _Response_default_instance_;
 class ServerMessage;
 class ServerMessageDefaultTypeInternal;
 extern ServerMessageDefaultTypeInternal _ServerMessage_default_instance_;
 class ServerMessage_Msg;
 class ServerMessage_MsgDefaultTypeInternal;
 extern ServerMessage_MsgDefaultTypeInternal _ServerMessage_Msg_default_instance_;
+class Signal;
+class SignalDefaultTypeInternal;
+extern SignalDefaultTypeInternal _Signal_default_instance_;
+class StatsRequest;
+class StatsRequestDefaultTypeInternal;
+extern StatsRequestDefaultTypeInternal _StatsRequest_default_instance_;
+class StatsResponse;
+class StatsResponseDefaultTypeInternal;
+extern StatsResponseDefaultTypeInternal _StatsResponse_default_instance_;
+class Transaction;
+class TransactionDefaultTypeInternal;
+extern TransactionDefaultTypeInternal _Transaction_default_instance_;
+class Transaction_Row;
+class Transaction_RowDefaultTypeInternal;
+extern Transaction_RowDefaultTypeInternal _Transaction_Row_default_instance_;
+class Transaction_Row_Column;
+class Transaction_Row_ColumnDefaultTypeInternal;
+extern Transaction_Row_ColumnDefaultTypeInternal _Transaction_Row_Column_default_instance_;
 }  // namespace merge
 PROTOBUF_NAMESPACE_OPEN
-template<> ::merge::MergeRequest* Arena::CreateMaybeMessage<::merge::MergeRequest>(Arena*);
-template<> ::merge::MergeRequest_Transaction* Arena::CreateMaybeMessage<::merge::MergeRequest_Transaction>(Arena*);
-template<> ::merge::MergeRequest_Transaction_Row* Arena::CreateMaybeMessage<::merge::MergeRequest_Transaction_Row>(Arena*);
-template<> ::merge::MergeRequest_Transaction_Row_Column* Arena::CreateMaybeMessage<::merge::MergeRequest_Transaction_Row_Column>(Arena*);
+template<> ::merge::ChangeServerStateRequest* Arena::CreateMaybeMessage<::merge::ChangeServerStateRequest>(Arena*);
+template<> ::merge::ChangeServerStateResponse* Arena::CreateMaybeMessage<::merge::ChangeServerStateResponse>(Arena*);
+template<> ::merge::EpochReplicationAck* Arena::CreateMaybeMessage<::merge::EpochReplicationAck>(Arena*);
+template<> ::merge::ForwardEpochRequest* Arena::CreateMaybeMessage<::merge::ForwardEpochRequest>(Arena*);
+template<> ::merge::KeyMasterMetadata* Arena::CreateMaybeMessage<::merge::KeyMasterMetadata>(Arena*);
+template<> ::merge::LookupMasterRequest* Arena::CreateMaybeMessage<::merge::LookupMasterRequest>(Arena*);
+template<> ::merge::LookupMasterResponse* Arena::CreateMaybeMessage<::merge::LookupMasterResponse>(Arena*);
+template<> ::merge::MasterMetadata* Arena::CreateMaybeMessage<::merge::MasterMetadata>(Arena*);
+template<> ::merge::Message* Arena::CreateMaybeMessage<::merge::Message>(Arena*);
+template<> ::merge::Ping* Arena::CreateMaybeMessage<::merge::Ping>(Arena*);
+template<> ::merge::Pong* Arena::CreateMaybeMessage<::merge::Pong>(Arena*);
+template<> ::merge::RaftAcceptRequest* Arena::CreateMaybeMessage<::merge::RaftAcceptRequest>(Arena*);
+template<> ::merge::RaftAcceptResponse* Arena::CreateMaybeMessage<::merge::RaftAcceptResponse>(Arena*);
+template<> ::merge::RaftCommitRequest* Arena::CreateMaybeMessage<::merge::RaftCommitRequest>(Arena*);
+template<> ::merge::RaftCommitResponse* Arena::CreateMaybeMessage<::merge::RaftCommitResponse>(Arena*);
+template<> ::merge::RaftPropose* Arena::CreateMaybeMessage<::merge::RaftPropose>(Arena*);
+template<> ::merge::Request* Arena::CreateMaybeMessage<::merge::Request>(Arena*);
+template<> ::merge::Response* Arena::CreateMaybeMessage<::merge::Response>(Arena*);
 template<> ::merge::ServerMessage* Arena::CreateMaybeMessage<::merge::ServerMessage>(Arena*);
 template<> ::merge::ServerMessage_Msg* Arena::CreateMaybeMessage<::merge::ServerMessage_Msg>(Arena*);
+template<> ::merge::Signal* Arena::CreateMaybeMessage<::merge::Signal>(Arena*);
+template<> ::merge::StatsRequest* Arena::CreateMaybeMessage<::merge::StatsRequest>(Arena*);
+template<> ::merge::StatsResponse* Arena::CreateMaybeMessage<::merge::StatsResponse>(Arena*);
+template<> ::merge::Transaction* Arena::CreateMaybeMessage<::merge::Transaction>(Arena*);
+template<> ::merge::Transaction_Row* Arena::CreateMaybeMessage<::merge::Transaction_Row>(Arena*);
+template<> ::merge::Transaction_Row_Column* Arena::CreateMaybeMessage<::merge::Transaction_Row_Column>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 namespace merge {
 
 // ===================================================================
 
-class MergeRequest_Transaction_Row_Column :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.MergeRequest.Transaction.Row.Column) */ {
+class Transaction_Row_Column :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.Transaction.Row.Column) */ {
  public:
-  MergeRequest_Transaction_Row_Column();
-  virtual ~MergeRequest_Transaction_Row_Column();
+  Transaction_Row_Column();
+  virtual ~Transaction_Row_Column();
 
-  MergeRequest_Transaction_Row_Column(const MergeRequest_Transaction_Row_Column& from);
-  MergeRequest_Transaction_Row_Column(MergeRequest_Transaction_Row_Column&& from) noexcept
-    : MergeRequest_Transaction_Row_Column() {
+  Transaction_Row_Column(const Transaction_Row_Column& from);
+  Transaction_Row_Column(Transaction_Row_Column&& from) noexcept
+    : Transaction_Row_Column() {
     *this = ::std::move(from);
   }
 
-  inline MergeRequest_Transaction_Row_Column& operator=(const MergeRequest_Transaction_Row_Column& from) {
+  inline Transaction_Row_Column& operator=(const Transaction_Row_Column& from) {
     CopyFrom(from);
     return *this;
   }
-  inline MergeRequest_Transaction_Row_Column& operator=(MergeRequest_Transaction_Row_Column&& from) noexcept {
+  inline Transaction_Row_Column& operator=(Transaction_Row_Column&& from) noexcept {
     if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
       if (this != &from) InternalSwap(&from);
     } else {
@@ -120,37 +200,37 @@ class MergeRequest_Transaction_Row_Column :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const MergeRequest_Transaction_Row_Column& default_instance();
+  static const Transaction_Row_Column& default_instance();
 
   static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const MergeRequest_Transaction_Row_Column* internal_default_instance() {
-    return reinterpret_cast<const MergeRequest_Transaction_Row_Column*>(
-               &_MergeRequest_Transaction_Row_Column_default_instance_);
+  static inline const Transaction_Row_Column* internal_default_instance() {
+    return reinterpret_cast<const Transaction_Row_Column*>(
+               &_Transaction_Row_Column_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
     0;
 
-  friend void swap(MergeRequest_Transaction_Row_Column& a, MergeRequest_Transaction_Row_Column& b) {
+  friend void swap(Transaction_Row_Column& a, Transaction_Row_Column& b) {
     a.Swap(&b);
   }
-  inline void Swap(MergeRequest_Transaction_Row_Column* other) {
+  inline void Swap(Transaction_Row_Column* other) {
     if (other == this) return;
     InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
 
-  inline MergeRequest_Transaction_Row_Column* New() const final {
-    return CreateMaybeMessage<MergeRequest_Transaction_Row_Column>(nullptr);
+  inline Transaction_Row_Column* New() const final {
+    return CreateMaybeMessage<Transaction_Row_Column>(nullptr);
   }
 
-  MergeRequest_Transaction_Row_Column* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
-    return CreateMaybeMessage<MergeRequest_Transaction_Row_Column>(arena);
+  Transaction_Row_Column* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Transaction_Row_Column>(arena);
   }
   void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
   void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const MergeRequest_Transaction_Row_Column& from);
-  void MergeFrom(const MergeRequest_Transaction_Row_Column& from);
+  void CopyFrom(const Transaction_Row_Column& from);
+  void MergeFrom(const Transaction_Row_Column& from);
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -164,10 +244,10 @@ class MergeRequest_Transaction_Row_Column :
   inline void SharedCtor();
   inline void SharedDtor();
   void SetCachedSize(int size) const final;
-  void InternalSwap(MergeRequest_Transaction_Row_Column* other);
+  void InternalSwap(Transaction_Row_Column* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "merge.MergeRequest.Transaction.Row.Column";
+    return "merge.Transaction.Row.Column";
   }
   private:
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
@@ -220,7 +300,7 @@ class MergeRequest_Transaction_Row_Column :
   void _internal_set_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
   public:
 
-  // @@protoc_insertion_point(class_scope:merge.MergeRequest.Transaction.Row.Column)
+  // @@protoc_insertion_point(class_scope:merge.Transaction.Row.Column)
  private:
   class _Internal;
 
@@ -232,23 +312,23 @@ class MergeRequest_Transaction_Row_Column :
 };
 // -------------------------------------------------------------------
 
-class MergeRequest_Transaction_Row :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.MergeRequest.Transaction.Row) */ {
+class Transaction_Row :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.Transaction.Row) */ {
  public:
-  MergeRequest_Transaction_Row();
-  virtual ~MergeRequest_Transaction_Row();
+  Transaction_Row();
+  virtual ~Transaction_Row();
 
-  MergeRequest_Transaction_Row(const MergeRequest_Transaction_Row& from);
-  MergeRequest_Transaction_Row(MergeRequest_Transaction_Row&& from) noexcept
-    : MergeRequest_Transaction_Row() {
+  Transaction_Row(const Transaction_Row& from);
+  Transaction_Row(Transaction_Row&& from) noexcept
+    : Transaction_Row() {
     *this = ::std::move(from);
   }
 
-  inline MergeRequest_Transaction_Row& operator=(const MergeRequest_Transaction_Row& from) {
+  inline Transaction_Row& operator=(const Transaction_Row& from) {
     CopyFrom(from);
     return *this;
   }
-  inline MergeRequest_Transaction_Row& operator=(MergeRequest_Transaction_Row&& from) noexcept {
+  inline Transaction_Row& operator=(Transaction_Row&& from) noexcept {
     if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
       if (this != &from) InternalSwap(&from);
     } else {
@@ -266,37 +346,37 @@ class MergeRequest_Transaction_Row :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const MergeRequest_Transaction_Row& default_instance();
+  static const Transaction_Row& default_instance();
 
   static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const MergeRequest_Transaction_Row* internal_default_instance() {
-    return reinterpret_cast<const MergeRequest_Transaction_Row*>(
-               &_MergeRequest_Transaction_Row_default_instance_);
+  static inline const Transaction_Row* internal_default_instance() {
+    return reinterpret_cast<const Transaction_Row*>(
+               &_Transaction_Row_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
     1;
 
-  friend void swap(MergeRequest_Transaction_Row& a, MergeRequest_Transaction_Row& b) {
+  friend void swap(Transaction_Row& a, Transaction_Row& b) {
     a.Swap(&b);
   }
-  inline void Swap(MergeRequest_Transaction_Row* other) {
+  inline void Swap(Transaction_Row* other) {
     if (other == this) return;
     InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
 
-  inline MergeRequest_Transaction_Row* New() const final {
-    return CreateMaybeMessage<MergeRequest_Transaction_Row>(nullptr);
+  inline Transaction_Row* New() const final {
+    return CreateMaybeMessage<Transaction_Row>(nullptr);
   }
 
-  MergeRequest_Transaction_Row* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
-    return CreateMaybeMessage<MergeRequest_Transaction_Row>(arena);
+  Transaction_Row* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Transaction_Row>(arena);
   }
   void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
   void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const MergeRequest_Transaction_Row& from);
-  void MergeFrom(const MergeRequest_Transaction_Row& from);
+  void CopyFrom(const Transaction_Row& from);
+  void MergeFrom(const Transaction_Row& from);
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -310,10 +390,10 @@ class MergeRequest_Transaction_Row :
   inline void SharedCtor();
   inline void SharedDtor();
   void SetCachedSize(int size) const final;
-  void InternalSwap(MergeRequest_Transaction_Row* other);
+  void InternalSwap(Transaction_Row* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "merge.MergeRequest.Transaction.Row";
+    return "merge.Transaction.Row";
   }
   private:
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
@@ -335,7 +415,7 @@ class MergeRequest_Transaction_Row :
 
   // nested types ----------------------------------------------------
 
-  typedef MergeRequest_Transaction_Row_Column Column;
+  typedef Transaction_Row_Column Column;
 
   // accessors -------------------------------------------------------
 
@@ -346,22 +426,22 @@ class MergeRequest_Transaction_Row :
     kDataFieldNumber = 5,
     kTypeFieldNumber = 3,
   };
-  // repeated .merge.MergeRequest.Transaction.Row.Column column = 4;
+  // repeated .merge.Transaction.Row.Column column = 4;
   int column_size() const;
   private:
   int _internal_column_size() const;
   public:
   void clear_column();
-  ::merge::MergeRequest_Transaction_Row_Column* mutable_column(int index);
-  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction_Row_Column >*
+  ::merge::Transaction_Row_Column* mutable_column(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::Transaction_Row_Column >*
       mutable_column();
   private:
-  const ::merge::MergeRequest_Transaction_Row_Column& _internal_column(int index) const;
-  ::merge::MergeRequest_Transaction_Row_Column* _internal_add_column();
+  const ::merge::Transaction_Row_Column& _internal_column(int index) const;
+  ::merge::Transaction_Row_Column* _internal_add_column();
   public:
-  const ::merge::MergeRequest_Transaction_Row_Column& column(int index) const;
-  ::merge::MergeRequest_Transaction_Row_Column* add_column();
-  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction_Row_Column >&
+  const ::merge::Transaction_Row_Column& column(int index) const;
+  ::merge::Transaction_Row_Column* add_column();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::Transaction_Row_Column >&
       column() const;
 
   // string tableName = 1;
@@ -421,12 +501,12 @@ class MergeRequest_Transaction_Row :
   void _internal_set_type(::PROTOBUF_NAMESPACE_ID::uint32 value);
   public:
 
-  // @@protoc_insertion_point(class_scope:merge.MergeRequest.Transaction.Row)
+  // @@protoc_insertion_point(class_scope:merge.Transaction.Row)
  private:
   class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
-  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction_Row_Column > column_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::Transaction_Row_Column > column_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr tablename_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr key_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr data_;
@@ -436,23 +516,23 @@ class MergeRequest_Transaction_Row :
 };
 // -------------------------------------------------------------------
 
-class MergeRequest_Transaction :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.MergeRequest.Transaction) */ {
+class Transaction :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.Transaction) */ {
  public:
-  MergeRequest_Transaction();
-  virtual ~MergeRequest_Transaction();
+  Transaction();
+  virtual ~Transaction();
 
-  MergeRequest_Transaction(const MergeRequest_Transaction& from);
-  MergeRequest_Transaction(MergeRequest_Transaction&& from) noexcept
-    : MergeRequest_Transaction() {
+  Transaction(const Transaction& from);
+  Transaction(Transaction&& from) noexcept
+    : Transaction() {
     *this = ::std::move(from);
   }
 
-  inline MergeRequest_Transaction& operator=(const MergeRequest_Transaction& from) {
+  inline Transaction& operator=(const Transaction& from) {
     CopyFrom(from);
     return *this;
   }
-  inline MergeRequest_Transaction& operator=(MergeRequest_Transaction&& from) noexcept {
+  inline Transaction& operator=(Transaction&& from) noexcept {
     if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
       if (this != &from) InternalSwap(&from);
     } else {
@@ -470,37 +550,37 @@ class MergeRequest_Transaction :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const MergeRequest_Transaction& default_instance();
+  static const Transaction& default_instance();
 
   static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const MergeRequest_Transaction* internal_default_instance() {
-    return reinterpret_cast<const MergeRequest_Transaction*>(
-               &_MergeRequest_Transaction_default_instance_);
+  static inline const Transaction* internal_default_instance() {
+    return reinterpret_cast<const Transaction*>(
+               &_Transaction_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
     2;
 
-  friend void swap(MergeRequest_Transaction& a, MergeRequest_Transaction& b) {
+  friend void swap(Transaction& a, Transaction& b) {
     a.Swap(&b);
   }
-  inline void Swap(MergeRequest_Transaction* other) {
+  inline void Swap(Transaction* other) {
     if (other == this) return;
     InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
 
-  inline MergeRequest_Transaction* New() const final {
-    return CreateMaybeMessage<MergeRequest_Transaction>(nullptr);
+  inline Transaction* New() const final {
+    return CreateMaybeMessage<Transaction>(nullptr);
   }
 
-  MergeRequest_Transaction* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
-    return CreateMaybeMessage<MergeRequest_Transaction>(arena);
+  Transaction* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Transaction>(arena);
   }
   void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
   void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const MergeRequest_Transaction& from);
-  void MergeFrom(const MergeRequest_Transaction& from);
+  void CopyFrom(const Transaction& from);
+  void MergeFrom(const Transaction& from);
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -514,10 +594,10 @@ class MergeRequest_Transaction :
   inline void SharedCtor();
   inline void SharedDtor();
   void SetCachedSize(int size) const final;
-  void InternalSwap(MergeRequest_Transaction* other);
+  void InternalSwap(Transaction* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "merge.MergeRequest.Transaction";
+    return "merge.Transaction";
   }
   private:
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
@@ -539,7 +619,7 @@ class MergeRequest_Transaction :
 
   // nested types ----------------------------------------------------
 
-  typedef MergeRequest_Transaction_Row Row;
+  typedef Transaction_Row Row;
 
   // accessors -------------------------------------------------------
 
@@ -551,22 +631,22 @@ class MergeRequest_Transaction :
     kServerIdFieldNumber = 6,
     kTxnidFieldNumber = 7,
   };
-  // repeated .merge.MergeRequest.Transaction.Row row = 2;
+  // repeated .merge.Transaction.Row row = 2;
   int row_size() const;
   private:
   int _internal_row_size() const;
   public:
   void clear_row();
-  ::merge::MergeRequest_Transaction_Row* mutable_row(int index);
-  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction_Row >*
+  ::merge::Transaction_Row* mutable_row(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::Transaction_Row >*
       mutable_row();
   private:
-  const ::merge::MergeRequest_Transaction_Row& _internal_row(int index) const;
-  ::merge::MergeRequest_Transaction_Row* _internal_add_row();
+  const ::merge::Transaction_Row& _internal_row(int index) const;
+  ::merge::Transaction_Row* _internal_add_row();
   public:
-  const ::merge::MergeRequest_Transaction_Row& row(int index) const;
-  ::merge::MergeRequest_Transaction_Row* add_row();
-  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction_Row >&
+  const ::merge::Transaction_Row& row(int index) const;
+  ::merge::Transaction_Row* add_row();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::Transaction_Row >&
       row() const;
 
   // uint64 StartEpoch = 3;
@@ -614,12 +694,12 @@ class MergeRequest_Transaction :
   void _internal_set_txnid(::PROTOBUF_NAMESPACE_ID::uint64 value);
   public:
 
-  // @@protoc_insertion_point(class_scope:merge.MergeRequest.Transaction)
+  // @@protoc_insertion_point(class_scope:merge.Transaction)
  private:
   class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
-  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction_Row > row_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::Transaction_Row > row_;
   ::PROTOBUF_NAMESPACE_ID::uint64 startepoch_;
   ::PROTOBUF_NAMESPACE_ID::uint64 commitepoch_;
   ::PROTOBUF_NAMESPACE_ID::uint64 csn_;
@@ -630,23 +710,23 @@ class MergeRequest_Transaction :
 };
 // -------------------------------------------------------------------
 
-class MergeRequest :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.MergeRequest) */ {
+class Message :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.Message) */ {
  public:
-  MergeRequest();
-  virtual ~MergeRequest();
+  Message();
+  virtual ~Message();
 
-  MergeRequest(const MergeRequest& from);
-  MergeRequest(MergeRequest&& from) noexcept
-    : MergeRequest() {
+  Message(const Message& from);
+  Message(Message&& from) noexcept
+    : Message() {
     *this = ::std::move(from);
   }
 
-  inline MergeRequest& operator=(const MergeRequest& from) {
+  inline Message& operator=(const Message& from) {
     CopyFrom(from);
     return *this;
   }
-  inline MergeRequest& operator=(MergeRequest&& from) noexcept {
+  inline Message& operator=(Message&& from) noexcept {
     if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
       if (this != &from) InternalSwap(&from);
     } else {
@@ -664,37 +744,44 @@ class MergeRequest :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const MergeRequest& default_instance();
+  static const Message& default_instance();
+
+  enum TypeCase {
+    kRequest = 1,
+    kResponse = 2,
+    kTxn = 3,
+    TYPE_NOT_SET = 0,
+  };
 
   static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const MergeRequest* internal_default_instance() {
-    return reinterpret_cast<const MergeRequest*>(
-               &_MergeRequest_default_instance_);
+  static inline const Message* internal_default_instance() {
+    return reinterpret_cast<const Message*>(
+               &_Message_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
     3;
 
-  friend void swap(MergeRequest& a, MergeRequest& b) {
+  friend void swap(Message& a, Message& b) {
     a.Swap(&b);
   }
-  inline void Swap(MergeRequest* other) {
+  inline void Swap(Message* other) {
     if (other == this) return;
     InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
 
-  inline MergeRequest* New() const final {
-    return CreateMaybeMessage<MergeRequest>(nullptr);
+  inline Message* New() const final {
+    return CreateMaybeMessage<Message>(nullptr);
   }
 
-  MergeRequest* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
-    return CreateMaybeMessage<MergeRequest>(arena);
+  Message* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Message>(arena);
   }
   void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
   void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const MergeRequest& from);
-  void MergeFrom(const MergeRequest& from);
+  void CopyFrom(const Message& from);
+  void MergeFrom(const Message& from);
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -708,10 +795,10 @@ class MergeRequest :
   inline void SharedCtor();
   inline void SharedDtor();
   void SetCachedSize(int size) const final;
-  void InternalSwap(MergeRequest* other);
+  void InternalSwap(Message* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "merge.MergeRequest";
+    return "merge.Message";
   }
   private:
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
@@ -733,70 +820,3377 @@ class MergeRequest :
 
   // nested types ----------------------------------------------------
 
-  typedef MergeRequest_Transaction Transaction;
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kRequestFieldNumber = 1,
+    kResponseFieldNumber = 2,
+    kTxnFieldNumber = 3,
+  };
+  // .merge.Request request = 1;
+  bool has_request() const;
+  private:
+  bool _internal_has_request() const;
+  public:
+  void clear_request();
+  const ::merge::Request& request() const;
+  ::merge::Request* release_request();
+  ::merge::Request* mutable_request();
+  void set_allocated_request(::merge::Request* request);
+  private:
+  const ::merge::Request& _internal_request() const;
+  ::merge::Request* _internal_mutable_request();
+  public:
+
+  // .merge.Response response = 2;
+  bool has_response() const;
+  private:
+  bool _internal_has_response() const;
+  public:
+  void clear_response();
+  const ::merge::Response& response() const;
+  ::merge::Response* release_response();
+  ::merge::Response* mutable_response();
+  void set_allocated_response(::merge::Response* response);
+  private:
+  const ::merge::Response& _internal_response() const;
+  ::merge::Response* _internal_mutable_response();
+  public:
+
+  // .merge.Transaction txn = 3;
+  bool has_txn() const;
+  private:
+  bool _internal_has_txn() const;
+  public:
+  void clear_txn();
+  const ::merge::Transaction& txn() const;
+  ::merge::Transaction* release_txn();
+  ::merge::Transaction* mutable_txn();
+  void set_allocated_txn(::merge::Transaction* txn);
+  private:
+  const ::merge::Transaction& _internal_txn() const;
+  ::merge::Transaction* _internal_mutable_txn();
+  public:
+
+  void clear_type();
+  TypeCase type_case() const;
+  // @@protoc_insertion_point(class_scope:merge.Message)
+ private:
+  class _Internal;
+  void set_has_request();
+  void set_has_response();
+  void set_has_txn();
+
+  inline bool has_type() const;
+  inline void clear_has_type();
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  union TypeUnion {
+    TypeUnion() {}
+    ::merge::Request* request_;
+    ::merge::Response* response_;
+    ::merge::Transaction* txn_;
+  } type_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 _oneof_case_[1];
+
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class Request :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.Request) */ {
+ public:
+  Request();
+  virtual ~Request();
+
+  Request(const Request& from);
+  Request(Request&& from) noexcept
+    : Request() {
+    *this = ::std::move(from);
+  }
+
+  inline Request& operator=(const Request& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Request& operator=(Request&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Request& default_instance();
+
+  enum TypeCase {
+    kPing = 1,
+    kSignal = 2,
+    kLookupMaster = 3,
+    kForwardEpoch = 4,
+    kEpochReplicationAck = 5,
+    kRaftPropose = 6,
+    kRaftAccept = 7,
+    kRaftCommit = 8,
+    kStats = 9,
+    kChangeServerState = 10,
+    TYPE_NOT_SET = 0,
+  };
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Request* internal_default_instance() {
+    return reinterpret_cast<const Request*>(
+               &_Request_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    4;
+
+  friend void swap(Request& a, Request& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Request* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Request* New() const final {
+    return CreateMaybeMessage<Request>(nullptr);
+  }
+
+  Request* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Request>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Request& from);
+  void MergeFrom(const Request& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Request* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "merge.Request";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
 
   enum : int {
-    kTxnFieldNumber = 1,
-    kServerIdFieldNumber = 2,
-    kEpochFieldNumber = 3,
-    kPackIdFieldNumber = 4,
+    kPingFieldNumber = 1,
+    kSignalFieldNumber = 2,
+    kLookupMasterFieldNumber = 3,
+    kForwardEpochFieldNumber = 4,
+    kEpochReplicationAckFieldNumber = 5,
+    kRaftProposeFieldNumber = 6,
+    kRaftAcceptFieldNumber = 7,
+    kRaftCommitFieldNumber = 8,
+    kStatsFieldNumber = 9,
+    kChangeServerStateFieldNumber = 10,
   };
-  // repeated .merge.MergeRequest.Transaction Txn = 1;
-  int txn_size() const;
+  // .merge.Ping ping = 1;
+  bool has_ping() const;
   private:
-  int _internal_txn_size() const;
+  bool _internal_has_ping() const;
   public:
-  void clear_txn();
-  ::merge::MergeRequest_Transaction* mutable_txn(int index);
-  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction >*
-      mutable_txn();
+  void clear_ping();
+  const ::merge::Ping& ping() const;
+  ::merge::Ping* release_ping();
+  ::merge::Ping* mutable_ping();
+  void set_allocated_ping(::merge::Ping* ping);
   private:
-  const ::merge::MergeRequest_Transaction& _internal_txn(int index) const;
-  ::merge::MergeRequest_Transaction* _internal_add_txn();
-  public:
-  const ::merge::MergeRequest_Transaction& txn(int index) const;
-  ::merge::MergeRequest_Transaction* add_txn();
-  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction >&
-      txn() const;
-
-  // uint64 server_id = 2;
-  void clear_server_id();
-  ::PROTOBUF_NAMESPACE_ID::uint64 server_id() const;
-  void set_server_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_server_id() const;
-  void _internal_set_server_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  const ::merge::Ping& _internal_ping() const;
+  ::merge::Ping* _internal_mutable_ping();
   public:
 
-  // uint64 epoch = 3;
-  void clear_epoch();
-  ::PROTOBUF_NAMESPACE_ID::uint64 epoch() const;
-  void set_epoch(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  // .merge.Signal signal = 2;
+  bool has_signal() const;
   private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_epoch() const;
-  void _internal_set_epoch(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  bool _internal_has_signal() const;
+  public:
+  void clear_signal();
+  const ::merge::Signal& signal() const;
+  ::merge::Signal* release_signal();
+  ::merge::Signal* mutable_signal();
+  void set_allocated_signal(::merge::Signal* signal);
+  private:
+  const ::merge::Signal& _internal_signal() const;
+  ::merge::Signal* _internal_mutable_signal();
   public:
 
-  // uint64 pack_id = 4;
-  void clear_pack_id();
-  ::PROTOBUF_NAMESPACE_ID::uint64 pack_id() const;
-  void set_pack_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  // .merge.LookupMasterRequest lookup_master = 3;
+  bool has_lookup_master() const;
   private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_pack_id() const;
-  void _internal_set_pack_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  bool _internal_has_lookup_master() const;
+  public:
+  void clear_lookup_master();
+  const ::merge::LookupMasterRequest& lookup_master() const;
+  ::merge::LookupMasterRequest* release_lookup_master();
+  ::merge::LookupMasterRequest* mutable_lookup_master();
+  void set_allocated_lookup_master(::merge::LookupMasterRequest* lookup_master);
+  private:
+  const ::merge::LookupMasterRequest& _internal_lookup_master() const;
+  ::merge::LookupMasterRequest* _internal_mutable_lookup_master();
   public:
 
-  // @@protoc_insertion_point(class_scope:merge.MergeRequest)
+  // .merge.ForwardEpochRequest forward_epoch = 4;
+  bool has_forward_epoch() const;
+  private:
+  bool _internal_has_forward_epoch() const;
+  public:
+  void clear_forward_epoch();
+  const ::merge::ForwardEpochRequest& forward_epoch() const;
+  ::merge::ForwardEpochRequest* release_forward_epoch();
+  ::merge::ForwardEpochRequest* mutable_forward_epoch();
+  void set_allocated_forward_epoch(::merge::ForwardEpochRequest* forward_epoch);
+  private:
+  const ::merge::ForwardEpochRequest& _internal_forward_epoch() const;
+  ::merge::ForwardEpochRequest* _internal_mutable_forward_epoch();
+  public:
+
+  // .merge.EpochReplicationAck epoch_replication_ack = 5;
+  bool has_epoch_replication_ack() const;
+  private:
+  bool _internal_has_epoch_replication_ack() const;
+  public:
+  void clear_epoch_replication_ack();
+  const ::merge::EpochReplicationAck& epoch_replication_ack() const;
+  ::merge::EpochReplicationAck* release_epoch_replication_ack();
+  ::merge::EpochReplicationAck* mutable_epoch_replication_ack();
+  void set_allocated_epoch_replication_ack(::merge::EpochReplicationAck* epoch_replication_ack);
+  private:
+  const ::merge::EpochReplicationAck& _internal_epoch_replication_ack() const;
+  ::merge::EpochReplicationAck* _internal_mutable_epoch_replication_ack();
+  public:
+
+  // .merge.RaftPropose raft_propose = 6;
+  bool has_raft_propose() const;
+  private:
+  bool _internal_has_raft_propose() const;
+  public:
+  void clear_raft_propose();
+  const ::merge::RaftPropose& raft_propose() const;
+  ::merge::RaftPropose* release_raft_propose();
+  ::merge::RaftPropose* mutable_raft_propose();
+  void set_allocated_raft_propose(::merge::RaftPropose* raft_propose);
+  private:
+  const ::merge::RaftPropose& _internal_raft_propose() const;
+  ::merge::RaftPropose* _internal_mutable_raft_propose();
+  public:
+
+  // .merge.RaftAcceptRequest raft_accept = 7;
+  bool has_raft_accept() const;
+  private:
+  bool _internal_has_raft_accept() const;
+  public:
+  void clear_raft_accept();
+  const ::merge::RaftAcceptRequest& raft_accept() const;
+  ::merge::RaftAcceptRequest* release_raft_accept();
+  ::merge::RaftAcceptRequest* mutable_raft_accept();
+  void set_allocated_raft_accept(::merge::RaftAcceptRequest* raft_accept);
+  private:
+  const ::merge::RaftAcceptRequest& _internal_raft_accept() const;
+  ::merge::RaftAcceptRequest* _internal_mutable_raft_accept();
+  public:
+
+  // .merge.RaftCommitRequest raft_commit = 8;
+  bool has_raft_commit() const;
+  private:
+  bool _internal_has_raft_commit() const;
+  public:
+  void clear_raft_commit();
+  const ::merge::RaftCommitRequest& raft_commit() const;
+  ::merge::RaftCommitRequest* release_raft_commit();
+  ::merge::RaftCommitRequest* mutable_raft_commit();
+  void set_allocated_raft_commit(::merge::RaftCommitRequest* raft_commit);
+  private:
+  const ::merge::RaftCommitRequest& _internal_raft_commit() const;
+  ::merge::RaftCommitRequest* _internal_mutable_raft_commit();
+  public:
+
+  // .merge.StatsRequest stats = 9;
+  bool has_stats() const;
+  private:
+  bool _internal_has_stats() const;
+  public:
+  void clear_stats();
+  const ::merge::StatsRequest& stats() const;
+  ::merge::StatsRequest* release_stats();
+  ::merge::StatsRequest* mutable_stats();
+  void set_allocated_stats(::merge::StatsRequest* stats);
+  private:
+  const ::merge::StatsRequest& _internal_stats() const;
+  ::merge::StatsRequest* _internal_mutable_stats();
+  public:
+
+  // .merge.ChangeServerStateRequest change_server_state = 10;
+  bool has_change_server_state() const;
+  private:
+  bool _internal_has_change_server_state() const;
+  public:
+  void clear_change_server_state();
+  const ::merge::ChangeServerStateRequest& change_server_state() const;
+  ::merge::ChangeServerStateRequest* release_change_server_state();
+  ::merge::ChangeServerStateRequest* mutable_change_server_state();
+  void set_allocated_change_server_state(::merge::ChangeServerStateRequest* change_server_state);
+  private:
+  const ::merge::ChangeServerStateRequest& _internal_change_server_state() const;
+  ::merge::ChangeServerStateRequest* _internal_mutable_change_server_state();
+  public:
+
+  void clear_type();
+  TypeCase type_case() const;
+  // @@protoc_insertion_point(class_scope:merge.Request)
+ private:
+  class _Internal;
+  void set_has_ping();
+  void set_has_signal();
+  void set_has_lookup_master();
+  void set_has_forward_epoch();
+  void set_has_epoch_replication_ack();
+  void set_has_raft_propose();
+  void set_has_raft_accept();
+  void set_has_raft_commit();
+  void set_has_stats();
+  void set_has_change_server_state();
+
+  inline bool has_type() const;
+  inline void clear_has_type();
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  union TypeUnion {
+    TypeUnion() {}
+    ::merge::Ping* ping_;
+    ::merge::Signal* signal_;
+    ::merge::LookupMasterRequest* lookup_master_;
+    ::merge::ForwardEpochRequest* forward_epoch_;
+    ::merge::EpochReplicationAck* epoch_replication_ack_;
+    ::merge::RaftPropose* raft_propose_;
+    ::merge::RaftAcceptRequest* raft_accept_;
+    ::merge::RaftCommitRequest* raft_commit_;
+    ::merge::StatsRequest* stats_;
+    ::merge::ChangeServerStateRequest* change_server_state_;
+  } type_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 _oneof_case_[1];
+
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class Ping :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.Ping) */ {
+ public:
+  Ping();
+  virtual ~Ping();
+
+  Ping(const Ping& from);
+  Ping(Ping&& from) noexcept
+    : Ping() {
+    *this = ::std::move(from);
+  }
+
+  inline Ping& operator=(const Ping& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Ping& operator=(Ping&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Ping& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Ping* internal_default_instance() {
+    return reinterpret_cast<const Ping*>(
+               &_Ping_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    5;
+
+  friend void swap(Ping& a, Ping& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Ping* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Ping* New() const final {
+    return CreateMaybeMessage<Ping>(nullptr);
+  }
+
+  Ping* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Ping>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Ping& from);
+  void MergeFrom(const Ping& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Ping* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "merge.Ping";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kFromFieldNumber = 1,
+    kToFieldNumber = 2,
+  };
+  // int32 from = 1;
+  void clear_from();
+  ::PROTOBUF_NAMESPACE_ID::int32 from() const;
+  void set_from(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_from() const;
+  void _internal_set_from(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // int32 to = 2;
+  void clear_to();
+  ::PROTOBUF_NAMESPACE_ID::int32 to() const;
+  void set_to(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_to() const;
+  void _internal_set_to(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:merge.Ping)
  private:
   class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
-  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction > txn_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 server_id_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 epoch_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 pack_id_;
+  ::PROTOBUF_NAMESPACE_ID::int32 from_;
+  ::PROTOBUF_NAMESPACE_ID::int32 to_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class Signal :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.Signal) */ {
+ public:
+  Signal();
+  virtual ~Signal();
+
+  Signal(const Signal& from);
+  Signal(Signal&& from) noexcept
+    : Signal() {
+    *this = ::std::move(from);
+  }
+
+  inline Signal& operator=(const Signal& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Signal& operator=(Signal&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Signal& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Signal* internal_default_instance() {
+    return reinterpret_cast<const Signal*>(
+               &_Signal_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    6;
+
+  friend void swap(Signal& a, Signal& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Signal* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Signal* New() const final {
+    return CreateMaybeMessage<Signal>(nullptr);
+  }
+
+  Signal* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Signal>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Signal& from);
+  void MergeFrom(const Signal& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Signal* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "merge.Signal";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kFromFieldNumber = 1,
+  };
+  // int32 from = 1;
+  void clear_from();
+  ::PROTOBUF_NAMESPACE_ID::int32 from() const;
+  void set_from(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_from() const;
+  void _internal_set_from(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:merge.Signal)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::int32 from_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class LookupMasterRequest :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.LookupMasterRequest) */ {
+ public:
+  LookupMasterRequest();
+  virtual ~LookupMasterRequest();
+
+  LookupMasterRequest(const LookupMasterRequest& from);
+  LookupMasterRequest(LookupMasterRequest&& from) noexcept
+    : LookupMasterRequest() {
+    *this = ::std::move(from);
+  }
+
+  inline LookupMasterRequest& operator=(const LookupMasterRequest& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline LookupMasterRequest& operator=(LookupMasterRequest&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const LookupMasterRequest& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const LookupMasterRequest* internal_default_instance() {
+    return reinterpret_cast<const LookupMasterRequest*>(
+               &_LookupMasterRequest_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    7;
+
+  friend void swap(LookupMasterRequest& a, LookupMasterRequest& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(LookupMasterRequest* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline LookupMasterRequest* New() const final {
+    return CreateMaybeMessage<LookupMasterRequest>(nullptr);
+  }
+
+  LookupMasterRequest* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<LookupMasterRequest>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const LookupMasterRequest& from);
+  void MergeFrom(const LookupMasterRequest& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(LookupMasterRequest* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "merge.LookupMasterRequest";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kTxnIdsFieldNumber = 1,
+    kKeysFieldNumber = 2,
+  };
+  // repeated uint64 txn_ids = 1;
+  int txn_ids_size() const;
+  private:
+  int _internal_txn_ids_size() const;
+  public:
+  void clear_txn_ids();
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_txn_ids(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+      _internal_txn_ids() const;
+  void _internal_add_txn_ids(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+      _internal_mutable_txn_ids();
+  public:
+  ::PROTOBUF_NAMESPACE_ID::uint64 txn_ids(int index) const;
+  void set_txn_ids(int index, ::PROTOBUF_NAMESPACE_ID::uint64 value);
+  void add_txn_ids(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+      txn_ids() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+      mutable_txn_ids();
+
+  // repeated bytes keys = 2;
+  int keys_size() const;
+  private:
+  int _internal_keys_size() const;
+  public:
+  void clear_keys();
+  const std::string& keys(int index) const;
+  std::string* mutable_keys(int index);
+  void set_keys(int index, const std::string& value);
+  void set_keys(int index, std::string&& value);
+  void set_keys(int index, const char* value);
+  void set_keys(int index, const void* value, size_t size);
+  std::string* add_keys();
+  void add_keys(const std::string& value);
+  void add_keys(std::string&& value);
+  void add_keys(const char* value);
+  void add_keys(const void* value, size_t size);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& keys() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_keys();
+  private:
+  const std::string& _internal_keys(int index) const;
+  std::string* _internal_add_keys();
+  public:
+
+  // @@protoc_insertion_point(class_scope:merge.LookupMasterRequest)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 > txn_ids_;
+  mutable std::atomic<int> _txn_ids_cached_byte_size_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string> keys_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class ForwardEpochRequest :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.ForwardEpochRequest) */ {
+ public:
+  ForwardEpochRequest();
+  virtual ~ForwardEpochRequest();
+
+  ForwardEpochRequest(const ForwardEpochRequest& from);
+  ForwardEpochRequest(ForwardEpochRequest&& from) noexcept
+    : ForwardEpochRequest() {
+    *this = ::std::move(from);
+  }
+
+  inline ForwardEpochRequest& operator=(const ForwardEpochRequest& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline ForwardEpochRequest& operator=(ForwardEpochRequest&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const ForwardEpochRequest& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const ForwardEpochRequest* internal_default_instance() {
+    return reinterpret_cast<const ForwardEpochRequest*>(
+               &_ForwardEpochRequest_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    8;
+
+  friend void swap(ForwardEpochRequest& a, ForwardEpochRequest& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(ForwardEpochRequest* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ForwardEpochRequest* New() const final {
+    return CreateMaybeMessage<ForwardEpochRequest>(nullptr);
+  }
+
+  ForwardEpochRequest* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<ForwardEpochRequest>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ForwardEpochRequest& from);
+  void MergeFrom(const ForwardEpochRequest& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ForwardEpochRequest* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "merge.ForwardEpochRequest";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kFromFieldNumber = 1,
+    kToFieldNumber = 2,
+    kEpochIdFieldNumber = 3,
+  };
+  // int32 from = 1;
+  void clear_from();
+  ::PROTOBUF_NAMESPACE_ID::int32 from() const;
+  void set_from(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_from() const;
+  void _internal_set_from(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // int32 to = 2;
+  void clear_to();
+  ::PROTOBUF_NAMESPACE_ID::int32 to() const;
+  void set_to(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_to() const;
+  void _internal_set_to(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // uint64 epoch_id = 3;
+  void clear_epoch_id();
+  ::PROTOBUF_NAMESPACE_ID::uint64 epoch_id() const;
+  void set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_epoch_id() const;
+  void _internal_set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:merge.ForwardEpochRequest)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::int32 from_;
+  ::PROTOBUF_NAMESPACE_ID::int32 to_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 epoch_id_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class EpochReplicationAck :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.EpochReplicationAck) */ {
+ public:
+  EpochReplicationAck();
+  virtual ~EpochReplicationAck();
+
+  EpochReplicationAck(const EpochReplicationAck& from);
+  EpochReplicationAck(EpochReplicationAck&& from) noexcept
+    : EpochReplicationAck() {
+    *this = ::std::move(from);
+  }
+
+  inline EpochReplicationAck& operator=(const EpochReplicationAck& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline EpochReplicationAck& operator=(EpochReplicationAck&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const EpochReplicationAck& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const EpochReplicationAck* internal_default_instance() {
+    return reinterpret_cast<const EpochReplicationAck*>(
+               &_EpochReplicationAck_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    9;
+
+  friend void swap(EpochReplicationAck& a, EpochReplicationAck& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(EpochReplicationAck* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline EpochReplicationAck* New() const final {
+    return CreateMaybeMessage<EpochReplicationAck>(nullptr);
+  }
+
+  EpochReplicationAck* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<EpochReplicationAck>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const EpochReplicationAck& from);
+  void MergeFrom(const EpochReplicationAck& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(EpochReplicationAck* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "merge.EpochReplicationAck";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kEpochIdFieldNumber = 1,
+  };
+  // uint64 epoch_id = 1;
+  void clear_epoch_id();
+  ::PROTOBUF_NAMESPACE_ID::uint64 epoch_id() const;
+  void set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_epoch_id() const;
+  void _internal_set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:merge.EpochReplicationAck)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 epoch_id_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class RaftPropose :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.RaftPropose) */ {
+ public:
+  RaftPropose();
+  virtual ~RaftPropose();
+
+  RaftPropose(const RaftPropose& from);
+  RaftPropose(RaftPropose&& from) noexcept
+    : RaftPropose() {
+    *this = ::std::move(from);
+  }
+
+  inline RaftPropose& operator=(const RaftPropose& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline RaftPropose& operator=(RaftPropose&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const RaftPropose& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const RaftPropose* internal_default_instance() {
+    return reinterpret_cast<const RaftPropose*>(
+               &_RaftPropose_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    10;
+
+  friend void swap(RaftPropose& a, RaftPropose& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(RaftPropose* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline RaftPropose* New() const final {
+    return CreateMaybeMessage<RaftPropose>(nullptr);
+  }
+
+  RaftPropose* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<RaftPropose>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const RaftPropose& from);
+  void MergeFrom(const RaftPropose& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(RaftPropose* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "merge.RaftPropose";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kValueFieldNumber = 1,
+  };
+  // uint64 value = 1;
+  void clear_value();
+  ::PROTOBUF_NAMESPACE_ID::uint64 value() const;
+  void set_value(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_value() const;
+  void _internal_set_value(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:merge.RaftPropose)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 value_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class RaftAcceptRequest :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.RaftAcceptRequest) */ {
+ public:
+  RaftAcceptRequest();
+  virtual ~RaftAcceptRequest();
+
+  RaftAcceptRequest(const RaftAcceptRequest& from);
+  RaftAcceptRequest(RaftAcceptRequest&& from) noexcept
+    : RaftAcceptRequest() {
+    *this = ::std::move(from);
+  }
+
+  inline RaftAcceptRequest& operator=(const RaftAcceptRequest& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline RaftAcceptRequest& operator=(RaftAcceptRequest&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const RaftAcceptRequest& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const RaftAcceptRequest* internal_default_instance() {
+    return reinterpret_cast<const RaftAcceptRequest*>(
+               &_RaftAcceptRequest_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    11;
+
+  friend void swap(RaftAcceptRequest& a, RaftAcceptRequest& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(RaftAcceptRequest* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline RaftAcceptRequest* New() const final {
+    return CreateMaybeMessage<RaftAcceptRequest>(nullptr);
+  }
+
+  RaftAcceptRequest* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<RaftAcceptRequest>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const RaftAcceptRequest& from);
+  void MergeFrom(const RaftAcceptRequest& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(RaftAcceptRequest* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "merge.RaftAcceptRequest";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kFromFieldNumber = 1,
+    kToFieldNumber = 2,
+    kEpochIdFieldNumber = 3,
+  };
+  // uint32 from = 1;
+  void clear_from();
+  ::PROTOBUF_NAMESPACE_ID::uint32 from() const;
+  void set_from(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_from() const;
+  void _internal_set_from(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint32 to = 2;
+  void clear_to();
+  ::PROTOBUF_NAMESPACE_ID::uint32 to() const;
+  void set_to(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_to() const;
+  void _internal_set_to(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint64 epoch_id = 3;
+  void clear_epoch_id();
+  ::PROTOBUF_NAMESPACE_ID::uint64 epoch_id() const;
+  void set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_epoch_id() const;
+  void _internal_set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:merge.RaftAcceptRequest)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 from_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 to_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 epoch_id_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class RaftCommitRequest :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.RaftCommitRequest) */ {
+ public:
+  RaftCommitRequest();
+  virtual ~RaftCommitRequest();
+
+  RaftCommitRequest(const RaftCommitRequest& from);
+  RaftCommitRequest(RaftCommitRequest&& from) noexcept
+    : RaftCommitRequest() {
+    *this = ::std::move(from);
+  }
+
+  inline RaftCommitRequest& operator=(const RaftCommitRequest& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline RaftCommitRequest& operator=(RaftCommitRequest&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const RaftCommitRequest& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const RaftCommitRequest* internal_default_instance() {
+    return reinterpret_cast<const RaftCommitRequest*>(
+               &_RaftCommitRequest_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    12;
+
+  friend void swap(RaftCommitRequest& a, RaftCommitRequest& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(RaftCommitRequest* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline RaftCommitRequest* New() const final {
+    return CreateMaybeMessage<RaftCommitRequest>(nullptr);
+  }
+
+  RaftCommitRequest* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<RaftCommitRequest>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const RaftCommitRequest& from);
+  void MergeFrom(const RaftCommitRequest& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(RaftCommitRequest* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "merge.RaftCommitRequest";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kFromFieldNumber = 1,
+    kToFieldNumber = 2,
+    kEpochIdFieldNumber = 3,
+  };
+  // uint32 from = 1;
+  void clear_from();
+  ::PROTOBUF_NAMESPACE_ID::uint32 from() const;
+  void set_from(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_from() const;
+  void _internal_set_from(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint32 to = 2;
+  void clear_to();
+  ::PROTOBUF_NAMESPACE_ID::uint32 to() const;
+  void set_to(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_to() const;
+  void _internal_set_to(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint64 epoch_id = 3;
+  void clear_epoch_id();
+  ::PROTOBUF_NAMESPACE_ID::uint64 epoch_id() const;
+  void set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_epoch_id() const;
+  void _internal_set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:merge.RaftCommitRequest)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 from_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 to_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 epoch_id_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class StatsRequest :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.StatsRequest) */ {
+ public:
+  StatsRequest();
+  virtual ~StatsRequest();
+
+  StatsRequest(const StatsRequest& from);
+  StatsRequest(StatsRequest&& from) noexcept
+    : StatsRequest() {
+    *this = ::std::move(from);
+  }
+
+  inline StatsRequest& operator=(const StatsRequest& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline StatsRequest& operator=(StatsRequest&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const StatsRequest& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const StatsRequest* internal_default_instance() {
+    return reinterpret_cast<const StatsRequest*>(
+               &_StatsRequest_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    13;
+
+  friend void swap(StatsRequest& a, StatsRequest& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(StatsRequest* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline StatsRequest* New() const final {
+    return CreateMaybeMessage<StatsRequest>(nullptr);
+  }
+
+  StatsRequest* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<StatsRequest>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const StatsRequest& from);
+  void MergeFrom(const StatsRequest& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(StatsRequest* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "merge.StatsRequest";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kFromFieldNumber = 1,
+    kToFieldNumber = 2,
+    kLevelFieldNumber = 3,
+  };
+  // uint32 from = 1;
+  void clear_from();
+  ::PROTOBUF_NAMESPACE_ID::uint32 from() const;
+  void set_from(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_from() const;
+  void _internal_set_from(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint32 to = 2;
+  void clear_to();
+  ::PROTOBUF_NAMESPACE_ID::uint32 to() const;
+  void set_to(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_to() const;
+  void _internal_set_to(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint32 level = 3;
+  void clear_level();
+  ::PROTOBUF_NAMESPACE_ID::uint32 level() const;
+  void set_level(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_level() const;
+  void _internal_set_level(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:merge.StatsRequest)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 from_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 to_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 level_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class ChangeServerStateRequest :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.ChangeServerStateRequest) */ {
+ public:
+  ChangeServerStateRequest();
+  virtual ~ChangeServerStateRequest();
+
+  ChangeServerStateRequest(const ChangeServerStateRequest& from);
+  ChangeServerStateRequest(ChangeServerStateRequest&& from) noexcept
+    : ChangeServerStateRequest() {
+    *this = ::std::move(from);
+  }
+
+  inline ChangeServerStateRequest& operator=(const ChangeServerStateRequest& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline ChangeServerStateRequest& operator=(ChangeServerStateRequest&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const ChangeServerStateRequest& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const ChangeServerStateRequest* internal_default_instance() {
+    return reinterpret_cast<const ChangeServerStateRequest*>(
+               &_ChangeServerStateRequest_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    14;
+
+  friend void swap(ChangeServerStateRequest& a, ChangeServerStateRequest& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(ChangeServerStateRequest* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ChangeServerStateRequest* New() const final {
+    return CreateMaybeMessage<ChangeServerStateRequest>(nullptr);
+  }
+
+  ChangeServerStateRequest* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<ChangeServerStateRequest>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ChangeServerStateRequest& from);
+  void MergeFrom(const ChangeServerStateRequest& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ChangeServerStateRequest* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "merge.ChangeServerStateRequest";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kFromFieldNumber = 1,
+    kToFieldNumber = 2,
+    kTargetFieldNumber = 3,
+    kStateFieldNumber = 4,
+    kEpochIdFieldNumber = 6,
+    kPullServerIdFieldNumber = 5,
+  };
+  // uint32 from = 1;
+  void clear_from();
+  ::PROTOBUF_NAMESPACE_ID::uint32 from() const;
+  void set_from(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_from() const;
+  void _internal_set_from(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint32 to = 2;
+  void clear_to();
+  ::PROTOBUF_NAMESPACE_ID::uint32 to() const;
+  void set_to(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_to() const;
+  void _internal_set_to(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint32 target = 3;
+  void clear_target();
+  ::PROTOBUF_NAMESPACE_ID::uint32 target() const;
+  void set_target(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_target() const;
+  void _internal_set_target(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint32 state = 4;
+  void clear_state();
+  ::PROTOBUF_NAMESPACE_ID::uint32 state() const;
+  void set_state(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_state() const;
+  void _internal_set_state(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint64 epoch_id = 6;
+  void clear_epoch_id();
+  ::PROTOBUF_NAMESPACE_ID::uint64 epoch_id() const;
+  void set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_epoch_id() const;
+  void _internal_set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint32 pull_server_id = 5;
+  void clear_pull_server_id();
+  ::PROTOBUF_NAMESPACE_ID::uint32 pull_server_id() const;
+  void set_pull_server_id(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_pull_server_id() const;
+  void _internal_set_pull_server_id(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:merge.ChangeServerStateRequest)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 from_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 to_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 target_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 state_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 epoch_id_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 pull_server_id_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class Response :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.Response) */ {
+ public:
+  Response();
+  virtual ~Response();
+
+  Response(const Response& from);
+  Response(Response&& from) noexcept
+    : Response() {
+    *this = ::std::move(from);
+  }
+
+  inline Response& operator=(const Response& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Response& operator=(Response&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Response& default_instance();
+
+  enum TypeCase {
+    kPong = 1,
+    kLookupMaster = 2,
+    kRaftAccept = 3,
+    kRaftCommit = 4,
+    kStats = 5,
+    kChangeServerState = 6,
+    TYPE_NOT_SET = 0,
+  };
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Response* internal_default_instance() {
+    return reinterpret_cast<const Response*>(
+               &_Response_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    15;
+
+  friend void swap(Response& a, Response& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Response* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Response* New() const final {
+    return CreateMaybeMessage<Response>(nullptr);
+  }
+
+  Response* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Response>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Response& from);
+  void MergeFrom(const Response& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Response* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "merge.Response";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kPongFieldNumber = 1,
+    kLookupMasterFieldNumber = 2,
+    kRaftAcceptFieldNumber = 3,
+    kRaftCommitFieldNumber = 4,
+    kStatsFieldNumber = 5,
+    kChangeServerStateFieldNumber = 6,
+  };
+  // .merge.Pong pong = 1;
+  bool has_pong() const;
+  private:
+  bool _internal_has_pong() const;
+  public:
+  void clear_pong();
+  const ::merge::Pong& pong() const;
+  ::merge::Pong* release_pong();
+  ::merge::Pong* mutable_pong();
+  void set_allocated_pong(::merge::Pong* pong);
+  private:
+  const ::merge::Pong& _internal_pong() const;
+  ::merge::Pong* _internal_mutable_pong();
+  public:
+
+  // .merge.LookupMasterResponse lookup_master = 2;
+  bool has_lookup_master() const;
+  private:
+  bool _internal_has_lookup_master() const;
+  public:
+  void clear_lookup_master();
+  const ::merge::LookupMasterResponse& lookup_master() const;
+  ::merge::LookupMasterResponse* release_lookup_master();
+  ::merge::LookupMasterResponse* mutable_lookup_master();
+  void set_allocated_lookup_master(::merge::LookupMasterResponse* lookup_master);
+  private:
+  const ::merge::LookupMasterResponse& _internal_lookup_master() const;
+  ::merge::LookupMasterResponse* _internal_mutable_lookup_master();
+  public:
+
+  // .merge.RaftAcceptResponse raft_accept = 3;
+  bool has_raft_accept() const;
+  private:
+  bool _internal_has_raft_accept() const;
+  public:
+  void clear_raft_accept();
+  const ::merge::RaftAcceptResponse& raft_accept() const;
+  ::merge::RaftAcceptResponse* release_raft_accept();
+  ::merge::RaftAcceptResponse* mutable_raft_accept();
+  void set_allocated_raft_accept(::merge::RaftAcceptResponse* raft_accept);
+  private:
+  const ::merge::RaftAcceptResponse& _internal_raft_accept() const;
+  ::merge::RaftAcceptResponse* _internal_mutable_raft_accept();
+  public:
+
+  // .merge.RaftCommitResponse raft_commit = 4;
+  bool has_raft_commit() const;
+  private:
+  bool _internal_has_raft_commit() const;
+  public:
+  void clear_raft_commit();
+  const ::merge::RaftCommitResponse& raft_commit() const;
+  ::merge::RaftCommitResponse* release_raft_commit();
+  ::merge::RaftCommitResponse* mutable_raft_commit();
+  void set_allocated_raft_commit(::merge::RaftCommitResponse* raft_commit);
+  private:
+  const ::merge::RaftCommitResponse& _internal_raft_commit() const;
+  ::merge::RaftCommitResponse* _internal_mutable_raft_commit();
+  public:
+
+  // .merge.StatsResponse stats = 5;
+  bool has_stats() const;
+  private:
+  bool _internal_has_stats() const;
+  public:
+  void clear_stats();
+  const ::merge::StatsResponse& stats() const;
+  ::merge::StatsResponse* release_stats();
+  ::merge::StatsResponse* mutable_stats();
+  void set_allocated_stats(::merge::StatsResponse* stats);
+  private:
+  const ::merge::StatsResponse& _internal_stats() const;
+  ::merge::StatsResponse* _internal_mutable_stats();
+  public:
+
+  // .merge.ChangeServerStateResponse change_server_state = 6;
+  bool has_change_server_state() const;
+  private:
+  bool _internal_has_change_server_state() const;
+  public:
+  void clear_change_server_state();
+  const ::merge::ChangeServerStateResponse& change_server_state() const;
+  ::merge::ChangeServerStateResponse* release_change_server_state();
+  ::merge::ChangeServerStateResponse* mutable_change_server_state();
+  void set_allocated_change_server_state(::merge::ChangeServerStateResponse* change_server_state);
+  private:
+  const ::merge::ChangeServerStateResponse& _internal_change_server_state() const;
+  ::merge::ChangeServerStateResponse* _internal_mutable_change_server_state();
+  public:
+
+  void clear_type();
+  TypeCase type_case() const;
+  // @@protoc_insertion_point(class_scope:merge.Response)
+ private:
+  class _Internal;
+  void set_has_pong();
+  void set_has_lookup_master();
+  void set_has_raft_accept();
+  void set_has_raft_commit();
+  void set_has_stats();
+  void set_has_change_server_state();
+
+  inline bool has_type() const;
+  inline void clear_has_type();
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  union TypeUnion {
+    TypeUnion() {}
+    ::merge::Pong* pong_;
+    ::merge::LookupMasterResponse* lookup_master_;
+    ::merge::RaftAcceptResponse* raft_accept_;
+    ::merge::RaftCommitResponse* raft_commit_;
+    ::merge::StatsResponse* stats_;
+    ::merge::ChangeServerStateResponse* change_server_state_;
+  } type_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 _oneof_case_[1];
+
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class Pong :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.Pong) */ {
+ public:
+  Pong();
+  virtual ~Pong();
+
+  Pong(const Pong& from);
+  Pong(Pong&& from) noexcept
+    : Pong() {
+    *this = ::std::move(from);
+  }
+
+  inline Pong& operator=(const Pong& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Pong& operator=(Pong&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Pong& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Pong* internal_default_instance() {
+    return reinterpret_cast<const Pong*>(
+               &_Pong_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    16;
+
+  friend void swap(Pong& a, Pong& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Pong* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Pong* New() const final {
+    return CreateMaybeMessage<Pong>(nullptr);
+  }
+
+  Pong* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Pong>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Pong& from);
+  void MergeFrom(const Pong& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Pong* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "merge.Pong";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kFromFieldNumber = 1,
+    kToFieldNumber = 2,
+    kTimeFieldNumber = 3,
+    kEpochIdFieldNumber = 4,
+  };
+  // int32 from = 1;
+  void clear_from();
+  ::PROTOBUF_NAMESPACE_ID::int32 from() const;
+  void set_from(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_from() const;
+  void _internal_set_from(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // int32 to = 2;
+  void clear_to();
+  ::PROTOBUF_NAMESPACE_ID::int32 to() const;
+  void set_to(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_to() const;
+  void _internal_set_to(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // int64 time = 3;
+  void clear_time();
+  ::PROTOBUF_NAMESPACE_ID::int64 time() const;
+  void set_time(::PROTOBUF_NAMESPACE_ID::int64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_time() const;
+  void _internal_set_time(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
+  // int64 epoch_id = 4;
+  void clear_epoch_id();
+  ::PROTOBUF_NAMESPACE_ID::int64 epoch_id() const;
+  void set_epoch_id(::PROTOBUF_NAMESPACE_ID::int64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_epoch_id() const;
+  void _internal_set_epoch_id(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:merge.Pong)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::int32 from_;
+  ::PROTOBUF_NAMESPACE_ID::int32 to_;
+  ::PROTOBUF_NAMESPACE_ID::int64 time_;
+  ::PROTOBUF_NAMESPACE_ID::int64 epoch_id_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class MasterMetadata :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.MasterMetadata) */ {
+ public:
+  MasterMetadata();
+  virtual ~MasterMetadata();
+
+  MasterMetadata(const MasterMetadata& from);
+  MasterMetadata(MasterMetadata&& from) noexcept
+    : MasterMetadata() {
+    *this = ::std::move(from);
+  }
+
+  inline MasterMetadata& operator=(const MasterMetadata& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline MasterMetadata& operator=(MasterMetadata&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const MasterMetadata& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const MasterMetadata* internal_default_instance() {
+    return reinterpret_cast<const MasterMetadata*>(
+               &_MasterMetadata_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    17;
+
+  friend void swap(MasterMetadata& a, MasterMetadata& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(MasterMetadata* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline MasterMetadata* New() const final {
+    return CreateMaybeMessage<MasterMetadata>(nullptr);
+  }
+
+  MasterMetadata* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<MasterMetadata>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const MasterMetadata& from);
+  void MergeFrom(const MasterMetadata& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(MasterMetadata* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "merge.MasterMetadata";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kMasterFieldNumber = 1,
+    kEpochCountFieldNumber = 2,
+  };
+  // uint32 master = 1;
+  void clear_master();
+  ::PROTOBUF_NAMESPACE_ID::uint32 master() const;
+  void set_master(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_master() const;
+  void _internal_set_master(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint32 epoch_count = 2;
+  void clear_epoch_count();
+  ::PROTOBUF_NAMESPACE_ID::uint32 epoch_count() const;
+  void set_epoch_count(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_epoch_count() const;
+  void _internal_set_epoch_count(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:merge.MasterMetadata)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 master_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 epoch_count_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class KeyMasterMetadata :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.KeyMasterMetadata) */ {
+ public:
+  KeyMasterMetadata();
+  virtual ~KeyMasterMetadata();
+
+  KeyMasterMetadata(const KeyMasterMetadata& from);
+  KeyMasterMetadata(KeyMasterMetadata&& from) noexcept
+    : KeyMasterMetadata() {
+    *this = ::std::move(from);
+  }
+
+  inline KeyMasterMetadata& operator=(const KeyMasterMetadata& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline KeyMasterMetadata& operator=(KeyMasterMetadata&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const KeyMasterMetadata& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const KeyMasterMetadata* internal_default_instance() {
+    return reinterpret_cast<const KeyMasterMetadata*>(
+               &_KeyMasterMetadata_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    18;
+
+  friend void swap(KeyMasterMetadata& a, KeyMasterMetadata& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(KeyMasterMetadata* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline KeyMasterMetadata* New() const final {
+    return CreateMaybeMessage<KeyMasterMetadata>(nullptr);
+  }
+
+  KeyMasterMetadata* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<KeyMasterMetadata>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const KeyMasterMetadata& from);
+  void MergeFrom(const KeyMasterMetadata& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(KeyMasterMetadata* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "merge.KeyMasterMetadata";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kKeyFieldNumber = 1,
+    kMetadataFieldNumber = 2,
+  };
+  // bytes key = 1;
+  void clear_key();
+  const std::string& key() const;
+  void set_key(const std::string& value);
+  void set_key(std::string&& value);
+  void set_key(const char* value);
+  void set_key(const void* value, size_t size);
+  std::string* mutable_key();
+  std::string* release_key();
+  void set_allocated_key(std::string* key);
+  private:
+  const std::string& _internal_key() const;
+  void _internal_set_key(const std::string& value);
+  std::string* _internal_mutable_key();
+  public:
+
+  // .merge.MasterMetadata metadata = 2;
+  bool has_metadata() const;
+  private:
+  bool _internal_has_metadata() const;
+  public:
+  void clear_metadata();
+  const ::merge::MasterMetadata& metadata() const;
+  ::merge::MasterMetadata* release_metadata();
+  ::merge::MasterMetadata* mutable_metadata();
+  void set_allocated_metadata(::merge::MasterMetadata* metadata);
+  private:
+  const ::merge::MasterMetadata& _internal_metadata() const;
+  ::merge::MasterMetadata* _internal_mutable_metadata();
+  public:
+
+  // @@protoc_insertion_point(class_scope:merge.KeyMasterMetadata)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr key_;
+  ::merge::MasterMetadata* metadata_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class LookupMasterResponse :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.LookupMasterResponse) */ {
+ public:
+  LookupMasterResponse();
+  virtual ~LookupMasterResponse();
+
+  LookupMasterResponse(const LookupMasterResponse& from);
+  LookupMasterResponse(LookupMasterResponse&& from) noexcept
+    : LookupMasterResponse() {
+    *this = ::std::move(from);
+  }
+
+  inline LookupMasterResponse& operator=(const LookupMasterResponse& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline LookupMasterResponse& operator=(LookupMasterResponse&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const LookupMasterResponse& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const LookupMasterResponse* internal_default_instance() {
+    return reinterpret_cast<const LookupMasterResponse*>(
+               &_LookupMasterResponse_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    19;
+
+  friend void swap(LookupMasterResponse& a, LookupMasterResponse& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(LookupMasterResponse* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline LookupMasterResponse* New() const final {
+    return CreateMaybeMessage<LookupMasterResponse>(nullptr);
+  }
+
+  LookupMasterResponse* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<LookupMasterResponse>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const LookupMasterResponse& from);
+  void MergeFrom(const LookupMasterResponse& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(LookupMasterResponse* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "merge.LookupMasterResponse";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kEpochIdFieldNumber = 1,
+    kLookupResultsFieldNumber = 2,
+  };
+  // repeated uint64 epoch_id = 1;
+  int epoch_id_size() const;
+  private:
+  int _internal_epoch_id_size() const;
+  public:
+  void clear_epoch_id();
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_epoch_id(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+      _internal_epoch_id() const;
+  void _internal_add_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+      _internal_mutable_epoch_id();
+  public:
+  ::PROTOBUF_NAMESPACE_ID::uint64 epoch_id(int index) const;
+  void set_epoch_id(int index, ::PROTOBUF_NAMESPACE_ID::uint64 value);
+  void add_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+      epoch_id() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+      mutable_epoch_id();
+
+  // repeated .merge.KeyMasterMetadata lookup_results = 2;
+  int lookup_results_size() const;
+  private:
+  int _internal_lookup_results_size() const;
+  public:
+  void clear_lookup_results();
+  ::merge::KeyMasterMetadata* mutable_lookup_results(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::KeyMasterMetadata >*
+      mutable_lookup_results();
+  private:
+  const ::merge::KeyMasterMetadata& _internal_lookup_results(int index) const;
+  ::merge::KeyMasterMetadata* _internal_add_lookup_results();
+  public:
+  const ::merge::KeyMasterMetadata& lookup_results(int index) const;
+  ::merge::KeyMasterMetadata* add_lookup_results();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::KeyMasterMetadata >&
+      lookup_results() const;
+
+  // @@protoc_insertion_point(class_scope:merge.LookupMasterResponse)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 > epoch_id_;
+  mutable std::atomic<int> _epoch_id_cached_byte_size_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::KeyMasterMetadata > lookup_results_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class RaftAcceptResponse :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.RaftAcceptResponse) */ {
+ public:
+  RaftAcceptResponse();
+  virtual ~RaftAcceptResponse();
+
+  RaftAcceptResponse(const RaftAcceptResponse& from);
+  RaftAcceptResponse(RaftAcceptResponse&& from) noexcept
+    : RaftAcceptResponse() {
+    *this = ::std::move(from);
+  }
+
+  inline RaftAcceptResponse& operator=(const RaftAcceptResponse& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline RaftAcceptResponse& operator=(RaftAcceptResponse&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const RaftAcceptResponse& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const RaftAcceptResponse* internal_default_instance() {
+    return reinterpret_cast<const RaftAcceptResponse*>(
+               &_RaftAcceptResponse_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    20;
+
+  friend void swap(RaftAcceptResponse& a, RaftAcceptResponse& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(RaftAcceptResponse* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline RaftAcceptResponse* New() const final {
+    return CreateMaybeMessage<RaftAcceptResponse>(nullptr);
+  }
+
+  RaftAcceptResponse* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<RaftAcceptResponse>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const RaftAcceptResponse& from);
+  void MergeFrom(const RaftAcceptResponse& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(RaftAcceptResponse* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "merge.RaftAcceptResponse";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kFromFieldNumber = 1,
+    kToFieldNumber = 2,
+    kEpochIdFieldNumber = 3,
+    kResultFieldNumber = 4,
+  };
+  // uint32 from = 1;
+  void clear_from();
+  ::PROTOBUF_NAMESPACE_ID::uint32 from() const;
+  void set_from(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_from() const;
+  void _internal_set_from(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint32 to = 2;
+  void clear_to();
+  ::PROTOBUF_NAMESPACE_ID::uint32 to() const;
+  void set_to(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_to() const;
+  void _internal_set_to(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint64 epoch_id = 3;
+  void clear_epoch_id();
+  ::PROTOBUF_NAMESPACE_ID::uint64 epoch_id() const;
+  void set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_epoch_id() const;
+  void _internal_set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint32 result = 4;
+  void clear_result();
+  ::PROTOBUF_NAMESPACE_ID::uint32 result() const;
+  void set_result(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_result() const;
+  void _internal_set_result(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:merge.RaftAcceptResponse)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 from_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 to_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 epoch_id_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 result_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class RaftCommitResponse :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.RaftCommitResponse) */ {
+ public:
+  RaftCommitResponse();
+  virtual ~RaftCommitResponse();
+
+  RaftCommitResponse(const RaftCommitResponse& from);
+  RaftCommitResponse(RaftCommitResponse&& from) noexcept
+    : RaftCommitResponse() {
+    *this = ::std::move(from);
+  }
+
+  inline RaftCommitResponse& operator=(const RaftCommitResponse& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline RaftCommitResponse& operator=(RaftCommitResponse&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const RaftCommitResponse& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const RaftCommitResponse* internal_default_instance() {
+    return reinterpret_cast<const RaftCommitResponse*>(
+               &_RaftCommitResponse_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    21;
+
+  friend void swap(RaftCommitResponse& a, RaftCommitResponse& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(RaftCommitResponse* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline RaftCommitResponse* New() const final {
+    return CreateMaybeMessage<RaftCommitResponse>(nullptr);
+  }
+
+  RaftCommitResponse* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<RaftCommitResponse>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const RaftCommitResponse& from);
+  void MergeFrom(const RaftCommitResponse& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(RaftCommitResponse* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "merge.RaftCommitResponse";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kFromFieldNumber = 1,
+    kToFieldNumber = 2,
+    kEpochIdFieldNumber = 3,
+    kResultFieldNumber = 4,
+  };
+  // uint32 from = 1;
+  void clear_from();
+  ::PROTOBUF_NAMESPACE_ID::uint32 from() const;
+  void set_from(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_from() const;
+  void _internal_set_from(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint32 to = 2;
+  void clear_to();
+  ::PROTOBUF_NAMESPACE_ID::uint32 to() const;
+  void set_to(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_to() const;
+  void _internal_set_to(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint64 epoch_id = 3;
+  void clear_epoch_id();
+  ::PROTOBUF_NAMESPACE_ID::uint64 epoch_id() const;
+  void set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_epoch_id() const;
+  void _internal_set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint32 result = 4;
+  void clear_result();
+  ::PROTOBUF_NAMESPACE_ID::uint32 result() const;
+  void set_result(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_result() const;
+  void _internal_set_result(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:merge.RaftCommitResponse)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 from_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 to_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 epoch_id_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 result_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class StatsResponse :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.StatsResponse) */ {
+ public:
+  StatsResponse();
+  virtual ~StatsResponse();
+
+  StatsResponse(const StatsResponse& from);
+  StatsResponse(StatsResponse&& from) noexcept
+    : StatsResponse() {
+    *this = ::std::move(from);
+  }
+
+  inline StatsResponse& operator=(const StatsResponse& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline StatsResponse& operator=(StatsResponse&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const StatsResponse& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const StatsResponse* internal_default_instance() {
+    return reinterpret_cast<const StatsResponse*>(
+               &_StatsResponse_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    22;
+
+  friend void swap(StatsResponse& a, StatsResponse& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(StatsResponse* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline StatsResponse* New() const final {
+    return CreateMaybeMessage<StatsResponse>(nullptr);
+  }
+
+  StatsResponse* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<StatsResponse>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const StatsResponse& from);
+  void MergeFrom(const StatsResponse& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(StatsResponse* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "merge.StatsResponse";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kToFieldNumber = 2,
+    kEpochIdFieldNumber = 3,
+    kFromFieldNumber = 1,
+  };
+  // uint64 to = 2;
+  void clear_to();
+  ::PROTOBUF_NAMESPACE_ID::uint64 to() const;
+  void set_to(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_to() const;
+  void _internal_set_to(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint64 epoch_id = 3;
+  void clear_epoch_id();
+  ::PROTOBUF_NAMESPACE_ID::uint64 epoch_id() const;
+  void set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_epoch_id() const;
+  void _internal_set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint32 from = 1;
+  void clear_from();
+  ::PROTOBUF_NAMESPACE_ID::uint32 from() const;
+  void set_from(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_from() const;
+  void _internal_set_from(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:merge.StatsResponse)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 to_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 epoch_id_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 from_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class ChangeServerStateResponse :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:merge.ChangeServerStateResponse) */ {
+ public:
+  ChangeServerStateResponse();
+  virtual ~ChangeServerStateResponse();
+
+  ChangeServerStateResponse(const ChangeServerStateResponse& from);
+  ChangeServerStateResponse(ChangeServerStateResponse&& from) noexcept
+    : ChangeServerStateResponse() {
+    *this = ::std::move(from);
+  }
+
+  inline ChangeServerStateResponse& operator=(const ChangeServerStateResponse& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline ChangeServerStateResponse& operator=(ChangeServerStateResponse&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const ChangeServerStateResponse& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const ChangeServerStateResponse* internal_default_instance() {
+    return reinterpret_cast<const ChangeServerStateResponse*>(
+               &_ChangeServerStateResponse_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    23;
+
+  friend void swap(ChangeServerStateResponse& a, ChangeServerStateResponse& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(ChangeServerStateResponse* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ChangeServerStateResponse* New() const final {
+    return CreateMaybeMessage<ChangeServerStateResponse>(nullptr);
+  }
+
+  ChangeServerStateResponse* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<ChangeServerStateResponse>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ChangeServerStateResponse& from);
+  void MergeFrom(const ChangeServerStateResponse& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ChangeServerStateResponse* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "merge.ChangeServerStateResponse";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kFromFieldNumber = 1,
+    kToFieldNumber = 2,
+    kEpochIdFieldNumber = 4,
+    kTargetFieldNumber = 3,
+    kStateFieldNumber = 5,
+  };
+  // uint32 from = 1;
+  void clear_from();
+  ::PROTOBUF_NAMESPACE_ID::uint32 from() const;
+  void set_from(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_from() const;
+  void _internal_set_from(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint32 to = 2;
+  void clear_to();
+  ::PROTOBUF_NAMESPACE_ID::uint32 to() const;
+  void set_to(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_to() const;
+  void _internal_set_to(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint64 epoch_id = 4;
+  void clear_epoch_id();
+  ::PROTOBUF_NAMESPACE_ID::uint64 epoch_id() const;
+  void set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_epoch_id() const;
+  void _internal_set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint32 target = 3;
+  void clear_target();
+  ::PROTOBUF_NAMESPACE_ID::uint32 target() const;
+  void set_target(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_target() const;
+  void _internal_set_target(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint32 state = 5;
+  void clear_state();
+  ::PROTOBUF_NAMESPACE_ID::uint32 state() const;
+  void set_state(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_state() const;
+  void _internal_set_state(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:merge.ChangeServerStateResponse)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 from_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 to_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 epoch_id_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 target_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 state_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_message_2eproto;
 };
@@ -844,7 +4238,7 @@ class ServerMessage_Msg :
                &_ServerMessage_Msg_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    24;
 
   friend void swap(ServerMessage_Msg& a, ServerMessage_Msg& b) {
     a.Swap(&b);
@@ -997,7 +4391,7 @@ class ServerMessage :
                &_ServerMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    25;
 
   friend void swap(ServerMessage& a, ServerMessage& b) {
     a.Swap(&b);
@@ -1155,575 +4549,2760 @@ class ServerMessage :
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
-// MergeRequest_Transaction_Row_Column
+// Transaction_Row_Column
 
 // uint64 id = 1;
-inline void MergeRequest_Transaction_Row_Column::clear_id() {
+inline void Transaction_Row_Column::clear_id() {
   id_ = PROTOBUF_ULONGLONG(0);
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest_Transaction_Row_Column::_internal_id() const {
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Transaction_Row_Column::_internal_id() const {
   return id_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest_Transaction_Row_Column::id() const {
-  // @@protoc_insertion_point(field_get:merge.MergeRequest.Transaction.Row.Column.id)
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Transaction_Row_Column::id() const {
+  // @@protoc_insertion_point(field_get:merge.Transaction.Row.Column.id)
   return _internal_id();
 }
-inline void MergeRequest_Transaction_Row_Column::_internal_set_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+inline void Transaction_Row_Column::_internal_set_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   
   id_ = value;
 }
-inline void MergeRequest_Transaction_Row_Column::set_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+inline void Transaction_Row_Column::set_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   _internal_set_id(value);
-  // @@protoc_insertion_point(field_set:merge.MergeRequest.Transaction.Row.Column.id)
+  // @@protoc_insertion_point(field_set:merge.Transaction.Row.Column.id)
 }
 
 // bytes value = 2;
-inline void MergeRequest_Transaction_Row_Column::clear_value() {
+inline void Transaction_Row_Column::clear_value() {
   value_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
-inline const std::string& MergeRequest_Transaction_Row_Column::value() const {
-  // @@protoc_insertion_point(field_get:merge.MergeRequest.Transaction.Row.Column.value)
+inline const std::string& Transaction_Row_Column::value() const {
+  // @@protoc_insertion_point(field_get:merge.Transaction.Row.Column.value)
   return _internal_value();
 }
-inline void MergeRequest_Transaction_Row_Column::set_value(const std::string& value) {
+inline void Transaction_Row_Column::set_value(const std::string& value) {
   _internal_set_value(value);
-  // @@protoc_insertion_point(field_set:merge.MergeRequest.Transaction.Row.Column.value)
+  // @@protoc_insertion_point(field_set:merge.Transaction.Row.Column.value)
 }
-inline std::string* MergeRequest_Transaction_Row_Column::mutable_value() {
-  // @@protoc_insertion_point(field_mutable:merge.MergeRequest.Transaction.Row.Column.value)
+inline std::string* Transaction_Row_Column::mutable_value() {
+  // @@protoc_insertion_point(field_mutable:merge.Transaction.Row.Column.value)
   return _internal_mutable_value();
 }
-inline const std::string& MergeRequest_Transaction_Row_Column::_internal_value() const {
+inline const std::string& Transaction_Row_Column::_internal_value() const {
   return value_.GetNoArena();
 }
-inline void MergeRequest_Transaction_Row_Column::_internal_set_value(const std::string& value) {
+inline void Transaction_Row_Column::_internal_set_value(const std::string& value) {
   
   value_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
 }
-inline void MergeRequest_Transaction_Row_Column::set_value(std::string&& value) {
+inline void Transaction_Row_Column::set_value(std::string&& value) {
   
   value_.SetNoArena(
     &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:merge.MergeRequest.Transaction.Row.Column.value)
+  // @@protoc_insertion_point(field_set_rvalue:merge.Transaction.Row.Column.value)
 }
-inline void MergeRequest_Transaction_Row_Column::set_value(const char* value) {
+inline void Transaction_Row_Column::set_value(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   
   value_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:merge.MergeRequest.Transaction.Row.Column.value)
+  // @@protoc_insertion_point(field_set_char:merge.Transaction.Row.Column.value)
 }
-inline void MergeRequest_Transaction_Row_Column::set_value(const void* value, size_t size) {
+inline void Transaction_Row_Column::set_value(const void* value, size_t size) {
   
   value_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:merge.MergeRequest.Transaction.Row.Column.value)
+  // @@protoc_insertion_point(field_set_pointer:merge.Transaction.Row.Column.value)
 }
-inline std::string* MergeRequest_Transaction_Row_Column::_internal_mutable_value() {
+inline std::string* Transaction_Row_Column::_internal_mutable_value() {
   
   return value_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
-inline std::string* MergeRequest_Transaction_Row_Column::release_value() {
-  // @@protoc_insertion_point(field_release:merge.MergeRequest.Transaction.Row.Column.value)
+inline std::string* Transaction_Row_Column::release_value() {
+  // @@protoc_insertion_point(field_release:merge.Transaction.Row.Column.value)
   
   return value_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
-inline void MergeRequest_Transaction_Row_Column::set_allocated_value(std::string* value) {
+inline void Transaction_Row_Column::set_allocated_value(std::string* value) {
   if (value != nullptr) {
     
   } else {
     
   }
   value_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set_allocated:merge.MergeRequest.Transaction.Row.Column.value)
+  // @@protoc_insertion_point(field_set_allocated:merge.Transaction.Row.Column.value)
 }
 
 // -------------------------------------------------------------------
 
-// MergeRequest_Transaction_Row
+// Transaction_Row
 
 // string tableName = 1;
-inline void MergeRequest_Transaction_Row::clear_tablename() {
+inline void Transaction_Row::clear_tablename() {
   tablename_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
-inline const std::string& MergeRequest_Transaction_Row::tablename() const {
-  // @@protoc_insertion_point(field_get:merge.MergeRequest.Transaction.Row.tableName)
+inline const std::string& Transaction_Row::tablename() const {
+  // @@protoc_insertion_point(field_get:merge.Transaction.Row.tableName)
   return _internal_tablename();
 }
-inline void MergeRequest_Transaction_Row::set_tablename(const std::string& value) {
+inline void Transaction_Row::set_tablename(const std::string& value) {
   _internal_set_tablename(value);
-  // @@protoc_insertion_point(field_set:merge.MergeRequest.Transaction.Row.tableName)
+  // @@protoc_insertion_point(field_set:merge.Transaction.Row.tableName)
 }
-inline std::string* MergeRequest_Transaction_Row::mutable_tablename() {
-  // @@protoc_insertion_point(field_mutable:merge.MergeRequest.Transaction.Row.tableName)
+inline std::string* Transaction_Row::mutable_tablename() {
+  // @@protoc_insertion_point(field_mutable:merge.Transaction.Row.tableName)
   return _internal_mutable_tablename();
 }
-inline const std::string& MergeRequest_Transaction_Row::_internal_tablename() const {
+inline const std::string& Transaction_Row::_internal_tablename() const {
   return tablename_.GetNoArena();
 }
-inline void MergeRequest_Transaction_Row::_internal_set_tablename(const std::string& value) {
+inline void Transaction_Row::_internal_set_tablename(const std::string& value) {
   
   tablename_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
 }
-inline void MergeRequest_Transaction_Row::set_tablename(std::string&& value) {
+inline void Transaction_Row::set_tablename(std::string&& value) {
   
   tablename_.SetNoArena(
     &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:merge.MergeRequest.Transaction.Row.tableName)
+  // @@protoc_insertion_point(field_set_rvalue:merge.Transaction.Row.tableName)
 }
-inline void MergeRequest_Transaction_Row::set_tablename(const char* value) {
+inline void Transaction_Row::set_tablename(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   
   tablename_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:merge.MergeRequest.Transaction.Row.tableName)
+  // @@protoc_insertion_point(field_set_char:merge.Transaction.Row.tableName)
 }
-inline void MergeRequest_Transaction_Row::set_tablename(const char* value, size_t size) {
+inline void Transaction_Row::set_tablename(const char* value, size_t size) {
   
   tablename_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:merge.MergeRequest.Transaction.Row.tableName)
+  // @@protoc_insertion_point(field_set_pointer:merge.Transaction.Row.tableName)
 }
-inline std::string* MergeRequest_Transaction_Row::_internal_mutable_tablename() {
+inline std::string* Transaction_Row::_internal_mutable_tablename() {
   
   return tablename_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
-inline std::string* MergeRequest_Transaction_Row::release_tablename() {
-  // @@protoc_insertion_point(field_release:merge.MergeRequest.Transaction.Row.tableName)
+inline std::string* Transaction_Row::release_tablename() {
+  // @@protoc_insertion_point(field_release:merge.Transaction.Row.tableName)
   
   return tablename_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
-inline void MergeRequest_Transaction_Row::set_allocated_tablename(std::string* tablename) {
+inline void Transaction_Row::set_allocated_tablename(std::string* tablename) {
   if (tablename != nullptr) {
     
   } else {
     
   }
   tablename_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), tablename);
-  // @@protoc_insertion_point(field_set_allocated:merge.MergeRequest.Transaction.Row.tableName)
+  // @@protoc_insertion_point(field_set_allocated:merge.Transaction.Row.tableName)
 }
 
 // bytes key = 2;
-inline void MergeRequest_Transaction_Row::clear_key() {
+inline void Transaction_Row::clear_key() {
   key_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
-inline const std::string& MergeRequest_Transaction_Row::key() const {
-  // @@protoc_insertion_point(field_get:merge.MergeRequest.Transaction.Row.key)
+inline const std::string& Transaction_Row::key() const {
+  // @@protoc_insertion_point(field_get:merge.Transaction.Row.key)
   return _internal_key();
 }
-inline void MergeRequest_Transaction_Row::set_key(const std::string& value) {
+inline void Transaction_Row::set_key(const std::string& value) {
   _internal_set_key(value);
-  // @@protoc_insertion_point(field_set:merge.MergeRequest.Transaction.Row.key)
+  // @@protoc_insertion_point(field_set:merge.Transaction.Row.key)
 }
-inline std::string* MergeRequest_Transaction_Row::mutable_key() {
-  // @@protoc_insertion_point(field_mutable:merge.MergeRequest.Transaction.Row.key)
+inline std::string* Transaction_Row::mutable_key() {
+  // @@protoc_insertion_point(field_mutable:merge.Transaction.Row.key)
   return _internal_mutable_key();
 }
-inline const std::string& MergeRequest_Transaction_Row::_internal_key() const {
+inline const std::string& Transaction_Row::_internal_key() const {
   return key_.GetNoArena();
 }
-inline void MergeRequest_Transaction_Row::_internal_set_key(const std::string& value) {
+inline void Transaction_Row::_internal_set_key(const std::string& value) {
   
   key_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
 }
-inline void MergeRequest_Transaction_Row::set_key(std::string&& value) {
+inline void Transaction_Row::set_key(std::string&& value) {
   
   key_.SetNoArena(
     &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:merge.MergeRequest.Transaction.Row.key)
+  // @@protoc_insertion_point(field_set_rvalue:merge.Transaction.Row.key)
 }
-inline void MergeRequest_Transaction_Row::set_key(const char* value) {
+inline void Transaction_Row::set_key(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   
   key_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:merge.MergeRequest.Transaction.Row.key)
+  // @@protoc_insertion_point(field_set_char:merge.Transaction.Row.key)
 }
-inline void MergeRequest_Transaction_Row::set_key(const void* value, size_t size) {
+inline void Transaction_Row::set_key(const void* value, size_t size) {
   
   key_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:merge.MergeRequest.Transaction.Row.key)
+  // @@protoc_insertion_point(field_set_pointer:merge.Transaction.Row.key)
 }
-inline std::string* MergeRequest_Transaction_Row::_internal_mutable_key() {
+inline std::string* Transaction_Row::_internal_mutable_key() {
   
   return key_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
-inline std::string* MergeRequest_Transaction_Row::release_key() {
-  // @@protoc_insertion_point(field_release:merge.MergeRequest.Transaction.Row.key)
+inline std::string* Transaction_Row::release_key() {
+  // @@protoc_insertion_point(field_release:merge.Transaction.Row.key)
   
   return key_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
-inline void MergeRequest_Transaction_Row::set_allocated_key(std::string* key) {
+inline void Transaction_Row::set_allocated_key(std::string* key) {
   if (key != nullptr) {
     
   } else {
     
   }
   key_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), key);
-  // @@protoc_insertion_point(field_set_allocated:merge.MergeRequest.Transaction.Row.key)
+  // @@protoc_insertion_point(field_set_allocated:merge.Transaction.Row.key)
 }
 
 // uint32 type = 3;
-inline void MergeRequest_Transaction_Row::clear_type() {
+inline void Transaction_Row::clear_type() {
   type_ = 0u;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint32 MergeRequest_Transaction_Row::_internal_type() const {
+inline ::PROTOBUF_NAMESPACE_ID::uint32 Transaction_Row::_internal_type() const {
   return type_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint32 MergeRequest_Transaction_Row::type() const {
-  // @@protoc_insertion_point(field_get:merge.MergeRequest.Transaction.Row.type)
+inline ::PROTOBUF_NAMESPACE_ID::uint32 Transaction_Row::type() const {
+  // @@protoc_insertion_point(field_get:merge.Transaction.Row.type)
   return _internal_type();
 }
-inline void MergeRequest_Transaction_Row::_internal_set_type(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+inline void Transaction_Row::_internal_set_type(::PROTOBUF_NAMESPACE_ID::uint32 value) {
   
   type_ = value;
 }
-inline void MergeRequest_Transaction_Row::set_type(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+inline void Transaction_Row::set_type(::PROTOBUF_NAMESPACE_ID::uint32 value) {
   _internal_set_type(value);
-  // @@protoc_insertion_point(field_set:merge.MergeRequest.Transaction.Row.type)
+  // @@protoc_insertion_point(field_set:merge.Transaction.Row.type)
 }
 
-// repeated .merge.MergeRequest.Transaction.Row.Column column = 4;
-inline int MergeRequest_Transaction_Row::_internal_column_size() const {
+// repeated .merge.Transaction.Row.Column column = 4;
+inline int Transaction_Row::_internal_column_size() const {
   return column_.size();
 }
-inline int MergeRequest_Transaction_Row::column_size() const {
+inline int Transaction_Row::column_size() const {
   return _internal_column_size();
 }
-inline void MergeRequest_Transaction_Row::clear_column() {
+inline void Transaction_Row::clear_column() {
   column_.Clear();
 }
-inline ::merge::MergeRequest_Transaction_Row_Column* MergeRequest_Transaction_Row::mutable_column(int index) {
-  // @@protoc_insertion_point(field_mutable:merge.MergeRequest.Transaction.Row.column)
+inline ::merge::Transaction_Row_Column* Transaction_Row::mutable_column(int index) {
+  // @@protoc_insertion_point(field_mutable:merge.Transaction.Row.column)
   return column_.Mutable(index);
 }
-inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction_Row_Column >*
-MergeRequest_Transaction_Row::mutable_column() {
-  // @@protoc_insertion_point(field_mutable_list:merge.MergeRequest.Transaction.Row.column)
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::Transaction_Row_Column >*
+Transaction_Row::mutable_column() {
+  // @@protoc_insertion_point(field_mutable_list:merge.Transaction.Row.column)
   return &column_;
 }
-inline const ::merge::MergeRequest_Transaction_Row_Column& MergeRequest_Transaction_Row::_internal_column(int index) const {
+inline const ::merge::Transaction_Row_Column& Transaction_Row::_internal_column(int index) const {
   return column_.Get(index);
 }
-inline const ::merge::MergeRequest_Transaction_Row_Column& MergeRequest_Transaction_Row::column(int index) const {
-  // @@protoc_insertion_point(field_get:merge.MergeRequest.Transaction.Row.column)
+inline const ::merge::Transaction_Row_Column& Transaction_Row::column(int index) const {
+  // @@protoc_insertion_point(field_get:merge.Transaction.Row.column)
   return _internal_column(index);
 }
-inline ::merge::MergeRequest_Transaction_Row_Column* MergeRequest_Transaction_Row::_internal_add_column() {
+inline ::merge::Transaction_Row_Column* Transaction_Row::_internal_add_column() {
   return column_.Add();
 }
-inline ::merge::MergeRequest_Transaction_Row_Column* MergeRequest_Transaction_Row::add_column() {
-  // @@protoc_insertion_point(field_add:merge.MergeRequest.Transaction.Row.column)
+inline ::merge::Transaction_Row_Column* Transaction_Row::add_column() {
+  // @@protoc_insertion_point(field_add:merge.Transaction.Row.column)
   return _internal_add_column();
 }
-inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction_Row_Column >&
-MergeRequest_Transaction_Row::column() const {
-  // @@protoc_insertion_point(field_list:merge.MergeRequest.Transaction.Row.column)
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::Transaction_Row_Column >&
+Transaction_Row::column() const {
+  // @@protoc_insertion_point(field_list:merge.Transaction.Row.column)
   return column_;
 }
 
 // bytes data = 5;
-inline void MergeRequest_Transaction_Row::clear_data() {
+inline void Transaction_Row::clear_data() {
   data_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
-inline const std::string& MergeRequest_Transaction_Row::data() const {
-  // @@protoc_insertion_point(field_get:merge.MergeRequest.Transaction.Row.data)
+inline const std::string& Transaction_Row::data() const {
+  // @@protoc_insertion_point(field_get:merge.Transaction.Row.data)
   return _internal_data();
 }
-inline void MergeRequest_Transaction_Row::set_data(const std::string& value) {
+inline void Transaction_Row::set_data(const std::string& value) {
   _internal_set_data(value);
-  // @@protoc_insertion_point(field_set:merge.MergeRequest.Transaction.Row.data)
+  // @@protoc_insertion_point(field_set:merge.Transaction.Row.data)
 }
-inline std::string* MergeRequest_Transaction_Row::mutable_data() {
-  // @@protoc_insertion_point(field_mutable:merge.MergeRequest.Transaction.Row.data)
+inline std::string* Transaction_Row::mutable_data() {
+  // @@protoc_insertion_point(field_mutable:merge.Transaction.Row.data)
   return _internal_mutable_data();
 }
-inline const std::string& MergeRequest_Transaction_Row::_internal_data() const {
+inline const std::string& Transaction_Row::_internal_data() const {
   return data_.GetNoArena();
 }
-inline void MergeRequest_Transaction_Row::_internal_set_data(const std::string& value) {
+inline void Transaction_Row::_internal_set_data(const std::string& value) {
   
   data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
 }
-inline void MergeRequest_Transaction_Row::set_data(std::string&& value) {
+inline void Transaction_Row::set_data(std::string&& value) {
   
   data_.SetNoArena(
     &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:merge.MergeRequest.Transaction.Row.data)
+  // @@protoc_insertion_point(field_set_rvalue:merge.Transaction.Row.data)
 }
-inline void MergeRequest_Transaction_Row::set_data(const char* value) {
+inline void Transaction_Row::set_data(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   
   data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:merge.MergeRequest.Transaction.Row.data)
+  // @@protoc_insertion_point(field_set_char:merge.Transaction.Row.data)
 }
-inline void MergeRequest_Transaction_Row::set_data(const void* value, size_t size) {
+inline void Transaction_Row::set_data(const void* value, size_t size) {
   
   data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:merge.MergeRequest.Transaction.Row.data)
+  // @@protoc_insertion_point(field_set_pointer:merge.Transaction.Row.data)
 }
-inline std::string* MergeRequest_Transaction_Row::_internal_mutable_data() {
+inline std::string* Transaction_Row::_internal_mutable_data() {
   
   return data_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
-inline std::string* MergeRequest_Transaction_Row::release_data() {
-  // @@protoc_insertion_point(field_release:merge.MergeRequest.Transaction.Row.data)
+inline std::string* Transaction_Row::release_data() {
+  // @@protoc_insertion_point(field_release:merge.Transaction.Row.data)
   
   return data_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
-inline void MergeRequest_Transaction_Row::set_allocated_data(std::string* data) {
+inline void Transaction_Row::set_allocated_data(std::string* data) {
   if (data != nullptr) {
     
   } else {
     
   }
   data_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), data);
-  // @@protoc_insertion_point(field_set_allocated:merge.MergeRequest.Transaction.Row.data)
+  // @@protoc_insertion_point(field_set_allocated:merge.Transaction.Row.data)
 }
 
 // -------------------------------------------------------------------
 
-// MergeRequest_Transaction
+// Transaction
 
-// repeated .merge.MergeRequest.Transaction.Row row = 2;
-inline int MergeRequest_Transaction::_internal_row_size() const {
+// repeated .merge.Transaction.Row row = 2;
+inline int Transaction::_internal_row_size() const {
   return row_.size();
 }
-inline int MergeRequest_Transaction::row_size() const {
+inline int Transaction::row_size() const {
   return _internal_row_size();
 }
-inline void MergeRequest_Transaction::clear_row() {
+inline void Transaction::clear_row() {
   row_.Clear();
 }
-inline ::merge::MergeRequest_Transaction_Row* MergeRequest_Transaction::mutable_row(int index) {
-  // @@protoc_insertion_point(field_mutable:merge.MergeRequest.Transaction.row)
+inline ::merge::Transaction_Row* Transaction::mutable_row(int index) {
+  // @@protoc_insertion_point(field_mutable:merge.Transaction.row)
   return row_.Mutable(index);
 }
-inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction_Row >*
-MergeRequest_Transaction::mutable_row() {
-  // @@protoc_insertion_point(field_mutable_list:merge.MergeRequest.Transaction.row)
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::Transaction_Row >*
+Transaction::mutable_row() {
+  // @@protoc_insertion_point(field_mutable_list:merge.Transaction.row)
   return &row_;
 }
-inline const ::merge::MergeRequest_Transaction_Row& MergeRequest_Transaction::_internal_row(int index) const {
+inline const ::merge::Transaction_Row& Transaction::_internal_row(int index) const {
   return row_.Get(index);
 }
-inline const ::merge::MergeRequest_Transaction_Row& MergeRequest_Transaction::row(int index) const {
-  // @@protoc_insertion_point(field_get:merge.MergeRequest.Transaction.row)
+inline const ::merge::Transaction_Row& Transaction::row(int index) const {
+  // @@protoc_insertion_point(field_get:merge.Transaction.row)
   return _internal_row(index);
 }
-inline ::merge::MergeRequest_Transaction_Row* MergeRequest_Transaction::_internal_add_row() {
+inline ::merge::Transaction_Row* Transaction::_internal_add_row() {
   return row_.Add();
 }
-inline ::merge::MergeRequest_Transaction_Row* MergeRequest_Transaction::add_row() {
-  // @@protoc_insertion_point(field_add:merge.MergeRequest.Transaction.row)
+inline ::merge::Transaction_Row* Transaction::add_row() {
+  // @@protoc_insertion_point(field_add:merge.Transaction.row)
   return _internal_add_row();
 }
-inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction_Row >&
-MergeRequest_Transaction::row() const {
-  // @@protoc_insertion_point(field_list:merge.MergeRequest.Transaction.row)
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::Transaction_Row >&
+Transaction::row() const {
+  // @@protoc_insertion_point(field_list:merge.Transaction.row)
   return row_;
 }
 
 // uint64 StartEpoch = 3;
-inline void MergeRequest_Transaction::clear_startepoch() {
+inline void Transaction::clear_startepoch() {
   startepoch_ = PROTOBUF_ULONGLONG(0);
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest_Transaction::_internal_startepoch() const {
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Transaction::_internal_startepoch() const {
   return startepoch_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest_Transaction::startepoch() const {
-  // @@protoc_insertion_point(field_get:merge.MergeRequest.Transaction.StartEpoch)
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Transaction::startepoch() const {
+  // @@protoc_insertion_point(field_get:merge.Transaction.StartEpoch)
   return _internal_startepoch();
 }
-inline void MergeRequest_Transaction::_internal_set_startepoch(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+inline void Transaction::_internal_set_startepoch(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   
   startepoch_ = value;
 }
-inline void MergeRequest_Transaction::set_startepoch(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+inline void Transaction::set_startepoch(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   _internal_set_startepoch(value);
-  // @@protoc_insertion_point(field_set:merge.MergeRequest.Transaction.StartEpoch)
+  // @@protoc_insertion_point(field_set:merge.Transaction.StartEpoch)
 }
 
 // uint64 CommitEpoch = 4;
-inline void MergeRequest_Transaction::clear_commitepoch() {
+inline void Transaction::clear_commitepoch() {
   commitepoch_ = PROTOBUF_ULONGLONG(0);
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest_Transaction::_internal_commitepoch() const {
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Transaction::_internal_commitepoch() const {
   return commitepoch_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest_Transaction::commitepoch() const {
-  // @@protoc_insertion_point(field_get:merge.MergeRequest.Transaction.CommitEpoch)
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Transaction::commitepoch() const {
+  // @@protoc_insertion_point(field_get:merge.Transaction.CommitEpoch)
   return _internal_commitepoch();
 }
-inline void MergeRequest_Transaction::_internal_set_commitepoch(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+inline void Transaction::_internal_set_commitepoch(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   
   commitepoch_ = value;
 }
-inline void MergeRequest_Transaction::set_commitepoch(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+inline void Transaction::set_commitepoch(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   _internal_set_commitepoch(value);
-  // @@protoc_insertion_point(field_set:merge.MergeRequest.Transaction.CommitEpoch)
+  // @@protoc_insertion_point(field_set:merge.Transaction.CommitEpoch)
 }
 
 // uint64 CSN = 5;
-inline void MergeRequest_Transaction::clear_csn() {
+inline void Transaction::clear_csn() {
   csn_ = PROTOBUF_ULONGLONG(0);
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest_Transaction::_internal_csn() const {
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Transaction::_internal_csn() const {
   return csn_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest_Transaction::csn() const {
-  // @@protoc_insertion_point(field_get:merge.MergeRequest.Transaction.CSN)
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Transaction::csn() const {
+  // @@protoc_insertion_point(field_get:merge.Transaction.CSN)
   return _internal_csn();
 }
-inline void MergeRequest_Transaction::_internal_set_csn(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+inline void Transaction::_internal_set_csn(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   
   csn_ = value;
 }
-inline void MergeRequest_Transaction::set_csn(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+inline void Transaction::set_csn(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   _internal_set_csn(value);
-  // @@protoc_insertion_point(field_set:merge.MergeRequest.Transaction.CSN)
+  // @@protoc_insertion_point(field_set:merge.Transaction.CSN)
 }
 
 // uint64 server_id = 6;
-inline void MergeRequest_Transaction::clear_server_id() {
+inline void Transaction::clear_server_id() {
   server_id_ = PROTOBUF_ULONGLONG(0);
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest_Transaction::_internal_server_id() const {
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Transaction::_internal_server_id() const {
   return server_id_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest_Transaction::server_id() const {
-  // @@protoc_insertion_point(field_get:merge.MergeRequest.Transaction.server_id)
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Transaction::server_id() const {
+  // @@protoc_insertion_point(field_get:merge.Transaction.server_id)
   return _internal_server_id();
 }
-inline void MergeRequest_Transaction::_internal_set_server_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+inline void Transaction::_internal_set_server_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   
   server_id_ = value;
 }
-inline void MergeRequest_Transaction::set_server_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+inline void Transaction::set_server_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   _internal_set_server_id(value);
-  // @@protoc_insertion_point(field_set:merge.MergeRequest.Transaction.server_id)
+  // @@protoc_insertion_point(field_set:merge.Transaction.server_id)
 }
 
 // uint64 txnid = 7;
-inline void MergeRequest_Transaction::clear_txnid() {
+inline void Transaction::clear_txnid() {
   txnid_ = PROTOBUF_ULONGLONG(0);
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest_Transaction::_internal_txnid() const {
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Transaction::_internal_txnid() const {
   return txnid_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest_Transaction::txnid() const {
-  // @@protoc_insertion_point(field_get:merge.MergeRequest.Transaction.txnid)
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Transaction::txnid() const {
+  // @@protoc_insertion_point(field_get:merge.Transaction.txnid)
   return _internal_txnid();
 }
-inline void MergeRequest_Transaction::_internal_set_txnid(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+inline void Transaction::_internal_set_txnid(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   
   txnid_ = value;
 }
-inline void MergeRequest_Transaction::set_txnid(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+inline void Transaction::set_txnid(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   _internal_set_txnid(value);
-  // @@protoc_insertion_point(field_set:merge.MergeRequest.Transaction.txnid)
+  // @@protoc_insertion_point(field_set:merge.Transaction.txnid)
 }
 
 // -------------------------------------------------------------------
 
-// MergeRequest
+// Message
 
-// repeated .merge.MergeRequest.Transaction Txn = 1;
-inline int MergeRequest::_internal_txn_size() const {
-  return txn_.size();
+// .merge.Request request = 1;
+inline bool Message::_internal_has_request() const {
+  return type_case() == kRequest;
 }
-inline int MergeRequest::txn_size() const {
-  return _internal_txn_size();
+inline bool Message::has_request() const {
+  return _internal_has_request();
 }
-inline void MergeRequest::clear_txn() {
-  txn_.Clear();
+inline void Message::set_has_request() {
+  _oneof_case_[0] = kRequest;
 }
-inline ::merge::MergeRequest_Transaction* MergeRequest::mutable_txn(int index) {
-  // @@protoc_insertion_point(field_mutable:merge.MergeRequest.Txn)
-  return txn_.Mutable(index);
+inline void Message::clear_request() {
+  if (_internal_has_request()) {
+    delete type_.request_;
+    clear_has_type();
+  }
 }
-inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction >*
-MergeRequest::mutable_txn() {
-  // @@protoc_insertion_point(field_mutable_list:merge.MergeRequest.Txn)
-  return &txn_;
+inline ::merge::Request* Message::release_request() {
+  // @@protoc_insertion_point(field_release:merge.Message.request)
+  if (_internal_has_request()) {
+    clear_has_type();
+      ::merge::Request* temp = type_.request_;
+    type_.request_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
 }
-inline const ::merge::MergeRequest_Transaction& MergeRequest::_internal_txn(int index) const {
-  return txn_.Get(index);
+inline const ::merge::Request& Message::_internal_request() const {
+  return _internal_has_request()
+      ? *type_.request_
+      : *reinterpret_cast< ::merge::Request*>(&::merge::_Request_default_instance_);
 }
-inline const ::merge::MergeRequest_Transaction& MergeRequest::txn(int index) const {
-  // @@protoc_insertion_point(field_get:merge.MergeRequest.Txn)
-  return _internal_txn(index);
+inline const ::merge::Request& Message::request() const {
+  // @@protoc_insertion_point(field_get:merge.Message.request)
+  return _internal_request();
 }
-inline ::merge::MergeRequest_Transaction* MergeRequest::_internal_add_txn() {
-  return txn_.Add();
+inline ::merge::Request* Message::_internal_mutable_request() {
+  if (!_internal_has_request()) {
+    clear_type();
+    set_has_request();
+    type_.request_ = CreateMaybeMessage< ::merge::Request >(
+        GetArenaNoVirtual());
+  }
+  return type_.request_;
 }
-inline ::merge::MergeRequest_Transaction* MergeRequest::add_txn() {
-  // @@protoc_insertion_point(field_add:merge.MergeRequest.Txn)
-  return _internal_add_txn();
-}
-inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::MergeRequest_Transaction >&
-MergeRequest::txn() const {
-  // @@protoc_insertion_point(field_list:merge.MergeRequest.Txn)
-  return txn_;
+inline ::merge::Request* Message::mutable_request() {
+  // @@protoc_insertion_point(field_mutable:merge.Message.request)
+  return _internal_mutable_request();
 }
 
-// uint64 server_id = 2;
-inline void MergeRequest::clear_server_id() {
-  server_id_ = PROTOBUF_ULONGLONG(0);
+// .merge.Response response = 2;
+inline bool Message::_internal_has_response() const {
+  return type_case() == kResponse;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest::_internal_server_id() const {
-  return server_id_;
+inline bool Message::has_response() const {
+  return _internal_has_response();
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest::server_id() const {
-  // @@protoc_insertion_point(field_get:merge.MergeRequest.server_id)
-  return _internal_server_id();
+inline void Message::set_has_response() {
+  _oneof_case_[0] = kResponse;
 }
-inline void MergeRequest::_internal_set_server_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+inline void Message::clear_response() {
+  if (_internal_has_response()) {
+    delete type_.response_;
+    clear_has_type();
+  }
+}
+inline ::merge::Response* Message::release_response() {
+  // @@protoc_insertion_point(field_release:merge.Message.response)
+  if (_internal_has_response()) {
+    clear_has_type();
+      ::merge::Response* temp = type_.response_;
+    type_.response_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::merge::Response& Message::_internal_response() const {
+  return _internal_has_response()
+      ? *type_.response_
+      : *reinterpret_cast< ::merge::Response*>(&::merge::_Response_default_instance_);
+}
+inline const ::merge::Response& Message::response() const {
+  // @@protoc_insertion_point(field_get:merge.Message.response)
+  return _internal_response();
+}
+inline ::merge::Response* Message::_internal_mutable_response() {
+  if (!_internal_has_response()) {
+    clear_type();
+    set_has_response();
+    type_.response_ = CreateMaybeMessage< ::merge::Response >(
+        GetArenaNoVirtual());
+  }
+  return type_.response_;
+}
+inline ::merge::Response* Message::mutable_response() {
+  // @@protoc_insertion_point(field_mutable:merge.Message.response)
+  return _internal_mutable_response();
+}
+
+// .merge.Transaction txn = 3;
+inline bool Message::_internal_has_txn() const {
+  return type_case() == kTxn;
+}
+inline bool Message::has_txn() const {
+  return _internal_has_txn();
+}
+inline void Message::set_has_txn() {
+  _oneof_case_[0] = kTxn;
+}
+inline void Message::clear_txn() {
+  if (_internal_has_txn()) {
+    delete type_.txn_;
+    clear_has_type();
+  }
+}
+inline ::merge::Transaction* Message::release_txn() {
+  // @@protoc_insertion_point(field_release:merge.Message.txn)
+  if (_internal_has_txn()) {
+    clear_has_type();
+      ::merge::Transaction* temp = type_.txn_;
+    type_.txn_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::merge::Transaction& Message::_internal_txn() const {
+  return _internal_has_txn()
+      ? *type_.txn_
+      : *reinterpret_cast< ::merge::Transaction*>(&::merge::_Transaction_default_instance_);
+}
+inline const ::merge::Transaction& Message::txn() const {
+  // @@protoc_insertion_point(field_get:merge.Message.txn)
+  return _internal_txn();
+}
+inline ::merge::Transaction* Message::_internal_mutable_txn() {
+  if (!_internal_has_txn()) {
+    clear_type();
+    set_has_txn();
+    type_.txn_ = CreateMaybeMessage< ::merge::Transaction >(
+        GetArenaNoVirtual());
+  }
+  return type_.txn_;
+}
+inline ::merge::Transaction* Message::mutable_txn() {
+  // @@protoc_insertion_point(field_mutable:merge.Message.txn)
+  return _internal_mutable_txn();
+}
+
+inline bool Message::has_type() const {
+  return type_case() != TYPE_NOT_SET;
+}
+inline void Message::clear_has_type() {
+  _oneof_case_[0] = TYPE_NOT_SET;
+}
+inline Message::TypeCase Message::type_case() const {
+  return Message::TypeCase(_oneof_case_[0]);
+}
+// -------------------------------------------------------------------
+
+// Request
+
+// .merge.Ping ping = 1;
+inline bool Request::_internal_has_ping() const {
+  return type_case() == kPing;
+}
+inline bool Request::has_ping() const {
+  return _internal_has_ping();
+}
+inline void Request::set_has_ping() {
+  _oneof_case_[0] = kPing;
+}
+inline void Request::clear_ping() {
+  if (_internal_has_ping()) {
+    delete type_.ping_;
+    clear_has_type();
+  }
+}
+inline ::merge::Ping* Request::release_ping() {
+  // @@protoc_insertion_point(field_release:merge.Request.ping)
+  if (_internal_has_ping()) {
+    clear_has_type();
+      ::merge::Ping* temp = type_.ping_;
+    type_.ping_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::merge::Ping& Request::_internal_ping() const {
+  return _internal_has_ping()
+      ? *type_.ping_
+      : *reinterpret_cast< ::merge::Ping*>(&::merge::_Ping_default_instance_);
+}
+inline const ::merge::Ping& Request::ping() const {
+  // @@protoc_insertion_point(field_get:merge.Request.ping)
+  return _internal_ping();
+}
+inline ::merge::Ping* Request::_internal_mutable_ping() {
+  if (!_internal_has_ping()) {
+    clear_type();
+    set_has_ping();
+    type_.ping_ = CreateMaybeMessage< ::merge::Ping >(
+        GetArenaNoVirtual());
+  }
+  return type_.ping_;
+}
+inline ::merge::Ping* Request::mutable_ping() {
+  // @@protoc_insertion_point(field_mutable:merge.Request.ping)
+  return _internal_mutable_ping();
+}
+
+// .merge.Signal signal = 2;
+inline bool Request::_internal_has_signal() const {
+  return type_case() == kSignal;
+}
+inline bool Request::has_signal() const {
+  return _internal_has_signal();
+}
+inline void Request::set_has_signal() {
+  _oneof_case_[0] = kSignal;
+}
+inline void Request::clear_signal() {
+  if (_internal_has_signal()) {
+    delete type_.signal_;
+    clear_has_type();
+  }
+}
+inline ::merge::Signal* Request::release_signal() {
+  // @@protoc_insertion_point(field_release:merge.Request.signal)
+  if (_internal_has_signal()) {
+    clear_has_type();
+      ::merge::Signal* temp = type_.signal_;
+    type_.signal_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::merge::Signal& Request::_internal_signal() const {
+  return _internal_has_signal()
+      ? *type_.signal_
+      : *reinterpret_cast< ::merge::Signal*>(&::merge::_Signal_default_instance_);
+}
+inline const ::merge::Signal& Request::signal() const {
+  // @@protoc_insertion_point(field_get:merge.Request.signal)
+  return _internal_signal();
+}
+inline ::merge::Signal* Request::_internal_mutable_signal() {
+  if (!_internal_has_signal()) {
+    clear_type();
+    set_has_signal();
+    type_.signal_ = CreateMaybeMessage< ::merge::Signal >(
+        GetArenaNoVirtual());
+  }
+  return type_.signal_;
+}
+inline ::merge::Signal* Request::mutable_signal() {
+  // @@protoc_insertion_point(field_mutable:merge.Request.signal)
+  return _internal_mutable_signal();
+}
+
+// .merge.LookupMasterRequest lookup_master = 3;
+inline bool Request::_internal_has_lookup_master() const {
+  return type_case() == kLookupMaster;
+}
+inline bool Request::has_lookup_master() const {
+  return _internal_has_lookup_master();
+}
+inline void Request::set_has_lookup_master() {
+  _oneof_case_[0] = kLookupMaster;
+}
+inline void Request::clear_lookup_master() {
+  if (_internal_has_lookup_master()) {
+    delete type_.lookup_master_;
+    clear_has_type();
+  }
+}
+inline ::merge::LookupMasterRequest* Request::release_lookup_master() {
+  // @@protoc_insertion_point(field_release:merge.Request.lookup_master)
+  if (_internal_has_lookup_master()) {
+    clear_has_type();
+      ::merge::LookupMasterRequest* temp = type_.lookup_master_;
+    type_.lookup_master_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::merge::LookupMasterRequest& Request::_internal_lookup_master() const {
+  return _internal_has_lookup_master()
+      ? *type_.lookup_master_
+      : *reinterpret_cast< ::merge::LookupMasterRequest*>(&::merge::_LookupMasterRequest_default_instance_);
+}
+inline const ::merge::LookupMasterRequest& Request::lookup_master() const {
+  // @@protoc_insertion_point(field_get:merge.Request.lookup_master)
+  return _internal_lookup_master();
+}
+inline ::merge::LookupMasterRequest* Request::_internal_mutable_lookup_master() {
+  if (!_internal_has_lookup_master()) {
+    clear_type();
+    set_has_lookup_master();
+    type_.lookup_master_ = CreateMaybeMessage< ::merge::LookupMasterRequest >(
+        GetArenaNoVirtual());
+  }
+  return type_.lookup_master_;
+}
+inline ::merge::LookupMasterRequest* Request::mutable_lookup_master() {
+  // @@protoc_insertion_point(field_mutable:merge.Request.lookup_master)
+  return _internal_mutable_lookup_master();
+}
+
+// .merge.ForwardEpochRequest forward_epoch = 4;
+inline bool Request::_internal_has_forward_epoch() const {
+  return type_case() == kForwardEpoch;
+}
+inline bool Request::has_forward_epoch() const {
+  return _internal_has_forward_epoch();
+}
+inline void Request::set_has_forward_epoch() {
+  _oneof_case_[0] = kForwardEpoch;
+}
+inline void Request::clear_forward_epoch() {
+  if (_internal_has_forward_epoch()) {
+    delete type_.forward_epoch_;
+    clear_has_type();
+  }
+}
+inline ::merge::ForwardEpochRequest* Request::release_forward_epoch() {
+  // @@protoc_insertion_point(field_release:merge.Request.forward_epoch)
+  if (_internal_has_forward_epoch()) {
+    clear_has_type();
+      ::merge::ForwardEpochRequest* temp = type_.forward_epoch_;
+    type_.forward_epoch_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::merge::ForwardEpochRequest& Request::_internal_forward_epoch() const {
+  return _internal_has_forward_epoch()
+      ? *type_.forward_epoch_
+      : *reinterpret_cast< ::merge::ForwardEpochRequest*>(&::merge::_ForwardEpochRequest_default_instance_);
+}
+inline const ::merge::ForwardEpochRequest& Request::forward_epoch() const {
+  // @@protoc_insertion_point(field_get:merge.Request.forward_epoch)
+  return _internal_forward_epoch();
+}
+inline ::merge::ForwardEpochRequest* Request::_internal_mutable_forward_epoch() {
+  if (!_internal_has_forward_epoch()) {
+    clear_type();
+    set_has_forward_epoch();
+    type_.forward_epoch_ = CreateMaybeMessage< ::merge::ForwardEpochRequest >(
+        GetArenaNoVirtual());
+  }
+  return type_.forward_epoch_;
+}
+inline ::merge::ForwardEpochRequest* Request::mutable_forward_epoch() {
+  // @@protoc_insertion_point(field_mutable:merge.Request.forward_epoch)
+  return _internal_mutable_forward_epoch();
+}
+
+// .merge.EpochReplicationAck epoch_replication_ack = 5;
+inline bool Request::_internal_has_epoch_replication_ack() const {
+  return type_case() == kEpochReplicationAck;
+}
+inline bool Request::has_epoch_replication_ack() const {
+  return _internal_has_epoch_replication_ack();
+}
+inline void Request::set_has_epoch_replication_ack() {
+  _oneof_case_[0] = kEpochReplicationAck;
+}
+inline void Request::clear_epoch_replication_ack() {
+  if (_internal_has_epoch_replication_ack()) {
+    delete type_.epoch_replication_ack_;
+    clear_has_type();
+  }
+}
+inline ::merge::EpochReplicationAck* Request::release_epoch_replication_ack() {
+  // @@protoc_insertion_point(field_release:merge.Request.epoch_replication_ack)
+  if (_internal_has_epoch_replication_ack()) {
+    clear_has_type();
+      ::merge::EpochReplicationAck* temp = type_.epoch_replication_ack_;
+    type_.epoch_replication_ack_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::merge::EpochReplicationAck& Request::_internal_epoch_replication_ack() const {
+  return _internal_has_epoch_replication_ack()
+      ? *type_.epoch_replication_ack_
+      : *reinterpret_cast< ::merge::EpochReplicationAck*>(&::merge::_EpochReplicationAck_default_instance_);
+}
+inline const ::merge::EpochReplicationAck& Request::epoch_replication_ack() const {
+  // @@protoc_insertion_point(field_get:merge.Request.epoch_replication_ack)
+  return _internal_epoch_replication_ack();
+}
+inline ::merge::EpochReplicationAck* Request::_internal_mutable_epoch_replication_ack() {
+  if (!_internal_has_epoch_replication_ack()) {
+    clear_type();
+    set_has_epoch_replication_ack();
+    type_.epoch_replication_ack_ = CreateMaybeMessage< ::merge::EpochReplicationAck >(
+        GetArenaNoVirtual());
+  }
+  return type_.epoch_replication_ack_;
+}
+inline ::merge::EpochReplicationAck* Request::mutable_epoch_replication_ack() {
+  // @@protoc_insertion_point(field_mutable:merge.Request.epoch_replication_ack)
+  return _internal_mutable_epoch_replication_ack();
+}
+
+// .merge.RaftPropose raft_propose = 6;
+inline bool Request::_internal_has_raft_propose() const {
+  return type_case() == kRaftPropose;
+}
+inline bool Request::has_raft_propose() const {
+  return _internal_has_raft_propose();
+}
+inline void Request::set_has_raft_propose() {
+  _oneof_case_[0] = kRaftPropose;
+}
+inline void Request::clear_raft_propose() {
+  if (_internal_has_raft_propose()) {
+    delete type_.raft_propose_;
+    clear_has_type();
+  }
+}
+inline ::merge::RaftPropose* Request::release_raft_propose() {
+  // @@protoc_insertion_point(field_release:merge.Request.raft_propose)
+  if (_internal_has_raft_propose()) {
+    clear_has_type();
+      ::merge::RaftPropose* temp = type_.raft_propose_;
+    type_.raft_propose_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::merge::RaftPropose& Request::_internal_raft_propose() const {
+  return _internal_has_raft_propose()
+      ? *type_.raft_propose_
+      : *reinterpret_cast< ::merge::RaftPropose*>(&::merge::_RaftPropose_default_instance_);
+}
+inline const ::merge::RaftPropose& Request::raft_propose() const {
+  // @@protoc_insertion_point(field_get:merge.Request.raft_propose)
+  return _internal_raft_propose();
+}
+inline ::merge::RaftPropose* Request::_internal_mutable_raft_propose() {
+  if (!_internal_has_raft_propose()) {
+    clear_type();
+    set_has_raft_propose();
+    type_.raft_propose_ = CreateMaybeMessage< ::merge::RaftPropose >(
+        GetArenaNoVirtual());
+  }
+  return type_.raft_propose_;
+}
+inline ::merge::RaftPropose* Request::mutable_raft_propose() {
+  // @@protoc_insertion_point(field_mutable:merge.Request.raft_propose)
+  return _internal_mutable_raft_propose();
+}
+
+// .merge.RaftAcceptRequest raft_accept = 7;
+inline bool Request::_internal_has_raft_accept() const {
+  return type_case() == kRaftAccept;
+}
+inline bool Request::has_raft_accept() const {
+  return _internal_has_raft_accept();
+}
+inline void Request::set_has_raft_accept() {
+  _oneof_case_[0] = kRaftAccept;
+}
+inline void Request::clear_raft_accept() {
+  if (_internal_has_raft_accept()) {
+    delete type_.raft_accept_;
+    clear_has_type();
+  }
+}
+inline ::merge::RaftAcceptRequest* Request::release_raft_accept() {
+  // @@protoc_insertion_point(field_release:merge.Request.raft_accept)
+  if (_internal_has_raft_accept()) {
+    clear_has_type();
+      ::merge::RaftAcceptRequest* temp = type_.raft_accept_;
+    type_.raft_accept_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::merge::RaftAcceptRequest& Request::_internal_raft_accept() const {
+  return _internal_has_raft_accept()
+      ? *type_.raft_accept_
+      : *reinterpret_cast< ::merge::RaftAcceptRequest*>(&::merge::_RaftAcceptRequest_default_instance_);
+}
+inline const ::merge::RaftAcceptRequest& Request::raft_accept() const {
+  // @@protoc_insertion_point(field_get:merge.Request.raft_accept)
+  return _internal_raft_accept();
+}
+inline ::merge::RaftAcceptRequest* Request::_internal_mutable_raft_accept() {
+  if (!_internal_has_raft_accept()) {
+    clear_type();
+    set_has_raft_accept();
+    type_.raft_accept_ = CreateMaybeMessage< ::merge::RaftAcceptRequest >(
+        GetArenaNoVirtual());
+  }
+  return type_.raft_accept_;
+}
+inline ::merge::RaftAcceptRequest* Request::mutable_raft_accept() {
+  // @@protoc_insertion_point(field_mutable:merge.Request.raft_accept)
+  return _internal_mutable_raft_accept();
+}
+
+// .merge.RaftCommitRequest raft_commit = 8;
+inline bool Request::_internal_has_raft_commit() const {
+  return type_case() == kRaftCommit;
+}
+inline bool Request::has_raft_commit() const {
+  return _internal_has_raft_commit();
+}
+inline void Request::set_has_raft_commit() {
+  _oneof_case_[0] = kRaftCommit;
+}
+inline void Request::clear_raft_commit() {
+  if (_internal_has_raft_commit()) {
+    delete type_.raft_commit_;
+    clear_has_type();
+  }
+}
+inline ::merge::RaftCommitRequest* Request::release_raft_commit() {
+  // @@protoc_insertion_point(field_release:merge.Request.raft_commit)
+  if (_internal_has_raft_commit()) {
+    clear_has_type();
+      ::merge::RaftCommitRequest* temp = type_.raft_commit_;
+    type_.raft_commit_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::merge::RaftCommitRequest& Request::_internal_raft_commit() const {
+  return _internal_has_raft_commit()
+      ? *type_.raft_commit_
+      : *reinterpret_cast< ::merge::RaftCommitRequest*>(&::merge::_RaftCommitRequest_default_instance_);
+}
+inline const ::merge::RaftCommitRequest& Request::raft_commit() const {
+  // @@protoc_insertion_point(field_get:merge.Request.raft_commit)
+  return _internal_raft_commit();
+}
+inline ::merge::RaftCommitRequest* Request::_internal_mutable_raft_commit() {
+  if (!_internal_has_raft_commit()) {
+    clear_type();
+    set_has_raft_commit();
+    type_.raft_commit_ = CreateMaybeMessage< ::merge::RaftCommitRequest >(
+        GetArenaNoVirtual());
+  }
+  return type_.raft_commit_;
+}
+inline ::merge::RaftCommitRequest* Request::mutable_raft_commit() {
+  // @@protoc_insertion_point(field_mutable:merge.Request.raft_commit)
+  return _internal_mutable_raft_commit();
+}
+
+// .merge.StatsRequest stats = 9;
+inline bool Request::_internal_has_stats() const {
+  return type_case() == kStats;
+}
+inline bool Request::has_stats() const {
+  return _internal_has_stats();
+}
+inline void Request::set_has_stats() {
+  _oneof_case_[0] = kStats;
+}
+inline void Request::clear_stats() {
+  if (_internal_has_stats()) {
+    delete type_.stats_;
+    clear_has_type();
+  }
+}
+inline ::merge::StatsRequest* Request::release_stats() {
+  // @@protoc_insertion_point(field_release:merge.Request.stats)
+  if (_internal_has_stats()) {
+    clear_has_type();
+      ::merge::StatsRequest* temp = type_.stats_;
+    type_.stats_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::merge::StatsRequest& Request::_internal_stats() const {
+  return _internal_has_stats()
+      ? *type_.stats_
+      : *reinterpret_cast< ::merge::StatsRequest*>(&::merge::_StatsRequest_default_instance_);
+}
+inline const ::merge::StatsRequest& Request::stats() const {
+  // @@protoc_insertion_point(field_get:merge.Request.stats)
+  return _internal_stats();
+}
+inline ::merge::StatsRequest* Request::_internal_mutable_stats() {
+  if (!_internal_has_stats()) {
+    clear_type();
+    set_has_stats();
+    type_.stats_ = CreateMaybeMessage< ::merge::StatsRequest >(
+        GetArenaNoVirtual());
+  }
+  return type_.stats_;
+}
+inline ::merge::StatsRequest* Request::mutable_stats() {
+  // @@protoc_insertion_point(field_mutable:merge.Request.stats)
+  return _internal_mutable_stats();
+}
+
+// .merge.ChangeServerStateRequest change_server_state = 10;
+inline bool Request::_internal_has_change_server_state() const {
+  return type_case() == kChangeServerState;
+}
+inline bool Request::has_change_server_state() const {
+  return _internal_has_change_server_state();
+}
+inline void Request::set_has_change_server_state() {
+  _oneof_case_[0] = kChangeServerState;
+}
+inline void Request::clear_change_server_state() {
+  if (_internal_has_change_server_state()) {
+    delete type_.change_server_state_;
+    clear_has_type();
+  }
+}
+inline ::merge::ChangeServerStateRequest* Request::release_change_server_state() {
+  // @@protoc_insertion_point(field_release:merge.Request.change_server_state)
+  if (_internal_has_change_server_state()) {
+    clear_has_type();
+      ::merge::ChangeServerStateRequest* temp = type_.change_server_state_;
+    type_.change_server_state_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::merge::ChangeServerStateRequest& Request::_internal_change_server_state() const {
+  return _internal_has_change_server_state()
+      ? *type_.change_server_state_
+      : *reinterpret_cast< ::merge::ChangeServerStateRequest*>(&::merge::_ChangeServerStateRequest_default_instance_);
+}
+inline const ::merge::ChangeServerStateRequest& Request::change_server_state() const {
+  // @@protoc_insertion_point(field_get:merge.Request.change_server_state)
+  return _internal_change_server_state();
+}
+inline ::merge::ChangeServerStateRequest* Request::_internal_mutable_change_server_state() {
+  if (!_internal_has_change_server_state()) {
+    clear_type();
+    set_has_change_server_state();
+    type_.change_server_state_ = CreateMaybeMessage< ::merge::ChangeServerStateRequest >(
+        GetArenaNoVirtual());
+  }
+  return type_.change_server_state_;
+}
+inline ::merge::ChangeServerStateRequest* Request::mutable_change_server_state() {
+  // @@protoc_insertion_point(field_mutable:merge.Request.change_server_state)
+  return _internal_mutable_change_server_state();
+}
+
+inline bool Request::has_type() const {
+  return type_case() != TYPE_NOT_SET;
+}
+inline void Request::clear_has_type() {
+  _oneof_case_[0] = TYPE_NOT_SET;
+}
+inline Request::TypeCase Request::type_case() const {
+  return Request::TypeCase(_oneof_case_[0]);
+}
+// -------------------------------------------------------------------
+
+// Ping
+
+// int32 from = 1;
+inline void Ping::clear_from() {
+  from_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Ping::_internal_from() const {
+  return from_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Ping::from() const {
+  // @@protoc_insertion_point(field_get:merge.Ping.from)
+  return _internal_from();
+}
+inline void Ping::_internal_set_from(::PROTOBUF_NAMESPACE_ID::int32 value) {
   
-  server_id_ = value;
+  from_ = value;
 }
-inline void MergeRequest::set_server_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  _internal_set_server_id(value);
-  // @@protoc_insertion_point(field_set:merge.MergeRequest.server_id)
-}
-
-// uint64 epoch = 3;
-inline void MergeRequest::clear_epoch() {
-  epoch_ = PROTOBUF_ULONGLONG(0);
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest::_internal_epoch() const {
-  return epoch_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest::epoch() const {
-  // @@protoc_insertion_point(field_get:merge.MergeRequest.epoch)
-  return _internal_epoch();
-}
-inline void MergeRequest::_internal_set_epoch(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  
-  epoch_ = value;
-}
-inline void MergeRequest::set_epoch(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  _internal_set_epoch(value);
-  // @@protoc_insertion_point(field_set:merge.MergeRequest.epoch)
+inline void Ping::set_from(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_from(value);
+  // @@protoc_insertion_point(field_set:merge.Ping.from)
 }
 
-// uint64 pack_id = 4;
-inline void MergeRequest::clear_pack_id() {
-  pack_id_ = PROTOBUF_ULONGLONG(0);
+// int32 to = 2;
+inline void Ping::clear_to() {
+  to_ = 0;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest::_internal_pack_id() const {
-  return pack_id_;
+inline ::PROTOBUF_NAMESPACE_ID::int32 Ping::_internal_to() const {
+  return to_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 MergeRequest::pack_id() const {
-  // @@protoc_insertion_point(field_get:merge.MergeRequest.pack_id)
-  return _internal_pack_id();
+inline ::PROTOBUF_NAMESPACE_ID::int32 Ping::to() const {
+  // @@protoc_insertion_point(field_get:merge.Ping.to)
+  return _internal_to();
 }
-inline void MergeRequest::_internal_set_pack_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+inline void Ping::_internal_set_to(::PROTOBUF_NAMESPACE_ID::int32 value) {
   
-  pack_id_ = value;
+  to_ = value;
 }
-inline void MergeRequest::set_pack_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  _internal_set_pack_id(value);
-  // @@protoc_insertion_point(field_set:merge.MergeRequest.pack_id)
+inline void Ping::set_to(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_to(value);
+  // @@protoc_insertion_point(field_set:merge.Ping.to)
+}
+
+// -------------------------------------------------------------------
+
+// Signal
+
+// int32 from = 1;
+inline void Signal::clear_from() {
+  from_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Signal::_internal_from() const {
+  return from_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Signal::from() const {
+  // @@protoc_insertion_point(field_get:merge.Signal.from)
+  return _internal_from();
+}
+inline void Signal::_internal_set_from(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  from_ = value;
+}
+inline void Signal::set_from(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_from(value);
+  // @@protoc_insertion_point(field_set:merge.Signal.from)
+}
+
+// -------------------------------------------------------------------
+
+// LookupMasterRequest
+
+// repeated uint64 txn_ids = 1;
+inline int LookupMasterRequest::_internal_txn_ids_size() const {
+  return txn_ids_.size();
+}
+inline int LookupMasterRequest::txn_ids_size() const {
+  return _internal_txn_ids_size();
+}
+inline void LookupMasterRequest::clear_txn_ids() {
+  txn_ids_.Clear();
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 LookupMasterRequest::_internal_txn_ids(int index) const {
+  return txn_ids_.Get(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 LookupMasterRequest::txn_ids(int index) const {
+  // @@protoc_insertion_point(field_get:merge.LookupMasterRequest.txn_ids)
+  return _internal_txn_ids(index);
+}
+inline void LookupMasterRequest::set_txn_ids(int index, ::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  txn_ids_.Set(index, value);
+  // @@protoc_insertion_point(field_set:merge.LookupMasterRequest.txn_ids)
+}
+inline void LookupMasterRequest::_internal_add_txn_ids(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  txn_ids_.Add(value);
+}
+inline void LookupMasterRequest::add_txn_ids(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_add_txn_ids(value);
+  // @@protoc_insertion_point(field_add:merge.LookupMasterRequest.txn_ids)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+LookupMasterRequest::_internal_txn_ids() const {
+  return txn_ids_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+LookupMasterRequest::txn_ids() const {
+  // @@protoc_insertion_point(field_list:merge.LookupMasterRequest.txn_ids)
+  return _internal_txn_ids();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+LookupMasterRequest::_internal_mutable_txn_ids() {
+  return &txn_ids_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+LookupMasterRequest::mutable_txn_ids() {
+  // @@protoc_insertion_point(field_mutable_list:merge.LookupMasterRequest.txn_ids)
+  return _internal_mutable_txn_ids();
+}
+
+// repeated bytes keys = 2;
+inline int LookupMasterRequest::_internal_keys_size() const {
+  return keys_.size();
+}
+inline int LookupMasterRequest::keys_size() const {
+  return _internal_keys_size();
+}
+inline void LookupMasterRequest::clear_keys() {
+  keys_.Clear();
+}
+inline std::string* LookupMasterRequest::add_keys() {
+  // @@protoc_insertion_point(field_add_mutable:merge.LookupMasterRequest.keys)
+  return _internal_add_keys();
+}
+inline const std::string& LookupMasterRequest::_internal_keys(int index) const {
+  return keys_.Get(index);
+}
+inline const std::string& LookupMasterRequest::keys(int index) const {
+  // @@protoc_insertion_point(field_get:merge.LookupMasterRequest.keys)
+  return _internal_keys(index);
+}
+inline std::string* LookupMasterRequest::mutable_keys(int index) {
+  // @@protoc_insertion_point(field_mutable:merge.LookupMasterRequest.keys)
+  return keys_.Mutable(index);
+}
+inline void LookupMasterRequest::set_keys(int index, const std::string& value) {
+  // @@protoc_insertion_point(field_set:merge.LookupMasterRequest.keys)
+  keys_.Mutable(index)->assign(value);
+}
+inline void LookupMasterRequest::set_keys(int index, std::string&& value) {
+  // @@protoc_insertion_point(field_set:merge.LookupMasterRequest.keys)
+  keys_.Mutable(index)->assign(std::move(value));
+}
+inline void LookupMasterRequest::set_keys(int index, const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  keys_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:merge.LookupMasterRequest.keys)
+}
+inline void LookupMasterRequest::set_keys(int index, const void* value, size_t size) {
+  keys_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:merge.LookupMasterRequest.keys)
+}
+inline std::string* LookupMasterRequest::_internal_add_keys() {
+  return keys_.Add();
+}
+inline void LookupMasterRequest::add_keys(const std::string& value) {
+  keys_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:merge.LookupMasterRequest.keys)
+}
+inline void LookupMasterRequest::add_keys(std::string&& value) {
+  keys_.Add(std::move(value));
+  // @@protoc_insertion_point(field_add:merge.LookupMasterRequest.keys)
+}
+inline void LookupMasterRequest::add_keys(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  keys_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:merge.LookupMasterRequest.keys)
+}
+inline void LookupMasterRequest::add_keys(const void* value, size_t size) {
+  keys_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:merge.LookupMasterRequest.keys)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>&
+LookupMasterRequest::keys() const {
+  // @@protoc_insertion_point(field_list:merge.LookupMasterRequest.keys)
+  return keys_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>*
+LookupMasterRequest::mutable_keys() {
+  // @@protoc_insertion_point(field_mutable_list:merge.LookupMasterRequest.keys)
+  return &keys_;
+}
+
+// -------------------------------------------------------------------
+
+// ForwardEpochRequest
+
+// int32 from = 1;
+inline void ForwardEpochRequest::clear_from() {
+  from_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 ForwardEpochRequest::_internal_from() const {
+  return from_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 ForwardEpochRequest::from() const {
+  // @@protoc_insertion_point(field_get:merge.ForwardEpochRequest.from)
+  return _internal_from();
+}
+inline void ForwardEpochRequest::_internal_set_from(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  from_ = value;
+}
+inline void ForwardEpochRequest::set_from(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_from(value);
+  // @@protoc_insertion_point(field_set:merge.ForwardEpochRequest.from)
+}
+
+// int32 to = 2;
+inline void ForwardEpochRequest::clear_to() {
+  to_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 ForwardEpochRequest::_internal_to() const {
+  return to_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 ForwardEpochRequest::to() const {
+  // @@protoc_insertion_point(field_get:merge.ForwardEpochRequest.to)
+  return _internal_to();
+}
+inline void ForwardEpochRequest::_internal_set_to(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  to_ = value;
+}
+inline void ForwardEpochRequest::set_to(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_to(value);
+  // @@protoc_insertion_point(field_set:merge.ForwardEpochRequest.to)
+}
+
+// uint64 epoch_id = 3;
+inline void ForwardEpochRequest::clear_epoch_id() {
+  epoch_id_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ForwardEpochRequest::_internal_epoch_id() const {
+  return epoch_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ForwardEpochRequest::epoch_id() const {
+  // @@protoc_insertion_point(field_get:merge.ForwardEpochRequest.epoch_id)
+  return _internal_epoch_id();
+}
+inline void ForwardEpochRequest::_internal_set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  epoch_id_ = value;
+}
+inline void ForwardEpochRequest::set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_epoch_id(value);
+  // @@protoc_insertion_point(field_set:merge.ForwardEpochRequest.epoch_id)
+}
+
+// -------------------------------------------------------------------
+
+// EpochReplicationAck
+
+// uint64 epoch_id = 1;
+inline void EpochReplicationAck::clear_epoch_id() {
+  epoch_id_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 EpochReplicationAck::_internal_epoch_id() const {
+  return epoch_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 EpochReplicationAck::epoch_id() const {
+  // @@protoc_insertion_point(field_get:merge.EpochReplicationAck.epoch_id)
+  return _internal_epoch_id();
+}
+inline void EpochReplicationAck::_internal_set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  epoch_id_ = value;
+}
+inline void EpochReplicationAck::set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_epoch_id(value);
+  // @@protoc_insertion_point(field_set:merge.EpochReplicationAck.epoch_id)
+}
+
+// -------------------------------------------------------------------
+
+// RaftPropose
+
+// uint64 value = 1;
+inline void RaftPropose::clear_value() {
+  value_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 RaftPropose::_internal_value() const {
+  return value_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 RaftPropose::value() const {
+  // @@protoc_insertion_point(field_get:merge.RaftPropose.value)
+  return _internal_value();
+}
+inline void RaftPropose::_internal_set_value(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  value_ = value;
+}
+inline void RaftPropose::set_value(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_value(value);
+  // @@protoc_insertion_point(field_set:merge.RaftPropose.value)
+}
+
+// -------------------------------------------------------------------
+
+// RaftAcceptRequest
+
+// uint32 from = 1;
+inline void RaftAcceptRequest::clear_from() {
+  from_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 RaftAcceptRequest::_internal_from() const {
+  return from_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 RaftAcceptRequest::from() const {
+  // @@protoc_insertion_point(field_get:merge.RaftAcceptRequest.from)
+  return _internal_from();
+}
+inline void RaftAcceptRequest::_internal_set_from(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  from_ = value;
+}
+inline void RaftAcceptRequest::set_from(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_from(value);
+  // @@protoc_insertion_point(field_set:merge.RaftAcceptRequest.from)
+}
+
+// uint32 to = 2;
+inline void RaftAcceptRequest::clear_to() {
+  to_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 RaftAcceptRequest::_internal_to() const {
+  return to_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 RaftAcceptRequest::to() const {
+  // @@protoc_insertion_point(field_get:merge.RaftAcceptRequest.to)
+  return _internal_to();
+}
+inline void RaftAcceptRequest::_internal_set_to(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  to_ = value;
+}
+inline void RaftAcceptRequest::set_to(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_to(value);
+  // @@protoc_insertion_point(field_set:merge.RaftAcceptRequest.to)
+}
+
+// uint64 epoch_id = 3;
+inline void RaftAcceptRequest::clear_epoch_id() {
+  epoch_id_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 RaftAcceptRequest::_internal_epoch_id() const {
+  return epoch_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 RaftAcceptRequest::epoch_id() const {
+  // @@protoc_insertion_point(field_get:merge.RaftAcceptRequest.epoch_id)
+  return _internal_epoch_id();
+}
+inline void RaftAcceptRequest::_internal_set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  epoch_id_ = value;
+}
+inline void RaftAcceptRequest::set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_epoch_id(value);
+  // @@protoc_insertion_point(field_set:merge.RaftAcceptRequest.epoch_id)
+}
+
+// -------------------------------------------------------------------
+
+// RaftCommitRequest
+
+// uint32 from = 1;
+inline void RaftCommitRequest::clear_from() {
+  from_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 RaftCommitRequest::_internal_from() const {
+  return from_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 RaftCommitRequest::from() const {
+  // @@protoc_insertion_point(field_get:merge.RaftCommitRequest.from)
+  return _internal_from();
+}
+inline void RaftCommitRequest::_internal_set_from(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  from_ = value;
+}
+inline void RaftCommitRequest::set_from(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_from(value);
+  // @@protoc_insertion_point(field_set:merge.RaftCommitRequest.from)
+}
+
+// uint32 to = 2;
+inline void RaftCommitRequest::clear_to() {
+  to_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 RaftCommitRequest::_internal_to() const {
+  return to_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 RaftCommitRequest::to() const {
+  // @@protoc_insertion_point(field_get:merge.RaftCommitRequest.to)
+  return _internal_to();
+}
+inline void RaftCommitRequest::_internal_set_to(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  to_ = value;
+}
+inline void RaftCommitRequest::set_to(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_to(value);
+  // @@protoc_insertion_point(field_set:merge.RaftCommitRequest.to)
+}
+
+// uint64 epoch_id = 3;
+inline void RaftCommitRequest::clear_epoch_id() {
+  epoch_id_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 RaftCommitRequest::_internal_epoch_id() const {
+  return epoch_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 RaftCommitRequest::epoch_id() const {
+  // @@protoc_insertion_point(field_get:merge.RaftCommitRequest.epoch_id)
+  return _internal_epoch_id();
+}
+inline void RaftCommitRequest::_internal_set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  epoch_id_ = value;
+}
+inline void RaftCommitRequest::set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_epoch_id(value);
+  // @@protoc_insertion_point(field_set:merge.RaftCommitRequest.epoch_id)
+}
+
+// -------------------------------------------------------------------
+
+// StatsRequest
+
+// uint32 from = 1;
+inline void StatsRequest::clear_from() {
+  from_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 StatsRequest::_internal_from() const {
+  return from_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 StatsRequest::from() const {
+  // @@protoc_insertion_point(field_get:merge.StatsRequest.from)
+  return _internal_from();
+}
+inline void StatsRequest::_internal_set_from(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  from_ = value;
+}
+inline void StatsRequest::set_from(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_from(value);
+  // @@protoc_insertion_point(field_set:merge.StatsRequest.from)
+}
+
+// uint32 to = 2;
+inline void StatsRequest::clear_to() {
+  to_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 StatsRequest::_internal_to() const {
+  return to_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 StatsRequest::to() const {
+  // @@protoc_insertion_point(field_get:merge.StatsRequest.to)
+  return _internal_to();
+}
+inline void StatsRequest::_internal_set_to(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  to_ = value;
+}
+inline void StatsRequest::set_to(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_to(value);
+  // @@protoc_insertion_point(field_set:merge.StatsRequest.to)
+}
+
+// uint32 level = 3;
+inline void StatsRequest::clear_level() {
+  level_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 StatsRequest::_internal_level() const {
+  return level_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 StatsRequest::level() const {
+  // @@protoc_insertion_point(field_get:merge.StatsRequest.level)
+  return _internal_level();
+}
+inline void StatsRequest::_internal_set_level(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  level_ = value;
+}
+inline void StatsRequest::set_level(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_level(value);
+  // @@protoc_insertion_point(field_set:merge.StatsRequest.level)
+}
+
+// -------------------------------------------------------------------
+
+// ChangeServerStateRequest
+
+// uint32 from = 1;
+inline void ChangeServerStateRequest::clear_from() {
+  from_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ChangeServerStateRequest::_internal_from() const {
+  return from_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ChangeServerStateRequest::from() const {
+  // @@protoc_insertion_point(field_get:merge.ChangeServerStateRequest.from)
+  return _internal_from();
+}
+inline void ChangeServerStateRequest::_internal_set_from(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  from_ = value;
+}
+inline void ChangeServerStateRequest::set_from(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_from(value);
+  // @@protoc_insertion_point(field_set:merge.ChangeServerStateRequest.from)
+}
+
+// uint32 to = 2;
+inline void ChangeServerStateRequest::clear_to() {
+  to_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ChangeServerStateRequest::_internal_to() const {
+  return to_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ChangeServerStateRequest::to() const {
+  // @@protoc_insertion_point(field_get:merge.ChangeServerStateRequest.to)
+  return _internal_to();
+}
+inline void ChangeServerStateRequest::_internal_set_to(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  to_ = value;
+}
+inline void ChangeServerStateRequest::set_to(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_to(value);
+  // @@protoc_insertion_point(field_set:merge.ChangeServerStateRequest.to)
+}
+
+// uint32 target = 3;
+inline void ChangeServerStateRequest::clear_target() {
+  target_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ChangeServerStateRequest::_internal_target() const {
+  return target_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ChangeServerStateRequest::target() const {
+  // @@protoc_insertion_point(field_get:merge.ChangeServerStateRequest.target)
+  return _internal_target();
+}
+inline void ChangeServerStateRequest::_internal_set_target(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  target_ = value;
+}
+inline void ChangeServerStateRequest::set_target(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_target(value);
+  // @@protoc_insertion_point(field_set:merge.ChangeServerStateRequest.target)
+}
+
+// uint32 state = 4;
+inline void ChangeServerStateRequest::clear_state() {
+  state_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ChangeServerStateRequest::_internal_state() const {
+  return state_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ChangeServerStateRequest::state() const {
+  // @@protoc_insertion_point(field_get:merge.ChangeServerStateRequest.state)
+  return _internal_state();
+}
+inline void ChangeServerStateRequest::_internal_set_state(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  state_ = value;
+}
+inline void ChangeServerStateRequest::set_state(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_state(value);
+  // @@protoc_insertion_point(field_set:merge.ChangeServerStateRequest.state)
+}
+
+// uint32 pull_server_id = 5;
+inline void ChangeServerStateRequest::clear_pull_server_id() {
+  pull_server_id_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ChangeServerStateRequest::_internal_pull_server_id() const {
+  return pull_server_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ChangeServerStateRequest::pull_server_id() const {
+  // @@protoc_insertion_point(field_get:merge.ChangeServerStateRequest.pull_server_id)
+  return _internal_pull_server_id();
+}
+inline void ChangeServerStateRequest::_internal_set_pull_server_id(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  pull_server_id_ = value;
+}
+inline void ChangeServerStateRequest::set_pull_server_id(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_pull_server_id(value);
+  // @@protoc_insertion_point(field_set:merge.ChangeServerStateRequest.pull_server_id)
+}
+
+// uint64 epoch_id = 6;
+inline void ChangeServerStateRequest::clear_epoch_id() {
+  epoch_id_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ChangeServerStateRequest::_internal_epoch_id() const {
+  return epoch_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ChangeServerStateRequest::epoch_id() const {
+  // @@protoc_insertion_point(field_get:merge.ChangeServerStateRequest.epoch_id)
+  return _internal_epoch_id();
+}
+inline void ChangeServerStateRequest::_internal_set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  epoch_id_ = value;
+}
+inline void ChangeServerStateRequest::set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_epoch_id(value);
+  // @@protoc_insertion_point(field_set:merge.ChangeServerStateRequest.epoch_id)
+}
+
+// -------------------------------------------------------------------
+
+// Response
+
+// .merge.Pong pong = 1;
+inline bool Response::_internal_has_pong() const {
+  return type_case() == kPong;
+}
+inline bool Response::has_pong() const {
+  return _internal_has_pong();
+}
+inline void Response::set_has_pong() {
+  _oneof_case_[0] = kPong;
+}
+inline void Response::clear_pong() {
+  if (_internal_has_pong()) {
+    delete type_.pong_;
+    clear_has_type();
+  }
+}
+inline ::merge::Pong* Response::release_pong() {
+  // @@protoc_insertion_point(field_release:merge.Response.pong)
+  if (_internal_has_pong()) {
+    clear_has_type();
+      ::merge::Pong* temp = type_.pong_;
+    type_.pong_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::merge::Pong& Response::_internal_pong() const {
+  return _internal_has_pong()
+      ? *type_.pong_
+      : *reinterpret_cast< ::merge::Pong*>(&::merge::_Pong_default_instance_);
+}
+inline const ::merge::Pong& Response::pong() const {
+  // @@protoc_insertion_point(field_get:merge.Response.pong)
+  return _internal_pong();
+}
+inline ::merge::Pong* Response::_internal_mutable_pong() {
+  if (!_internal_has_pong()) {
+    clear_type();
+    set_has_pong();
+    type_.pong_ = CreateMaybeMessage< ::merge::Pong >(
+        GetArenaNoVirtual());
+  }
+  return type_.pong_;
+}
+inline ::merge::Pong* Response::mutable_pong() {
+  // @@protoc_insertion_point(field_mutable:merge.Response.pong)
+  return _internal_mutable_pong();
+}
+
+// .merge.LookupMasterResponse lookup_master = 2;
+inline bool Response::_internal_has_lookup_master() const {
+  return type_case() == kLookupMaster;
+}
+inline bool Response::has_lookup_master() const {
+  return _internal_has_lookup_master();
+}
+inline void Response::set_has_lookup_master() {
+  _oneof_case_[0] = kLookupMaster;
+}
+inline void Response::clear_lookup_master() {
+  if (_internal_has_lookup_master()) {
+    delete type_.lookup_master_;
+    clear_has_type();
+  }
+}
+inline ::merge::LookupMasterResponse* Response::release_lookup_master() {
+  // @@protoc_insertion_point(field_release:merge.Response.lookup_master)
+  if (_internal_has_lookup_master()) {
+    clear_has_type();
+      ::merge::LookupMasterResponse* temp = type_.lookup_master_;
+    type_.lookup_master_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::merge::LookupMasterResponse& Response::_internal_lookup_master() const {
+  return _internal_has_lookup_master()
+      ? *type_.lookup_master_
+      : *reinterpret_cast< ::merge::LookupMasterResponse*>(&::merge::_LookupMasterResponse_default_instance_);
+}
+inline const ::merge::LookupMasterResponse& Response::lookup_master() const {
+  // @@protoc_insertion_point(field_get:merge.Response.lookup_master)
+  return _internal_lookup_master();
+}
+inline ::merge::LookupMasterResponse* Response::_internal_mutable_lookup_master() {
+  if (!_internal_has_lookup_master()) {
+    clear_type();
+    set_has_lookup_master();
+    type_.lookup_master_ = CreateMaybeMessage< ::merge::LookupMasterResponse >(
+        GetArenaNoVirtual());
+  }
+  return type_.lookup_master_;
+}
+inline ::merge::LookupMasterResponse* Response::mutable_lookup_master() {
+  // @@protoc_insertion_point(field_mutable:merge.Response.lookup_master)
+  return _internal_mutable_lookup_master();
+}
+
+// .merge.RaftAcceptResponse raft_accept = 3;
+inline bool Response::_internal_has_raft_accept() const {
+  return type_case() == kRaftAccept;
+}
+inline bool Response::has_raft_accept() const {
+  return _internal_has_raft_accept();
+}
+inline void Response::set_has_raft_accept() {
+  _oneof_case_[0] = kRaftAccept;
+}
+inline void Response::clear_raft_accept() {
+  if (_internal_has_raft_accept()) {
+    delete type_.raft_accept_;
+    clear_has_type();
+  }
+}
+inline ::merge::RaftAcceptResponse* Response::release_raft_accept() {
+  // @@protoc_insertion_point(field_release:merge.Response.raft_accept)
+  if (_internal_has_raft_accept()) {
+    clear_has_type();
+      ::merge::RaftAcceptResponse* temp = type_.raft_accept_;
+    type_.raft_accept_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::merge::RaftAcceptResponse& Response::_internal_raft_accept() const {
+  return _internal_has_raft_accept()
+      ? *type_.raft_accept_
+      : *reinterpret_cast< ::merge::RaftAcceptResponse*>(&::merge::_RaftAcceptResponse_default_instance_);
+}
+inline const ::merge::RaftAcceptResponse& Response::raft_accept() const {
+  // @@protoc_insertion_point(field_get:merge.Response.raft_accept)
+  return _internal_raft_accept();
+}
+inline ::merge::RaftAcceptResponse* Response::_internal_mutable_raft_accept() {
+  if (!_internal_has_raft_accept()) {
+    clear_type();
+    set_has_raft_accept();
+    type_.raft_accept_ = CreateMaybeMessage< ::merge::RaftAcceptResponse >(
+        GetArenaNoVirtual());
+  }
+  return type_.raft_accept_;
+}
+inline ::merge::RaftAcceptResponse* Response::mutable_raft_accept() {
+  // @@protoc_insertion_point(field_mutable:merge.Response.raft_accept)
+  return _internal_mutable_raft_accept();
+}
+
+// .merge.RaftCommitResponse raft_commit = 4;
+inline bool Response::_internal_has_raft_commit() const {
+  return type_case() == kRaftCommit;
+}
+inline bool Response::has_raft_commit() const {
+  return _internal_has_raft_commit();
+}
+inline void Response::set_has_raft_commit() {
+  _oneof_case_[0] = kRaftCommit;
+}
+inline void Response::clear_raft_commit() {
+  if (_internal_has_raft_commit()) {
+    delete type_.raft_commit_;
+    clear_has_type();
+  }
+}
+inline ::merge::RaftCommitResponse* Response::release_raft_commit() {
+  // @@protoc_insertion_point(field_release:merge.Response.raft_commit)
+  if (_internal_has_raft_commit()) {
+    clear_has_type();
+      ::merge::RaftCommitResponse* temp = type_.raft_commit_;
+    type_.raft_commit_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::merge::RaftCommitResponse& Response::_internal_raft_commit() const {
+  return _internal_has_raft_commit()
+      ? *type_.raft_commit_
+      : *reinterpret_cast< ::merge::RaftCommitResponse*>(&::merge::_RaftCommitResponse_default_instance_);
+}
+inline const ::merge::RaftCommitResponse& Response::raft_commit() const {
+  // @@protoc_insertion_point(field_get:merge.Response.raft_commit)
+  return _internal_raft_commit();
+}
+inline ::merge::RaftCommitResponse* Response::_internal_mutable_raft_commit() {
+  if (!_internal_has_raft_commit()) {
+    clear_type();
+    set_has_raft_commit();
+    type_.raft_commit_ = CreateMaybeMessage< ::merge::RaftCommitResponse >(
+        GetArenaNoVirtual());
+  }
+  return type_.raft_commit_;
+}
+inline ::merge::RaftCommitResponse* Response::mutable_raft_commit() {
+  // @@protoc_insertion_point(field_mutable:merge.Response.raft_commit)
+  return _internal_mutable_raft_commit();
+}
+
+// .merge.StatsResponse stats = 5;
+inline bool Response::_internal_has_stats() const {
+  return type_case() == kStats;
+}
+inline bool Response::has_stats() const {
+  return _internal_has_stats();
+}
+inline void Response::set_has_stats() {
+  _oneof_case_[0] = kStats;
+}
+inline void Response::clear_stats() {
+  if (_internal_has_stats()) {
+    delete type_.stats_;
+    clear_has_type();
+  }
+}
+inline ::merge::StatsResponse* Response::release_stats() {
+  // @@protoc_insertion_point(field_release:merge.Response.stats)
+  if (_internal_has_stats()) {
+    clear_has_type();
+      ::merge::StatsResponse* temp = type_.stats_;
+    type_.stats_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::merge::StatsResponse& Response::_internal_stats() const {
+  return _internal_has_stats()
+      ? *type_.stats_
+      : *reinterpret_cast< ::merge::StatsResponse*>(&::merge::_StatsResponse_default_instance_);
+}
+inline const ::merge::StatsResponse& Response::stats() const {
+  // @@protoc_insertion_point(field_get:merge.Response.stats)
+  return _internal_stats();
+}
+inline ::merge::StatsResponse* Response::_internal_mutable_stats() {
+  if (!_internal_has_stats()) {
+    clear_type();
+    set_has_stats();
+    type_.stats_ = CreateMaybeMessage< ::merge::StatsResponse >(
+        GetArenaNoVirtual());
+  }
+  return type_.stats_;
+}
+inline ::merge::StatsResponse* Response::mutable_stats() {
+  // @@protoc_insertion_point(field_mutable:merge.Response.stats)
+  return _internal_mutable_stats();
+}
+
+// .merge.ChangeServerStateResponse change_server_state = 6;
+inline bool Response::_internal_has_change_server_state() const {
+  return type_case() == kChangeServerState;
+}
+inline bool Response::has_change_server_state() const {
+  return _internal_has_change_server_state();
+}
+inline void Response::set_has_change_server_state() {
+  _oneof_case_[0] = kChangeServerState;
+}
+inline void Response::clear_change_server_state() {
+  if (_internal_has_change_server_state()) {
+    delete type_.change_server_state_;
+    clear_has_type();
+  }
+}
+inline ::merge::ChangeServerStateResponse* Response::release_change_server_state() {
+  // @@protoc_insertion_point(field_release:merge.Response.change_server_state)
+  if (_internal_has_change_server_state()) {
+    clear_has_type();
+      ::merge::ChangeServerStateResponse* temp = type_.change_server_state_;
+    type_.change_server_state_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::merge::ChangeServerStateResponse& Response::_internal_change_server_state() const {
+  return _internal_has_change_server_state()
+      ? *type_.change_server_state_
+      : *reinterpret_cast< ::merge::ChangeServerStateResponse*>(&::merge::_ChangeServerStateResponse_default_instance_);
+}
+inline const ::merge::ChangeServerStateResponse& Response::change_server_state() const {
+  // @@protoc_insertion_point(field_get:merge.Response.change_server_state)
+  return _internal_change_server_state();
+}
+inline ::merge::ChangeServerStateResponse* Response::_internal_mutable_change_server_state() {
+  if (!_internal_has_change_server_state()) {
+    clear_type();
+    set_has_change_server_state();
+    type_.change_server_state_ = CreateMaybeMessage< ::merge::ChangeServerStateResponse >(
+        GetArenaNoVirtual());
+  }
+  return type_.change_server_state_;
+}
+inline ::merge::ChangeServerStateResponse* Response::mutable_change_server_state() {
+  // @@protoc_insertion_point(field_mutable:merge.Response.change_server_state)
+  return _internal_mutable_change_server_state();
+}
+
+inline bool Response::has_type() const {
+  return type_case() != TYPE_NOT_SET;
+}
+inline void Response::clear_has_type() {
+  _oneof_case_[0] = TYPE_NOT_SET;
+}
+inline Response::TypeCase Response::type_case() const {
+  return Response::TypeCase(_oneof_case_[0]);
+}
+// -------------------------------------------------------------------
+
+// Pong
+
+// int32 from = 1;
+inline void Pong::clear_from() {
+  from_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Pong::_internal_from() const {
+  return from_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Pong::from() const {
+  // @@protoc_insertion_point(field_get:merge.Pong.from)
+  return _internal_from();
+}
+inline void Pong::_internal_set_from(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  from_ = value;
+}
+inline void Pong::set_from(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_from(value);
+  // @@protoc_insertion_point(field_set:merge.Pong.from)
+}
+
+// int32 to = 2;
+inline void Pong::clear_to() {
+  to_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Pong::_internal_to() const {
+  return to_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Pong::to() const {
+  // @@protoc_insertion_point(field_get:merge.Pong.to)
+  return _internal_to();
+}
+inline void Pong::_internal_set_to(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  to_ = value;
+}
+inline void Pong::set_to(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_to(value);
+  // @@protoc_insertion_point(field_set:merge.Pong.to)
+}
+
+// int64 time = 3;
+inline void Pong::clear_time() {
+  time_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 Pong::_internal_time() const {
+  return time_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 Pong::time() const {
+  // @@protoc_insertion_point(field_get:merge.Pong.time)
+  return _internal_time();
+}
+inline void Pong::_internal_set_time(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  time_ = value;
+}
+inline void Pong::set_time(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_set_time(value);
+  // @@protoc_insertion_point(field_set:merge.Pong.time)
+}
+
+// int64 epoch_id = 4;
+inline void Pong::clear_epoch_id() {
+  epoch_id_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 Pong::_internal_epoch_id() const {
+  return epoch_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 Pong::epoch_id() const {
+  // @@protoc_insertion_point(field_get:merge.Pong.epoch_id)
+  return _internal_epoch_id();
+}
+inline void Pong::_internal_set_epoch_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  epoch_id_ = value;
+}
+inline void Pong::set_epoch_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_set_epoch_id(value);
+  // @@protoc_insertion_point(field_set:merge.Pong.epoch_id)
+}
+
+// -------------------------------------------------------------------
+
+// MasterMetadata
+
+// uint32 master = 1;
+inline void MasterMetadata::clear_master() {
+  master_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 MasterMetadata::_internal_master() const {
+  return master_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 MasterMetadata::master() const {
+  // @@protoc_insertion_point(field_get:merge.MasterMetadata.master)
+  return _internal_master();
+}
+inline void MasterMetadata::_internal_set_master(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  master_ = value;
+}
+inline void MasterMetadata::set_master(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_master(value);
+  // @@protoc_insertion_point(field_set:merge.MasterMetadata.master)
+}
+
+// uint32 epoch_count = 2;
+inline void MasterMetadata::clear_epoch_count() {
+  epoch_count_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 MasterMetadata::_internal_epoch_count() const {
+  return epoch_count_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 MasterMetadata::epoch_count() const {
+  // @@protoc_insertion_point(field_get:merge.MasterMetadata.epoch_count)
+  return _internal_epoch_count();
+}
+inline void MasterMetadata::_internal_set_epoch_count(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  epoch_count_ = value;
+}
+inline void MasterMetadata::set_epoch_count(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_epoch_count(value);
+  // @@protoc_insertion_point(field_set:merge.MasterMetadata.epoch_count)
+}
+
+// -------------------------------------------------------------------
+
+// KeyMasterMetadata
+
+// bytes key = 1;
+inline void KeyMasterMetadata::clear_key() {
+  key_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline const std::string& KeyMasterMetadata::key() const {
+  // @@protoc_insertion_point(field_get:merge.KeyMasterMetadata.key)
+  return _internal_key();
+}
+inline void KeyMasterMetadata::set_key(const std::string& value) {
+  _internal_set_key(value);
+  // @@protoc_insertion_point(field_set:merge.KeyMasterMetadata.key)
+}
+inline std::string* KeyMasterMetadata::mutable_key() {
+  // @@protoc_insertion_point(field_mutable:merge.KeyMasterMetadata.key)
+  return _internal_mutable_key();
+}
+inline const std::string& KeyMasterMetadata::_internal_key() const {
+  return key_.GetNoArena();
+}
+inline void KeyMasterMetadata::_internal_set_key(const std::string& value) {
+  
+  key_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+}
+inline void KeyMasterMetadata::set_key(std::string&& value) {
+  
+  key_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:merge.KeyMasterMetadata.key)
+}
+inline void KeyMasterMetadata::set_key(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  key_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:merge.KeyMasterMetadata.key)
+}
+inline void KeyMasterMetadata::set_key(const void* value, size_t size) {
+  
+  key_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:merge.KeyMasterMetadata.key)
+}
+inline std::string* KeyMasterMetadata::_internal_mutable_key() {
+  
+  return key_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* KeyMasterMetadata::release_key() {
+  // @@protoc_insertion_point(field_release:merge.KeyMasterMetadata.key)
+  
+  return key_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void KeyMasterMetadata::set_allocated_key(std::string* key) {
+  if (key != nullptr) {
+    
+  } else {
+    
+  }
+  key_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), key);
+  // @@protoc_insertion_point(field_set_allocated:merge.KeyMasterMetadata.key)
+}
+
+// .merge.MasterMetadata metadata = 2;
+inline bool KeyMasterMetadata::_internal_has_metadata() const {
+  return this != internal_default_instance() && metadata_ != nullptr;
+}
+inline bool KeyMasterMetadata::has_metadata() const {
+  return _internal_has_metadata();
+}
+inline void KeyMasterMetadata::clear_metadata() {
+  if (GetArenaNoVirtual() == nullptr && metadata_ != nullptr) {
+    delete metadata_;
+  }
+  metadata_ = nullptr;
+}
+inline const ::merge::MasterMetadata& KeyMasterMetadata::_internal_metadata() const {
+  const ::merge::MasterMetadata* p = metadata_;
+  return p != nullptr ? *p : *reinterpret_cast<const ::merge::MasterMetadata*>(
+      &::merge::_MasterMetadata_default_instance_);
+}
+inline const ::merge::MasterMetadata& KeyMasterMetadata::metadata() const {
+  // @@protoc_insertion_point(field_get:merge.KeyMasterMetadata.metadata)
+  return _internal_metadata();
+}
+inline ::merge::MasterMetadata* KeyMasterMetadata::release_metadata() {
+  // @@protoc_insertion_point(field_release:merge.KeyMasterMetadata.metadata)
+  
+  ::merge::MasterMetadata* temp = metadata_;
+  metadata_ = nullptr;
+  return temp;
+}
+inline ::merge::MasterMetadata* KeyMasterMetadata::_internal_mutable_metadata() {
+  
+  if (metadata_ == nullptr) {
+    auto* p = CreateMaybeMessage<::merge::MasterMetadata>(GetArenaNoVirtual());
+    metadata_ = p;
+  }
+  return metadata_;
+}
+inline ::merge::MasterMetadata* KeyMasterMetadata::mutable_metadata() {
+  // @@protoc_insertion_point(field_mutable:merge.KeyMasterMetadata.metadata)
+  return _internal_mutable_metadata();
+}
+inline void KeyMasterMetadata::set_allocated_metadata(::merge::MasterMetadata* metadata) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == nullptr) {
+    delete metadata_;
+  }
+  if (metadata) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena = nullptr;
+    if (message_arena != submessage_arena) {
+      metadata = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, metadata, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  metadata_ = metadata;
+  // @@protoc_insertion_point(field_set_allocated:merge.KeyMasterMetadata.metadata)
+}
+
+// -------------------------------------------------------------------
+
+// LookupMasterResponse
+
+// repeated uint64 epoch_id = 1;
+inline int LookupMasterResponse::_internal_epoch_id_size() const {
+  return epoch_id_.size();
+}
+inline int LookupMasterResponse::epoch_id_size() const {
+  return _internal_epoch_id_size();
+}
+inline void LookupMasterResponse::clear_epoch_id() {
+  epoch_id_.Clear();
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 LookupMasterResponse::_internal_epoch_id(int index) const {
+  return epoch_id_.Get(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 LookupMasterResponse::epoch_id(int index) const {
+  // @@protoc_insertion_point(field_get:merge.LookupMasterResponse.epoch_id)
+  return _internal_epoch_id(index);
+}
+inline void LookupMasterResponse::set_epoch_id(int index, ::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  epoch_id_.Set(index, value);
+  // @@protoc_insertion_point(field_set:merge.LookupMasterResponse.epoch_id)
+}
+inline void LookupMasterResponse::_internal_add_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  epoch_id_.Add(value);
+}
+inline void LookupMasterResponse::add_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_add_epoch_id(value);
+  // @@protoc_insertion_point(field_add:merge.LookupMasterResponse.epoch_id)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+LookupMasterResponse::_internal_epoch_id() const {
+  return epoch_id_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+LookupMasterResponse::epoch_id() const {
+  // @@protoc_insertion_point(field_list:merge.LookupMasterResponse.epoch_id)
+  return _internal_epoch_id();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+LookupMasterResponse::_internal_mutable_epoch_id() {
+  return &epoch_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+LookupMasterResponse::mutable_epoch_id() {
+  // @@protoc_insertion_point(field_mutable_list:merge.LookupMasterResponse.epoch_id)
+  return _internal_mutable_epoch_id();
+}
+
+// repeated .merge.KeyMasterMetadata lookup_results = 2;
+inline int LookupMasterResponse::_internal_lookup_results_size() const {
+  return lookup_results_.size();
+}
+inline int LookupMasterResponse::lookup_results_size() const {
+  return _internal_lookup_results_size();
+}
+inline void LookupMasterResponse::clear_lookup_results() {
+  lookup_results_.Clear();
+}
+inline ::merge::KeyMasterMetadata* LookupMasterResponse::mutable_lookup_results(int index) {
+  // @@protoc_insertion_point(field_mutable:merge.LookupMasterResponse.lookup_results)
+  return lookup_results_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::KeyMasterMetadata >*
+LookupMasterResponse::mutable_lookup_results() {
+  // @@protoc_insertion_point(field_mutable_list:merge.LookupMasterResponse.lookup_results)
+  return &lookup_results_;
+}
+inline const ::merge::KeyMasterMetadata& LookupMasterResponse::_internal_lookup_results(int index) const {
+  return lookup_results_.Get(index);
+}
+inline const ::merge::KeyMasterMetadata& LookupMasterResponse::lookup_results(int index) const {
+  // @@protoc_insertion_point(field_get:merge.LookupMasterResponse.lookup_results)
+  return _internal_lookup_results(index);
+}
+inline ::merge::KeyMasterMetadata* LookupMasterResponse::_internal_add_lookup_results() {
+  return lookup_results_.Add();
+}
+inline ::merge::KeyMasterMetadata* LookupMasterResponse::add_lookup_results() {
+  // @@protoc_insertion_point(field_add:merge.LookupMasterResponse.lookup_results)
+  return _internal_add_lookup_results();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::merge::KeyMasterMetadata >&
+LookupMasterResponse::lookup_results() const {
+  // @@protoc_insertion_point(field_list:merge.LookupMasterResponse.lookup_results)
+  return lookup_results_;
+}
+
+// -------------------------------------------------------------------
+
+// RaftAcceptResponse
+
+// uint32 from = 1;
+inline void RaftAcceptResponse::clear_from() {
+  from_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 RaftAcceptResponse::_internal_from() const {
+  return from_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 RaftAcceptResponse::from() const {
+  // @@protoc_insertion_point(field_get:merge.RaftAcceptResponse.from)
+  return _internal_from();
+}
+inline void RaftAcceptResponse::_internal_set_from(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  from_ = value;
+}
+inline void RaftAcceptResponse::set_from(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_from(value);
+  // @@protoc_insertion_point(field_set:merge.RaftAcceptResponse.from)
+}
+
+// uint32 to = 2;
+inline void RaftAcceptResponse::clear_to() {
+  to_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 RaftAcceptResponse::_internal_to() const {
+  return to_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 RaftAcceptResponse::to() const {
+  // @@protoc_insertion_point(field_get:merge.RaftAcceptResponse.to)
+  return _internal_to();
+}
+inline void RaftAcceptResponse::_internal_set_to(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  to_ = value;
+}
+inline void RaftAcceptResponse::set_to(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_to(value);
+  // @@protoc_insertion_point(field_set:merge.RaftAcceptResponse.to)
+}
+
+// uint64 epoch_id = 3;
+inline void RaftAcceptResponse::clear_epoch_id() {
+  epoch_id_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 RaftAcceptResponse::_internal_epoch_id() const {
+  return epoch_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 RaftAcceptResponse::epoch_id() const {
+  // @@protoc_insertion_point(field_get:merge.RaftAcceptResponse.epoch_id)
+  return _internal_epoch_id();
+}
+inline void RaftAcceptResponse::_internal_set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  epoch_id_ = value;
+}
+inline void RaftAcceptResponse::set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_epoch_id(value);
+  // @@protoc_insertion_point(field_set:merge.RaftAcceptResponse.epoch_id)
+}
+
+// uint32 result = 4;
+inline void RaftAcceptResponse::clear_result() {
+  result_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 RaftAcceptResponse::_internal_result() const {
+  return result_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 RaftAcceptResponse::result() const {
+  // @@protoc_insertion_point(field_get:merge.RaftAcceptResponse.result)
+  return _internal_result();
+}
+inline void RaftAcceptResponse::_internal_set_result(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  result_ = value;
+}
+inline void RaftAcceptResponse::set_result(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_result(value);
+  // @@protoc_insertion_point(field_set:merge.RaftAcceptResponse.result)
+}
+
+// -------------------------------------------------------------------
+
+// RaftCommitResponse
+
+// uint32 from = 1;
+inline void RaftCommitResponse::clear_from() {
+  from_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 RaftCommitResponse::_internal_from() const {
+  return from_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 RaftCommitResponse::from() const {
+  // @@protoc_insertion_point(field_get:merge.RaftCommitResponse.from)
+  return _internal_from();
+}
+inline void RaftCommitResponse::_internal_set_from(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  from_ = value;
+}
+inline void RaftCommitResponse::set_from(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_from(value);
+  // @@protoc_insertion_point(field_set:merge.RaftCommitResponse.from)
+}
+
+// uint32 to = 2;
+inline void RaftCommitResponse::clear_to() {
+  to_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 RaftCommitResponse::_internal_to() const {
+  return to_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 RaftCommitResponse::to() const {
+  // @@protoc_insertion_point(field_get:merge.RaftCommitResponse.to)
+  return _internal_to();
+}
+inline void RaftCommitResponse::_internal_set_to(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  to_ = value;
+}
+inline void RaftCommitResponse::set_to(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_to(value);
+  // @@protoc_insertion_point(field_set:merge.RaftCommitResponse.to)
+}
+
+// uint64 epoch_id = 3;
+inline void RaftCommitResponse::clear_epoch_id() {
+  epoch_id_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 RaftCommitResponse::_internal_epoch_id() const {
+  return epoch_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 RaftCommitResponse::epoch_id() const {
+  // @@protoc_insertion_point(field_get:merge.RaftCommitResponse.epoch_id)
+  return _internal_epoch_id();
+}
+inline void RaftCommitResponse::_internal_set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  epoch_id_ = value;
+}
+inline void RaftCommitResponse::set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_epoch_id(value);
+  // @@protoc_insertion_point(field_set:merge.RaftCommitResponse.epoch_id)
+}
+
+// uint32 result = 4;
+inline void RaftCommitResponse::clear_result() {
+  result_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 RaftCommitResponse::_internal_result() const {
+  return result_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 RaftCommitResponse::result() const {
+  // @@protoc_insertion_point(field_get:merge.RaftCommitResponse.result)
+  return _internal_result();
+}
+inline void RaftCommitResponse::_internal_set_result(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  result_ = value;
+}
+inline void RaftCommitResponse::set_result(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_result(value);
+  // @@protoc_insertion_point(field_set:merge.RaftCommitResponse.result)
+}
+
+// -------------------------------------------------------------------
+
+// StatsResponse
+
+// uint32 from = 1;
+inline void StatsResponse::clear_from() {
+  from_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 StatsResponse::_internal_from() const {
+  return from_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 StatsResponse::from() const {
+  // @@protoc_insertion_point(field_get:merge.StatsResponse.from)
+  return _internal_from();
+}
+inline void StatsResponse::_internal_set_from(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  from_ = value;
+}
+inline void StatsResponse::set_from(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_from(value);
+  // @@protoc_insertion_point(field_set:merge.StatsResponse.from)
+}
+
+// uint64 to = 2;
+inline void StatsResponse::clear_to() {
+  to_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 StatsResponse::_internal_to() const {
+  return to_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 StatsResponse::to() const {
+  // @@protoc_insertion_point(field_get:merge.StatsResponse.to)
+  return _internal_to();
+}
+inline void StatsResponse::_internal_set_to(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  to_ = value;
+}
+inline void StatsResponse::set_to(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_to(value);
+  // @@protoc_insertion_point(field_set:merge.StatsResponse.to)
+}
+
+// uint64 epoch_id = 3;
+inline void StatsResponse::clear_epoch_id() {
+  epoch_id_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 StatsResponse::_internal_epoch_id() const {
+  return epoch_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 StatsResponse::epoch_id() const {
+  // @@protoc_insertion_point(field_get:merge.StatsResponse.epoch_id)
+  return _internal_epoch_id();
+}
+inline void StatsResponse::_internal_set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  epoch_id_ = value;
+}
+inline void StatsResponse::set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_epoch_id(value);
+  // @@protoc_insertion_point(field_set:merge.StatsResponse.epoch_id)
+}
+
+// -------------------------------------------------------------------
+
+// ChangeServerStateResponse
+
+// uint32 from = 1;
+inline void ChangeServerStateResponse::clear_from() {
+  from_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ChangeServerStateResponse::_internal_from() const {
+  return from_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ChangeServerStateResponse::from() const {
+  // @@protoc_insertion_point(field_get:merge.ChangeServerStateResponse.from)
+  return _internal_from();
+}
+inline void ChangeServerStateResponse::_internal_set_from(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  from_ = value;
+}
+inline void ChangeServerStateResponse::set_from(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_from(value);
+  // @@protoc_insertion_point(field_set:merge.ChangeServerStateResponse.from)
+}
+
+// uint32 to = 2;
+inline void ChangeServerStateResponse::clear_to() {
+  to_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ChangeServerStateResponse::_internal_to() const {
+  return to_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ChangeServerStateResponse::to() const {
+  // @@protoc_insertion_point(field_get:merge.ChangeServerStateResponse.to)
+  return _internal_to();
+}
+inline void ChangeServerStateResponse::_internal_set_to(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  to_ = value;
+}
+inline void ChangeServerStateResponse::set_to(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_to(value);
+  // @@protoc_insertion_point(field_set:merge.ChangeServerStateResponse.to)
+}
+
+// uint32 target = 3;
+inline void ChangeServerStateResponse::clear_target() {
+  target_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ChangeServerStateResponse::_internal_target() const {
+  return target_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ChangeServerStateResponse::target() const {
+  // @@protoc_insertion_point(field_get:merge.ChangeServerStateResponse.target)
+  return _internal_target();
+}
+inline void ChangeServerStateResponse::_internal_set_target(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  target_ = value;
+}
+inline void ChangeServerStateResponse::set_target(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_target(value);
+  // @@protoc_insertion_point(field_set:merge.ChangeServerStateResponse.target)
+}
+
+// uint64 epoch_id = 4;
+inline void ChangeServerStateResponse::clear_epoch_id() {
+  epoch_id_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ChangeServerStateResponse::_internal_epoch_id() const {
+  return epoch_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 ChangeServerStateResponse::epoch_id() const {
+  // @@protoc_insertion_point(field_get:merge.ChangeServerStateResponse.epoch_id)
+  return _internal_epoch_id();
+}
+inline void ChangeServerStateResponse::_internal_set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  epoch_id_ = value;
+}
+inline void ChangeServerStateResponse::set_epoch_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_epoch_id(value);
+  // @@protoc_insertion_point(field_set:merge.ChangeServerStateResponse.epoch_id)
+}
+
+// uint32 state = 5;
+inline void ChangeServerStateResponse::clear_state() {
+  state_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ChangeServerStateResponse::_internal_state() const {
+  return state_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 ChangeServerStateResponse::state() const {
+  // @@protoc_insertion_point(field_get:merge.ChangeServerStateResponse.state)
+  return _internal_state();
+}
+inline void ChangeServerStateResponse::_internal_set_state(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  state_ = value;
+}
+inline void ChangeServerStateResponse::set_state(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_state(value);
+  // @@protoc_insertion_point(field_set:merge.ChangeServerStateResponse.state)
 }
 
 // -------------------------------------------------------------------
@@ -2076,6 +7655,46 @@ ServerMessage::msg() const {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

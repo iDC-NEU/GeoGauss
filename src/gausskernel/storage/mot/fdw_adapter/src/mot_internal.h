@@ -73,8 +73,11 @@ extern void EpochMessageCacheManagerThreadMain(uint64_t id);
 
 extern void EpochNotifyThreadMain(uint64_t id);
 extern void EpochPackThreadMain(uint64_t id);
+
+extern void EpochRaftSendThreadMain(uint64_t id);
 extern void EpochSendThreadMain(uint64_t id);
 
+extern void EpochRaftListenThreadMain(uint64_t id);
 extern void EpochListenThreadMain(uint64_t id);
 extern void EpochUnseriThreadMain(uint64_t id);
 extern void EpochUnpackThreadMain(uint64_t id);
@@ -84,6 +87,8 @@ extern void EpochRecordCommitThreadMain(uint64_t id);
 
 extern void EpochMessageSendThreadMain(uint64_t id);
 extern void EpochMessageListenThreadMain(uint64_t id);
+
+extern void MultiRaftThreadMain(uint64_t id);
 
 namespace aum {
     class SpinLock {
@@ -672,7 +677,8 @@ private:
 public:
     static uint64_t max_length, pack_num;
     static std::default_random_engine random_mot;
-    static std::vector<std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>> local_txn_counters, local_txn_exc_counters,
+    static std::vector<std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>>> 
+        local_txn_counters, local_txn_exc_counters, local_txn_execed_counters, local_txn_committed_counters,
         local_txn_index,
         record_commit_txn_counters, record_committed_txn_counters, remote_merged_txn_counters, remote_commit_txn_counters, 
         remote_committed_txn_counters, limite_txn_num;
@@ -705,10 +711,32 @@ public:
     static uint64_t AddLogicalEpoch(){ return ++ logical_epoch;}
     static uint64_t GetLogicalEpoch(){ return logical_epoch;}
 
-    static uint64_t IncLocalTxnCounters(uint64_t epoch_mod, uint64_t index){ return (*local_txn_counters[epoch_mod % max_length])[index]->fetch_add(ADD_NUM);}
-    static uint64_t DecLocalTxnCounters(uint64_t epoch_mod, uint64_t index){ return (*local_txn_counters[epoch_mod % max_length])[index]->fetch_sub(ADD_NUM);}
-    static uint64_t DecExeCounters(uint64_t epoch_mod, uint64_t index){ return (*local_txn_counters[epoch_mod % max_length])[index]->fetch_sub(1);}
-    static uint64_t DecComCounters(uint64_t epoch_mod, uint64_t index){ return (*local_txn_counters[epoch_mod % max_length])[index]->fetch_sub(MOD_NUM);}
+    static uint64_t IncLocalTxnCounters(uint64_t epoch_mod, uint64_t index){ return (*local_txn_counters[epoch_mod % max_length])[index]->fetch_add(1);}
+    static uint64_t IncLocalExecedCounters(uint64_t epoch_mod, uint64_t index){ return (*local_txn_execed_counters[epoch_mod % max_length])[index]->fetch_add(1);}
+    static uint64_t IncLocalCommittedCounters(uint64_t epoch_mod, uint64_t index){ return (*local_txn_committed_counters[epoch_mod % max_length])[index]->fetch_add(1);}
+    static uint64_t GetLocalExecedCounters(uint64_t epoch_mod) {
+        uint64_t ans = 0;
+        epoch_mod %= max_length;
+        for(int i = 0; i < (int)pack_num; i ++){
+            ans += (*local_txn_execed_counters[epoch_mod])[i]->load();
+        }
+        return ans;
+    }
+
+    static uint64_t GetLocalCommittedCounters(uint64_t epoch_mod) {
+        uint64_t ans = 0;
+        epoch_mod %= max_length;
+        for(int i = 0; i < (int)pack_num; i ++){
+            ans += (*local_txn_committed_counters[epoch_mod])[i]->load();
+        }
+        return ans;
+    }
+    static bool IsLocalTxnCountersExced(uint64_t epoch_mod){
+        return GetLocalExecedCounters(epoch_mod) >= GetLocalTxnCounters(epoch_mod);
+    }
+    static bool IsLocalTxnCountersCommitted(uint64_t epoch_mod){
+        return GetLocalCommittedCounters(epoch_mod) >= GetLocalTxnCounters(epoch_mod);
+    }
     static bool IsLocalTxnCountersExcEqualZero(uint64_t epoch_mod){
         epoch_mod %= max_length;
         for(int i = 0; i < (int)pack_num; i ++){
@@ -734,7 +762,6 @@ public:
 
     static void SetLocalTxnExcCounters(uint64_t epoch_mod, uint64_t index, uint64_t value){ (*local_txn_exc_counters[epoch_mod % max_length])[index]->store(value);}
     static uint64_t IncLocalTxnExcCounters(uint64_t epoch_mod, uint64_t index){ return (*local_txn_exc_counters[epoch_mod % max_length])[index]->fetch_add(1);}
-    static uint64_t DecLocalTxnExcCounters(uint64_t epoch_mod, uint64_t index){ return (*local_txn_exc_counters[epoch_mod % max_length])[index]->fetch_sub(1);}
     static uint64_t GetLocalTxnExcCounters(uint64_t epoch_mod){
         uint64_t ans = 0;
         epoch_mod %= max_length;
@@ -909,8 +936,10 @@ public:
         // if(LoadChangeSet(epoch) < LoadReadCommittedTxnNum(epoch) - (LoadTotalAbortTxnNum(epoch) - LoadWriteAbortAfterSendTxnNum(epoch))) {
         //     return MOTAdaptor::GetLocalTxnExcCounters();
         // }
-        return LoadChangeSet(epoch) - LoadReadCommittedTxnNum(epoch) - 
-            (LoadTotalAbortTxnNum(epoch) - LoadWriteAbortAfterSendTxnNum(epoch));
+        if(is_sync_exec)
+            return LoadChangeSet(epoch) - LoadReadCommittedTxnNum(epoch) - 
+                (LoadTotalAbortTxnNum(epoch) - LoadWriteAbortAfterSendTxnNum(epoch));
+        else return LoadChangeSet(epoch);
     }
 
     static bool IsCurrentEpochFinished(uint64_t epoch) {
@@ -928,18 +957,8 @@ public:
         return true;
     }
 
-    static bool SubNum(uint64_t epoch_num, uint64_t index, uint64_t value) {
-        (*(txn_num_ptrs[epoch_num % _max_length]))[index]->fetch_sub(value);
-        return true;
-    }
-
     static bool AddPackedNum(uint64_t epoch_num, uint64_t index, uint64_t value) {
         (*(packd_txn_num_ptrs[epoch_num % _max_length]))[index]->fetch_add(value);
-        return true;
-    }
-
-    static bool SubPackedNum(uint64_t epoch_num, uint64_t index, uint64_t value) {
-        (*(packd_txn_num_ptrs[epoch_num % _max_length]))[index]->fetch_sub(value);
         return true;
     }
 
@@ -986,15 +1005,12 @@ public:
     static bool InsertTxntoLocalChangeSet(MOT::TxnManager* txMan, const uint64_t& index_pack, const uint64_t& index_unique);
     static bool TryIncLocalChangeSetNum(uint64_t epoch, uint64_t index_pack, uint64_t value);
     static bool IncLocalChangeSetNum(uint64_t epoch, uint64_t index_pack, uint64_t value);
-    static bool DecLocalChangeSetNum(uint64_t epoch, uint64_t index_pack, uint64_t value);
     static bool InsertRowToSet(MOT::TxnManager* txMan, void* txn_void, const uint64_t& index_pack, const uint64_t& index_unique);
     static bool InsertTxnIntoRecordCommitQueue(MOT::TxnManager* txMan, void* txn_void, MOT::RC &rc);
     static void LocalTxnSafeExit(const uint64_t& index_pack, void* txn_void);
     static void Output(std::string v);
     static void Merge(MOT::TxnManager* txMan, uint64_t& index_pack);
     static void Commit(MOT::TxnManager* txMan, uint64_t& index_pack);
-    static void EnqueueEmpty(uint64_t index);
-
     
     
     static std::unique_ptr<std::atomic<uint64_t>> should_receive_pack_num, online_server_num;
@@ -1156,7 +1172,6 @@ public:
     static void SetCacheServerStored(uint64_t epoch, uint64_t value) {
         received_epoch[epoch % _max_length]->store(value);
     }
-    
 
 };
 
@@ -1246,21 +1261,6 @@ void ReleaseFdwState(MOTFdwStateSt* state);
 
 template<typename T>
 using BlockingConcurrentQueue =  moodycamel::BlockingConcurrentQueue<T>;
-// using BlockingConcurrentQueue = BlockingMPMCQueue<T>;
-// struct pack_params;
-// struct commit_thread_params;
-
-struct pack_thread_params {
-    uint64_t index;
-    uint64_t current_epoch;
-    std::shared_ptr<std::vector<std::shared_ptr<BlockingConcurrentQueue<std::string*>>>> local_change_set_txn_ptr_temp;
-    std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>> local_change_set_txn_num_ptr_temp;
-    pack_thread_params(uint64_t index, uint64_t ce, 
-        std::shared_ptr<std::vector<std::shared_ptr<BlockingConcurrentQueue<std::string*>>>> ptr1, 
-        std::shared_ptr<std::vector<std::shared_ptr<std::atomic<uint64_t>>>> ptr2): 
-        index(index), current_epoch(ce), local_change_set_txn_ptr_temp(ptr1), local_change_set_txn_num_ptr_temp(ptr2){}
-    pack_thread_params(){}
-};
 
 struct send_thread_params {
     uint64_t current_epoch;

@@ -92,8 +92,10 @@ extern void FDWEpochMessageCacheManagerThreadMain(uint64_t id);
 extern void FDWEpochMessageManagerThreadMain(uint64_t id);
 extern void FDWEpochNotifyThreadMain(uint64_t id);
 extern void FDWEpochPackThreadMain(uint64_t id);
+extern void FDWEpochRaftSendThreadMain(uint64_t id);
 extern void FDWEpochSendThreadMain(uint64_t id);
 extern void FDWEpochMessageSendThreadMain(uint64_t id);
+extern void FDWEpochRaftListenThreadMain(uint64_t id);
 extern void FDWEpochListenThreadMain(uint64_t id);
 extern void FDWEpochMessageListenThreadMain(uint64_t id);
 extern void FDWEpochUnseriThreadMain(uint64_t id);
@@ -101,5 +103,6 @@ extern void FDWEpochUnpackThreadMain(uint64_t id);
 extern void FDWEpochMergeThreadMain(uint64_t id);
 extern void FDWEpochCommitThreadMain(uint64_t id);
 extern void FDWEpochRecordCommitThreadMain(uint64_t id);
+extern void FDWMultiRaftThreadMain(uint64_t id);
 
 #endif  // MOT_FDW_H

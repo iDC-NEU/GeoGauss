@@ -1618,7 +1618,6 @@ static void MOTXactCallback(XactEvent event, void* arg)
             // MOT_LOG_INFO("XACT_EVENT_START ROLL_BACK");
             if(is_sync_exec) {
                 (*MOTAdaptor::total_abort_txn_num[(txn->GetStartEpoch() % MOTAdaptor::_max_length)])[txn->GetIndexPack()]->fetch_add(1);
-                // MOTAdaptor::DecLocalChangeSetNum(txn->GetStartEpoch(), txn->GetIndexPack(), 1);
             }
             txn->ClearEpochState();
             MOTAdaptor::Rollback();
@@ -1720,7 +1719,6 @@ static void MOTXactCallback(XactEvent event, void* arg)
         // MOT_LOG_INFO("XACT_EVENT_ABORT %llu", txn->GetStartEpoch());
         if(is_sync_exec) {
             (*MOTAdaptor::total_abort_txn_num[(txn->GetStartEpoch() % MOTAdaptor::_max_length)])[txn->GetIndexPack()]->fetch_add(1);
-            // MOTAdaptor::DecLocalChangeSetNum(txn->GetStartEpoch(), txn->GetIndexPack(), 1);
         }
         elog(DEBUG2, "XACT_EVENT_ABORT, tid %lu", tid);
         MOTAdaptor::Rollback();
@@ -2469,7 +2467,8 @@ void FDWEpochPhysicalTimerManagerThreadMain(uint64_t id){
     EpochPhysicalTimerManagerThreadMain(id);
 }
 void FDWEpochMessageCacheManagerThreadMain(uint64_t id){
-    EpochMessageCacheManagerThreadMain(id);
+    // EpochMessageCacheManagerThreadMain(id);
+    MultiRaftThreadMain(id);
 }
 void FDWEpochMessageManagerThreadMain(uint64_t id){
     EpochMessageManagerThreadMain(id);
@@ -2480,6 +2479,10 @@ void FDWEpochNotifyThreadMain(uint64_t id){
 }
 void FDWEpochPackThreadMain(uint64_t id){
     EpochPackThreadMain(id);
+}
+
+void FDWEpochRaftSendThreadMain(uint64_t id) {
+    EpochRaftSendThreadMain(id);
 }
 void FDWEpochSendThreadMain(uint64_t id){
     EpochSendThreadMain(id);
@@ -2493,6 +2496,10 @@ void FDWEpochListenThreadMain(uint64_t id){
 void FDWEpochMessageListenThreadMain(uint64_t id){
     EpochMessageListenThreadMain(id);
 }
+void FDWEpochRaftListenThreadMain(uint64_t id) {
+    EpochRaftListenThreadMain(id);
+}
+
 void FDWEpochUnseriThreadMain(uint64_t id){
     EpochUnseriThreadMain(id);
 }
@@ -2508,4 +2515,8 @@ void FDWEpochCommitThreadMain(uint64_t id){
 
 void FDWEpochRecordCommitThreadMain(uint64_t id){
     EpochRecordCommitThreadMain(id);
+}
+
+void FDWMultiRaftThreadMain(uint64_t id) {
+    MultiRaftThreadMain(id);
 }
