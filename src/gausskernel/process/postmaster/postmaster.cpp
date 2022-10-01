@@ -251,7 +251,8 @@ volatile uint64_t kServerNum = 1;
 uint64_t kPortNum = 1, kPackageNum = 1, kNotifyNum = 1, kBatchNum = 1, kNotifyThreadNum = 1, kPackThreadNum = 4, kSendThreadNum = 1, 
     kListenThreadNum = 1, kUnseriThreadNum = 1, kUnpackThreadNum = 1, kMergeThreadNum = 1, kCommitThreadNum = 1, kRecordCommitThreadNum = 1, kSendMessageNum = 1, kReceiveMessageNum = 1, 
     kSleepTime = 1, local_ip_index = 0, kCacheMaxLength = 200000, kDelayEpochNum = 0, kServerTimeOut_us = 700000, kRaftTimeOut_us = 500000, kLimiteTxnNum = 20,
-    kStartCheckStateNum = 1000000, kDelayTime = 0, kDelayRatio = 0, kRaftStopEpoch = 0, kRaftRestrtEpoch = 0, kRaftStopServerId = 1;
+    kStartCheckStateNum = 1000000, kDelayTime = 0, kDelayRatio = 0, kRaftStopEpoch = 0, kRaftRestrtEpoch = 0, kRaftStopServerId = 1,
+    kRaftLeaderId = 0, kRaftStartCheckEpoch = 100;
 std::vector<std::string> send_ips;
 std::vector<uint64_t>send_ports;
 std::string kMasterIp, kPrivateIp;
@@ -11590,7 +11591,10 @@ void GetServerInfo(){
     kDelayRatio = std::stoull(delay_ratio->GetText());
 
     tinyxml2::XMLElement* is_raft_enable_t = root->FirstChildElement("is_raft_enable");
-    is_raft_enable = std::stoull(is_raft_enable_t->GetText()) == 0 ? false : true;
+    is_raft_enable = std::stoull(is_raft_enable_t->GetText())  == 0 ? false : true;
+
+    tinyxml2::XMLElement* raft_start_check_epoch = root->FirstChildElement("raft_start_check_epoch");
+    kRaftStartCheckEpoch = std::stoull(raft_start_check_epoch->GetText());
 
     tinyxml2::XMLElement* raft_stop_epoch = root->FirstChildElement("raft_stop_epoch");
     kRaftStopEpoch = std::stoull(raft_stop_epoch->GetText());
@@ -11598,9 +11602,11 @@ void GetServerInfo(){
     tinyxml2::XMLElement* raft_restart_epoch = root->FirstChildElement("raft_restart_epoch");
     kRaftRestrtEpoch = std::stoull(raft_restart_epoch->GetText());
 
+    tinyxml2::XMLElement* raft_lerder_id = root->FirstChildElement("raft_lerder_id");
+    kRaftLeaderId = std::stoull(raft_lerder_id->GetText());
+
     tinyxml2::XMLElement* raft_stop_server_id = root->FirstChildElement("raft_stop_server_id");
     kRaftStopServerId = std::stoull(raft_stop_server_id->GetText());
-    
 
     
     tinyxml2::XMLElement* notify_num = root->FirstChildElement("notify_num");

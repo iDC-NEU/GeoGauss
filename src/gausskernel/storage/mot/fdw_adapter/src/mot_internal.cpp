@@ -2810,7 +2810,7 @@ void InitEpochTimerManager(){
     //==========Cache===============
     MOTAdaptor::max_length = max_length = kCacheMaxLength;
     MOTAdaptor::pack_num = kPackageNum;
-    MultiRaftState::Init(max_length, kServerNum, local_ip_index == 0 ? 1 : 0);
+    MultiRaftState::Init(max_length, kServerNum, (local_ip_index == kRaftLeaderId ? 1 : 0));
     for(int i = 0; i < (int)kServerNum; i++) {
         MultiRaftState::SetServerState(i, 1);
     }
@@ -3058,7 +3058,7 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
     MOT_LOG_INFO("线程开始工作 EpochLogicalTimerManagerThreadMain ");
     uint64_t remote_merged_txn_num = 0, remote_commit_txn_num = 0, current_local_txn_num = 0, remote_received_txn_num = 0,
         cnt = 0, epoch = 1, epoch_mod = 1, last_epoch_mod = 0, cache_server_available = 1, total_commit_txn_num = 0;
-    while(!init_ok.load()) usleep(100);
+    while(!init_ok.load()) usleep(200);
 
     if(is_cache_server_available)
         cache_server_available = 0;
@@ -3080,7 +3080,7 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
             //等所有上一个epoch 的事务写完 再开始下一个epoch
             cnt = 0;
 
-            while(MOTAdaptor::GetPhysicalEpoch() <= MOTAdaptor::GetLogicalEpoch() + kDelayEpochNum) usleep(100);
+            while(MOTAdaptor::GetPhysicalEpoch() <= MOTAdaptor::GetLogicalEpoch() + kDelayEpochNum) usleep(200);
             
             while((MOTAdaptor::LoadShouldExecTxnNum(epoch_mod)) 
                 > MOTAdaptor::GetLocalTxnExcCounters(epoch_mod) ){
@@ -3088,7 +3088,7 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
                 if(cnt % 100 == 0){
                     OUTPUTLOG("=等待本地事务进入commit完成");
                 }
-                usleep(100);
+                usleep(200);
             } 
             while(MOTAdaptor::GetReceivedPackNum(epoch_mod) < MOTAdaptor::GetShouldReceivePackNum() ||
                 MOTAdaptor::GetReceivedTxnNum(epoch_mod) < MOTAdaptor::GetShouldReceiveTxnNum(epoch_mod)) {
@@ -3096,14 +3096,14 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
                 if(cnt % 100 == 0){
                     OUTPUTLOG("=等待远端pack接收完成");
                 }
-                usleep(100);
+                usleep(200);
             }
             while(is_raft_enable && !MultiRaftState::IsEpochTransmitComplete(epoch_mod)) {
                 cnt++;
                 if(cnt % 100 == 0){
                     OUTPUTLOG("=等待远端pack接收完成 Raft Transmit");
                 }
-                usleep(100);
+                usleep(200);
             }
 
             while(is_raft_enable && !MultiRaftState::IsEpochReceiveComplete(epoch_mod)) {
@@ -3111,7 +3111,7 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
                 if(cnt % 100 == 0){
                     OUTPUTLOG("=等待远端pack接收完成 Raft Commit");
                 }
-                usleep(100);
+                usleep(200);
             }
             remote_merged_txn_num = MOTAdaptor::GetShouldReceiveTxnNum(epoch_mod);
             while(MOTAdaptor::GetRemoteMergedTxnCounters(epoch_mod) < remote_merged_txn_num) {
@@ -3119,14 +3119,14 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
                 if(cnt % 100 == 0){
                     OUTPUTLOG("=等待远端事务接收并执行完成");
                 }
-                usleep(100);
+                usleep(200);
             }
             while(!MOTAdaptor::IsLocalTxnCountersExced(epoch_mod)){
                 cnt++;
                 if(cnt % 100 == 0){
                     OUTPUTLOG("=等待本地事务完成");
                 }
-                usleep(100);
+                usleep(200);
             } 
 
             while(!MOTAdaptor::IsCacheServerStored(epoch_mod)) {
@@ -3134,7 +3134,7 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
                 if(cnt % 100 == 0){
                     OUTPUTLOG("=等待cache接收完成");
                 }
-                usleep(100);
+                usleep(200);
             }
             // ======= Merge结束 开始Commit ============   
             MOTAdaptor::SetRecordCommitted(false);
@@ -3149,7 +3149,7 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
                 if(cnt % 100 == 0){
                     OUTPUTLOG("==进行一个Epoch的合并 1");
                 }
-                usleep(100);
+                usleep(200);
             }
             MOTAdaptor::SetRemoteRecordCommitted(true);
             while(!MOTAdaptor::IsLocalTxnCountersCommitted(epoch_mod)) {
@@ -3157,13 +3157,13 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
                 if(cnt % 100 == 0){
                     OUTPUTLOG("==进行一个Epoch的合并 2");
                 }
-                usleep(100);
+                usleep(200);
             }
             
             // ============= 结束处理 ==================
             //远端事务已经写完，不写完无法开始下一个logical epoch
 
-            while(MOTAdaptor::GetRecordCommittedTxnCounters(epoch_mod) != MOTAdaptor::GetRecordCommitTxnCounters(epoch_mod)) usleep(100);
+            while(MOTAdaptor::GetRecordCommittedTxnCounters(epoch_mod) != MOTAdaptor::GetRecordCommitTxnCounters(epoch_mod)) usleep(200);
             MOTAdaptor::SetRecordCommitted(true);
             total_commit_txn_num += MOTAdaptor::GetRecordCommitTxnCounters(epoch_mod);
             MOT_LOG_INFO("===epoch所有事务写入完成 %llu, %llu %llu total %llu ", MOTAdaptor::GetRecordCommittedTxnCounters(epoch_mod), 
@@ -3186,7 +3186,7 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
             //等所有上一个epoch 的事务写完 再开始下一个epoch
             cnt = 0;
 
-            while(MOTAdaptor::GetPhysicalEpoch() <= MOTAdaptor::GetLogicalEpoch() + kDelayEpochNum) usleep(100);
+            while(MOTAdaptor::GetPhysicalEpoch() <= MOTAdaptor::GetLogicalEpoch() + kDelayEpochNum) usleep(200);
             
             while(static_cast<uint64_t>(MOTAdaptor::LoadChangeSet(epoch_mod)) 
                 > MOTAdaptor::GetLocalTxnExcCounters(epoch_mod) ){
@@ -3194,7 +3194,7 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
                 if(cnt % 100 == 0){
                     OUTPUTLOG("=等待本地事务进入commit完成");
                 }
-                usleep(100);
+                usleep(200);
             } 
             while(MOTAdaptor::GetReceivedPackNum(epoch_mod) < MOTAdaptor::GetShouldReceivePackNum() ||
                 MOTAdaptor::GetReceivedTxnNum(epoch_mod) < MOTAdaptor::GetShouldReceiveTxnNum(epoch_mod)) {
@@ -3202,14 +3202,14 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
                 if(cnt % 100 == 0){
                     OUTPUTLOG("=等待远端pack接收完成");
                 }
-                usleep(100);
+                usleep(200);
             }
             while(is_raft_enable && !MultiRaftState::IsEpochTransmitComplete(epoch_mod)) {
                 cnt++;
                 if(cnt % 100 == 0){
                     OUTPUTLOG("=等待远端pack接收完成 Raft Transmit");
                 }
-                usleep(100);
+                usleep(200);
             }
 
             while(is_raft_enable && !MultiRaftState::IsEpochReceiveComplete(epoch_mod)) {
@@ -3217,7 +3217,7 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
                 if(cnt % 100 == 0){
                     OUTPUTLOG("=等待远端pack接收完成 Raft Commit");
                 }
-                usleep(100);
+                usleep(200);
             }
             remote_merged_txn_num = MOTAdaptor::GetShouldReceiveTxnNum(epoch_mod);
             while(MOTAdaptor::GetRemoteMergedTxnCounters(epoch_mod) < remote_merged_txn_num) {
@@ -3225,14 +3225,14 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
                 if(cnt % 100 == 0){
                     OUTPUTLOG("=等待远端事务接收并执行完成");
                 }
-                usleep(100);
+                usleep(200);
             }
             while(!MOTAdaptor::IsLocalTxnCountersExced(epoch_mod)){
                 cnt++;
                 if(cnt % 100 == 0){
                     OUTPUTLOG("=等待本地事务完成");
                 }
-                usleep(100);
+                usleep(200);
             } 
 
             while(!MOTAdaptor::IsCacheServerStored(epoch_mod)) {
@@ -3240,7 +3240,7 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
                 if(cnt % 100 == 0){
                     OUTPUTLOG("=等待cache接收完成");
                 }
-                usleep(100);
+                usleep(200);
             }
             // ======= Merge结束 开始Commit ============   
             MOTAdaptor::SetRecordCommitted(false);
@@ -3256,7 +3256,7 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
                 if(cnt % 100 == 0){
                     OUTPUTLOG("==进行一个Epoch的合并 1");
                 }
-                usleep(100);
+                usleep(200);
             }
             MOTAdaptor::SetRemoteRecordCommitted(true);
             while(!MOTAdaptor::IsLocalTxnCountersCommitted(epoch_mod)) {
@@ -3264,12 +3264,12 @@ void EpochLogicalTimerManagerThreadMain(uint64_t id){
                 if(cnt % 100 == 0){
                     OUTPUTLOG("==进行一个Epoch的合并 2");
                 }
-                usleep(100);
+                usleep(200);
             }
             remote_received_txn_num = MOTAdaptor::GetReceivedTxnNum(epoch_mod);
             
 
-            while(MOTAdaptor::GetRecordCommittedTxnCounters(epoch_mod) != MOTAdaptor::GetRecordCommitTxnCounters(epoch_mod)) usleep(100);
+            while(MOTAdaptor::GetRecordCommittedTxnCounters(epoch_mod) != MOTAdaptor::GetRecordCommitTxnCounters(epoch_mod)) usleep(200);
             MOTAdaptor::SetRecordCommitted(true);
             total_commit_txn_num += MOTAdaptor::GetRecordCommitTxnCounters(epoch_mod);
             MOT_LOG_INFO("===epoch所有事务写入完成 %llu, %llu %llu total %llu ", MOTAdaptor::GetRecordCommittedTxnCounters(epoch_mod), 
@@ -3324,8 +3324,8 @@ void Send(std::string* serialized_str_ptr) {
 
 void RaftSendPing() {
     auto new_msg = std::make_unique<merge::Message>();
-    auto* rep = new_msg->mutable_response();
-    auto* ping = rep->mutable_pong();
+    auto* rep = new_msg->mutable_request();
+    auto* ping = rep->mutable_ping();
     ping->set_from(local_ip_index);
     Send(Gzip(std::move(new_msg)));
     MOT_LOG_INFO("发送一个Ping local_ip_index %llu", local_ip_index);
@@ -3443,7 +3443,7 @@ void EpochPackThreadMain(uint64_t id){
     std::unique_ptr<zmq::message_t> msg;
     std::string *serialized_txn_str_ptr;
     bool sleep_flag = false;
-    while(!init_ok.load()) usleep(100);
+    while(!init_ok.load()) usleep(200);
     if(kServerNum == 1) {
         while(true) txn_queue_ptrs[0]->wait_dequeue(pack_param);
     }
@@ -3481,7 +3481,7 @@ void EpochPackThreadMain(uint64_t id){
             }
         }
         if(sleep_flag)
-            usleep(100);
+            usleep(200);
     }
 }
 
@@ -3787,7 +3787,7 @@ void EpochMergeThreadMain(uint64_t id){
         }
     }
     
-    while(!init_ok.load()) usleep(100);
+    while(!init_ok.load()) usleep(200);
     for(;;){    
         sleep_flag = true;
         if(listen_message_queue.try_dequeue(message_ptr) && message_ptr != nullptr && message_ptr->size() > 0) {
@@ -3905,7 +3905,7 @@ void EpochMergeThreadMain(uint64_t id){
             continue;
         }
         if(sleep_flag) {
-            usleep(100);
+            usleep(200);
         }
     }
 }
@@ -3929,7 +3929,7 @@ void EpochCommitThreadMain(uint64_t id){//validate
     void* buf;
     int flag = 0;
     // bool sleep_flag = false;
-    while(!init_ok.load()) usleep(100);
+    while(!init_ok.load()) usleep(200);
     for(;;){
         if(commit_txn_queue_struct.try_dequeue(params)) {
             if(params == nullptr || params->msg == nullptr) continue;
@@ -3940,7 +3940,7 @@ void EpochCommitThreadMain(uint64_t id){//validate
             }
             if(is_full_async_exec == false)
                 while(!MOTAdaptor::IsRemoteExeced()) {
-                    usleep(100);
+                    usleep(200);
                 }
             auto& txn = msg_ptr->txn();
             csn = txn.csn();
@@ -4084,7 +4084,7 @@ void EpochCommitThreadMain(uint64_t id){//validate
             MOTAdaptor::IncRemoteCommittedTxnCounters(epoch_mod, index_pack);
         }
         else {
-            usleep(100);
+            usleep(200);
         }
     }
 }
@@ -4101,6 +4101,25 @@ void EpochUnpackThreadMain(uint64_t id){
 void EpochRecordCommitThreadMain(uint64_t id) {//deleted
     
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4155,6 +4174,7 @@ uint64_t MultiRaftState::SetServerState(uint64_t server_id, uint64_t epoch_id, u
 }
 
 uint64_t MultiRaftState::CheckServerState(uint64_t& server_id, uint64_t& epoch_id, uint64_t& state) {
+    if(MOTAdaptor::GetPhysicalEpoch() < kRaftStartCheckEpoch) return 0;
     auto now_time = now_to_us();
     for(int i = 0; i < (int)_size; i ++) {
         if(i == (int)local_ip_index) continue;
@@ -4204,15 +4224,21 @@ void MultiRaftState::HandleRaftRequest(std::unique_ptr<merge::Message> && msg) {
     auto* rep = new_msg->mutable_response();
     switch (req.type_case()) {
         case merge::Request::TypeCase::kPing : {
+            MOT_LOG_INFO("收到一个RaftPingRequest from server: %llu %llu", 
+                        req.ping().from(), now_to_us());
             if(local_ip_index == kRaftStopServerId && kRaftStopEpoch > 0 && 
-                MOTAdaptor::GetPhysicalEpoch() > kRaftStopEpoch && MOTAdaptor::GetPhysicalEpoch() < kRaftRestrtEpoch)
+                MOTAdaptor::GetPhysicalEpoch() > kRaftStopEpoch && MOTAdaptor::GetPhysicalEpoch() < kRaftRestrtEpoch) {
+                MOT_LOG_INFO("宕机期间不处理ping request");
                 break;
+            }
             auto* pong = rep->mutable_pong();
             pong->set_from(local_ip_index);
             pong->set_to(req.ping().from());
             pong->set_epoch_id(MOTAdaptor::GetLogicalEpoch());
             pong->set_time(now_to_us());
             Send(Gzip(std::move(new_msg)), req.ping().from());
+            MOT_LOG_INFO("发送一个RaftPongResponse to server: %llu %llu", 
+                        req.ping().from(), now_to_us());
             break;
         }
 
@@ -4286,21 +4312,25 @@ void MultiRaftState::HandleRaftResponse(std::unique_ptr<merge::Message> && msg) 
     auto* req = new_msg->mutable_request();
     switch (rep.type_case()) {
         case merge::Response::TypeCase::kPong : {
-            MultiRaftState::SetServerPongState(rep.pong().to(), rep.pong().time(), rep.pong().epoch_id());
-            uint64_t server_id, epoch_id, state;
-            auto res = MultiRaftState::CheckServerState(server_id, epoch_id, state);
-            if(res == 0) {//normal
-                // nothing to do
-            }
-            else if(res == 1) {// server offline
-                MOT_LOG_INFO("Server OFFLine server_id %llu epoch_id %llu", server_id, epoch_id);
-                SendChangeServerStateRequest(server_id, epoch_id, state);
-                MultiRaftState::SetServerState(server_id, epoch_id, state);
-            }
-            else if(res == 2) {// server back to online
-                MOT_LOG_INFO("Server back to online server_id %llu epoch_id %llu", server_id, epoch_id);
-                SendChangeServerStateRequest(server_id, epoch_id, state);
-                MultiRaftState::SetServerState(server_id, epoch_id, state);
+            if(is_server_leader) {
+                MOT_LOG_INFO("Server back to online from server_id %llu time %llu epoch %llu", 
+                    rep.pong().from(), rep.pong().time(), rep.pong().epoch_id());
+                MultiRaftState::SetServerPongState(rep.pong().from(), rep.pong().time(), rep.pong().epoch_id());
+                uint64_t server_id, epoch_id, state;
+                auto res = MultiRaftState::CheckServerState(server_id, epoch_id, state);
+                if(res == 0) {//normal
+                    // nothing to do
+                }
+                else if(res == 1) {// server offline
+                    MOT_LOG_INFO("Server OFFLine server_id %llu epoch_id %llu", server_id, epoch_id);
+                    SendChangeServerStateRequest(server_id, epoch_id, state);
+                    MultiRaftState::SetServerState(server_id, epoch_id, state);
+                }
+                else if(res == 2) {// server back to online
+                    MOT_LOG_INFO("Server back to online server_id %llu epoch_id %llu", server_id, epoch_id);
+                    SendChangeServerStateRequest(server_id, epoch_id, state);
+                    MultiRaftState::SetServerState(server_id, epoch_id, state);
+                }
             }
             break;
         }
@@ -4319,8 +4349,10 @@ void MultiRaftState::HandleRaftResponse(std::unique_ptr<merge::Message> && msg) 
                 }
                 else {
                     if(local_ip_index == kRaftStopServerId && kRaftStopEpoch > 0 && 
-                            rep.raft_accept().epoch_id() > kRaftStopEpoch && rep.raft_accept().epoch_id() < kRaftRestrtEpoch)
-                            break;
+                        MOTAdaptor::GetPhysicalEpoch() > kRaftStopEpoch && MOTAdaptor::GetPhysicalEpoch() < kRaftRestrtEpoch) {
+                        MOT_LOG_INFO("宕机期间不处理Accept response 不发送CommitAccept");
+                        break;
+                    }
                     if(MultiRaftState::IsEpochTransmitComplete(rep.raft_accept().epoch_id())) {
                         /// if followers received complete, current server as a leader send commit command to followers
                         if(MultiRaftState::GetLeaderCommitEpochState(rep.raft_accept().epoch_id(), local_ip_index) == 0) {
@@ -4373,6 +4405,61 @@ cache
 8.142.85.130
 39.99.158.230
 */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4542,7 +4629,7 @@ void* MergeThread(void* param){///delete
             if(!merge_queue.enqueue(std::move(std::make_unique<merge::Message>()))) Assert(false); //防止moodycamel取不出
         }
         if(sleep_flag) {
-            usleep(100);
+            usleep(200);
         }
     }
     MOTAdaptor::SubShouldReceivePackNum(1);
@@ -4592,7 +4679,7 @@ void EpochMessageManagerThreadMain(uint64_t id) {///delete
         _map_message_received[i] = std::make_shared<std::atomic<uint64_t>>(0);
         _map_total_pack_num[i] = std::make_shared<std::atomic<uint64_t>>(0);
     }
-    while(!is_epoch_advance_started.load()) usleep(100);
+    while(!is_epoch_advance_started.load()) usleep(200);
     for(;;) {
         sleep_flag = true;
         if(is_fault_tolerance_enable || is_cache_server_available) {

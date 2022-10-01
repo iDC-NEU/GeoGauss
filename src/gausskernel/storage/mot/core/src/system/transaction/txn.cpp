@@ -200,7 +200,7 @@ RC TxnManager::StartTransaction(uint64_t transactionId, int isolationLevel)
             // MOT_LOG_INFO("==Start Transaction 1 %llu %llu", GetStartEpoch(), MOTAdaptor::GetLogicalEpoch());
             // uint64_t cnt = 0;
             while(GetStartEpoch() > MOTAdaptor::GetLogicalEpoch() || !MOTAdaptor::IsRecordCommitted()) {
-                usleep(100);
+                usleep(200);
                 // cnt ++;
                 // if(cnt % 100 == 0) {
                 //     MOT_LOG_INFO("Start Transaction 1 %llu %llu", GetStartEpoch(), MOTAdaptor::GetLogicalEpoch());
@@ -1355,7 +1355,7 @@ void TxnManager::CommitInternalII()
         auto epoch_mod = GetCommitEpoch() % MOTAdaptor::max_length;
         MOTAdaptor::IncRecordCommittedTxnCounters(epoch_mod, GetIndexPack());
         // MOTAdaptor::Commit(this, GetIndexPack());
-        while(!MOTAdaptor::IsRemoteRecordCommitted()) usleep(100);
+        while(!MOTAdaptor::IsRemoteRecordCommitted()) usleep(200);
     }
     // ClearEpochState();
 }
@@ -1392,7 +1392,7 @@ std::atomic<int> wait_count(0);
 std::atomic<int> wait_count_commit(0);
 RC TxnManager::Commit(){
 
-    if(local_ip_index == kRaftStopServerId && kRaftStopEpoch > 0 && MOTAdaptor::GetPhysicalEpoch() > kRaftStopEpoch) {
+    if(is_raft_enable == 1 && local_ip_index == kRaftStopServerId && kRaftStopEpoch > 0 && MOTAdaptor::GetPhysicalEpoch() > kRaftStopEpoch) {
         while(MOTAdaptor::GetPhysicalEpoch() < kRaftRestrtEpoch) usleep(kSleepTime);
     }
     
@@ -1493,7 +1493,7 @@ RC TxnManager::Commit(){
             auto time1 = now_to_us();
             cnt = 0;
             while(GetCommitEpoch() > MOTAdaptor::GetLogicalEpoch() || !MOTAdaptor::IsRecordCommitted()){
-                usleep(100);
+                usleep(200);
             }
             auto epoch_mod = GetCommitEpoch() % MOTAdaptor::max_length;
             MOTAdaptor::IncLocalTxnCounters(epoch_mod, index_pack);
@@ -1502,7 +1502,7 @@ RC TxnManager::Commit(){
             MOTAdaptor::IncLocalExecedCounters(epoch_mod, index_pack);
             if (rc != RC_ABORT){    
                 while(!MOTAdaptor::IsRemoteExeced()) {
-                    usleep(100);
+                    usleep(200);
                 }
                 auto csn_temp = std::to_string(GetCommitSequenceNumber()) + ":" + std::to_string(local_ip_index);
                 if(MOTAdaptor::abort_transcation_csn_set.contain(csn_temp, csn_temp)){
@@ -1569,7 +1569,7 @@ RC TxnManager::Commit(){
             auto time1 = now_to_us();
             cnt = 0;
             while(GetCommitEpoch() > MOTAdaptor::GetLogicalEpoch() || !MOTAdaptor::IsRecordCommitted()){
-                usleep(100);
+                usleep(200);
             }
             auto epoch_mod = GetCommitEpoch() % MOTAdaptor::max_length;
             auto time3 = now_to_us();
@@ -1583,7 +1583,7 @@ RC TxnManager::Commit(){
             
             if(rc != RC_ABORT){    
                 while(!MOTAdaptor::IsRemoteExeced()) {
-                    usleep(100);
+                    usleep(200);
                 }
                 auto csn_temp = std::to_string(GetCommitSequenceNumber()) + ":" + std::to_string(local_ip_index);
                 if(MOTAdaptor::abort_transcation_csn_set.contain(csn_temp, csn_temp)){

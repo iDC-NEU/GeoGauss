@@ -1680,7 +1680,7 @@ static void MOTXactCallback(XactEvent event, void* arg)
             MOTAdaptor::RecordCommit(csn);//CommitInternalII();
             // auto epoch = txn->GetCommitEpoch();
             // if(!txn->isOnlyRead()){
-            //     while(!epoch < MOTAdaptor::local_change_set_ptr1_current_epoch) usleep(100); 
+            //     while(!epoch < MOTAdaptor::local_change_set_ptr1_current_epoch) usleep(200); 
                 //远端事务提交未完成，本地事务写完后等待。
             // }
         }
@@ -1699,7 +1699,7 @@ static void MOTXactCallback(XactEvent event, void* arg)
         //     uint64_t thread_id = GetThreadID();//随机分布
         //     uint64_t index_pack = thread_id % kPackageNum;
         //     // MOTAdaptor::DecComCounter(index_pack);
-        //     // while(!epoch < MOTAdaptor::local_change_set_ptr1_current_epoch) usleep(100); 
+        //     // while(!epoch < MOTAdaptor::local_change_set_ptr1_current_epoch) usleep(200); 
         //     //远端事务提交未完成，本地事务写完后等待。
         // }
     } else if (event == XACT_EVENT_PREPARE) {
