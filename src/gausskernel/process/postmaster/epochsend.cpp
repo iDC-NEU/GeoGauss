@@ -263,7 +263,10 @@ void EpochSendMain(void)
             /* Normal exit from the epochsend is here */
             proc_exit(0); /* done */
         }
-        if(id == kSendThreadNum - 1){
+        if(id == 2){
+            FDWEpochRaftSendThreadMain(id);
+        }
+        else if(id == 1){
             FDWEpochMessageSendThreadMain(id);
         }
         else{

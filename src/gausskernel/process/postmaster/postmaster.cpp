@@ -251,13 +251,14 @@ volatile uint64_t kServerNum = 1;
 uint64_t kPortNum = 1, kPackageNum = 1, kNotifyNum = 1, kBatchNum = 1, kNotifyThreadNum = 1, kPackThreadNum = 4, kSendThreadNum = 1, 
     kListenThreadNum = 1, kUnseriThreadNum = 1, kUnpackThreadNum = 1, kMergeThreadNum = 1, kCommitThreadNum = 1, kRecordCommitThreadNum = 1, kSendMessageNum = 1, kReceiveMessageNum = 1, 
     kSleepTime = 1, local_ip_index = 0, kCacheMaxLength = 200000, kDelayEpochNum = 0, kServerTimeOut_us = 700000, kRaftTimeOut_us = 500000, kLimiteTxnNum = 20,
-    kStartCheckStateNum = 1000000, kDelayTime = 0, kDelayRatio = 0;
+    kStartCheckStateNum = 1000000, kDelayTime = 0, kDelayRatio = 0, kRaftStopEpoch = 0, kRaftRestrtEpoch = 0, kRaftStopServerId = 1,
+    kRaftLeaderId = 0, kRaftStartCheckEpoch = 100;
 std::vector<std::string> send_ips;
 std::vector<uint64_t>send_ports;
 std::string kMasterIp, kPrivateIp;
 volatile bool is_stable_epoch_send = false, is_epoch_advanced_by_message = true, is_read_repeatable = true, is_breakdown = true, 
     is_snap_isolation = true, is_cache_server_available = true, is_fault_tolerance_enable = false, is_protobuf_gzip = false, 
-    is_total_pack = false, is_sync_exec = false, is_limite_txn = false, is_full_async_exec = false;
+    is_total_pack = false, is_sync_exec = false, is_limite_txn = false, is_full_async_exec = false, is_raft_enable = false;
 
 void GenerateEpochThreads();
 void CkeckEpochThreadsI();
@@ -11278,12 +11279,11 @@ void GenerateEpochThreads(){
         ereport(LOG, (errmsg("EpochPhysicalTimerManagerThread第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochPhysicalTimerManagerPIDS[i])));
     }
 
-    
-    // for (int i = 0 ; i < 1 ; i++){
-    //     g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i] = initialize_util_thread(EPOCH_MESSAGE_CACHE_MANAGER); 
-    //     epoch_cache_thread_ids.push_back(g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i]);
-    //     ereport(LOG, (errmsg("EpochMessageCacheManagerThread第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i])));
-    // }
+    for (int i = 0 ; i < 1 ; i++){
+        g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i] = initialize_util_thread(EPOCH_MESSAGE_CACHE_MANAGER); 
+        epoch_cache_thread_ids.push_back(g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i]);
+        ereport(LOG, (errmsg("EpochMessageCacheManagerThread第 %d 个创建完成 pid %lu",i, g_instance.pid_cxt.EpochMessageCacheManagerPIDS[i])));
+    }
 
     
     for (int i = 0 ; i < 1 ; i++){
@@ -11589,7 +11589,24 @@ void GetServerInfo(){
 
     tinyxml2::XMLElement* delay_ratio = root->FirstChildElement("delay_ratio");
     kDelayRatio = std::stoull(delay_ratio->GetText());
-    
+
+    tinyxml2::XMLElement* is_raft_enable_t = root->FirstChildElement("is_raft_enable");
+    is_raft_enable = std::stoull(is_raft_enable_t->GetText())  == 0 ? false : true;
+
+    tinyxml2::XMLElement* raft_start_check_epoch = root->FirstChildElement("raft_start_check_epoch");
+    kRaftStartCheckEpoch = std::stoull(raft_start_check_epoch->GetText());
+
+    tinyxml2::XMLElement* raft_stop_epoch = root->FirstChildElement("raft_stop_epoch");
+    kRaftStopEpoch = std::stoull(raft_stop_epoch->GetText());
+
+    tinyxml2::XMLElement* raft_restart_epoch = root->FirstChildElement("raft_restart_epoch");
+    kRaftRestrtEpoch = std::stoull(raft_restart_epoch->GetText());
+
+    tinyxml2::XMLElement* raft_lerder_id = root->FirstChildElement("raft_lerder_id");
+    kRaftLeaderId = std::stoull(raft_lerder_id->GetText());
+
+    tinyxml2::XMLElement* raft_stop_server_id = root->FirstChildElement("raft_stop_server_id");
+    kRaftStopServerId = std::stoull(raft_stop_server_id->GetText());
 
     
     tinyxml2::XMLElement* notify_num = root->FirstChildElement("notify_num");
@@ -11616,7 +11633,7 @@ void GetServerInfo(){
 
     if(kServerNum > 1){
         // kSendThreadNum = kListenThreadNum = kPackageNum + 1;
-        kSendThreadNum = kListenThreadNum = 2;
+        kSendThreadNum = kListenThreadNum = 3;
     }
     else{
         kSendThreadNum = kListenThreadNum = 1;

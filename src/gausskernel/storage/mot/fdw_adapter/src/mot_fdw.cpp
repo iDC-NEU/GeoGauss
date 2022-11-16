@@ -1618,7 +1618,6 @@ static void MOTXactCallback(XactEvent event, void* arg)
             // MOT_LOG_INFO("XACT_EVENT_START ROLL_BACK");
             if(is_sync_exec) {
                 (*MOTAdaptor::total_abort_txn_num[(txn->GetStartEpoch() % MOTAdaptor::_max_length)])[txn->GetIndexPack()]->fetch_add(1);
-                // MOTAdaptor::DecLocalChangeSetNum(txn->GetStartEpoch(), txn->GetIndexPack(), 1);
             }
             txn->ClearEpochState();
             MOTAdaptor::Rollback();
@@ -1681,7 +1680,7 @@ static void MOTXactCallback(XactEvent event, void* arg)
             MOTAdaptor::RecordCommit(csn);//CommitInternalII();
             // auto epoch = txn->GetCommitEpoch();
             // if(!txn->isOnlyRead()){
-            //     while(!epoch < MOTAdaptor::local_change_set_ptr1_current_epoch) usleep(100); 
+            //     while(!epoch < MOTAdaptor::local_change_set_ptr1_current_epoch) usleep(200); 
                 //远端事务提交未完成，本地事务写完后等待。
             // }
         }
@@ -1700,7 +1699,7 @@ static void MOTXactCallback(XactEvent event, void* arg)
         //     uint64_t thread_id = GetThreadID();//随机分布
         //     uint64_t index_pack = thread_id % kPackageNum;
         //     // MOTAdaptor::DecComCounter(index_pack);
-        //     // while(!epoch < MOTAdaptor::local_change_set_ptr1_current_epoch) usleep(100); 
+        //     // while(!epoch < MOTAdaptor::local_change_set_ptr1_current_epoch) usleep(200); 
         //     //远端事务提交未完成，本地事务写完后等待。
         // }
     } else if (event == XACT_EVENT_PREPARE) {
@@ -1720,7 +1719,6 @@ static void MOTXactCallback(XactEvent event, void* arg)
         // MOT_LOG_INFO("XACT_EVENT_ABORT %llu", txn->GetStartEpoch());
         if(is_sync_exec) {
             (*MOTAdaptor::total_abort_txn_num[(txn->GetStartEpoch() % MOTAdaptor::_max_length)])[txn->GetIndexPack()]->fetch_add(1);
-            // MOTAdaptor::DecLocalChangeSetNum(txn->GetStartEpoch(), txn->GetIndexPack(), 1);
         }
         elog(DEBUG2, "XACT_EVENT_ABORT, tid %lu", tid);
         MOTAdaptor::Rollback();
@@ -2469,7 +2467,8 @@ void FDWEpochPhysicalTimerManagerThreadMain(uint64_t id){
     EpochPhysicalTimerManagerThreadMain(id);
 }
 void FDWEpochMessageCacheManagerThreadMain(uint64_t id){
-    EpochMessageCacheManagerThreadMain(id);
+    // EpochMessageCacheManagerThreadMain(id);
+    MultiRaftThreadMain(id);
 }
 void FDWEpochMessageManagerThreadMain(uint64_t id){
     EpochMessageManagerThreadMain(id);
@@ -2480,6 +2479,10 @@ void FDWEpochNotifyThreadMain(uint64_t id){
 }
 void FDWEpochPackThreadMain(uint64_t id){
     EpochPackThreadMain(id);
+}
+
+void FDWEpochRaftSendThreadMain(uint64_t id) {
+    EpochRaftSendThreadMain(id);
 }
 void FDWEpochSendThreadMain(uint64_t id){
     EpochSendThreadMain(id);
@@ -2493,6 +2496,10 @@ void FDWEpochListenThreadMain(uint64_t id){
 void FDWEpochMessageListenThreadMain(uint64_t id){
     EpochMessageListenThreadMain(id);
 }
+void FDWEpochRaftListenThreadMain(uint64_t id) {
+    EpochRaftListenThreadMain(id);
+}
+
 void FDWEpochUnseriThreadMain(uint64_t id){
     EpochUnseriThreadMain(id);
 }
@@ -2508,4 +2515,8 @@ void FDWEpochCommitThreadMain(uint64_t id){
 
 void FDWEpochRecordCommitThreadMain(uint64_t id){
     EpochRecordCommitThreadMain(id);
+}
+
+void FDWMultiRaftThreadMain(uint64_t id) {
+    MultiRaftThreadMain(id);
 }

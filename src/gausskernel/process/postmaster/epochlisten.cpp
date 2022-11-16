@@ -224,7 +224,9 @@ void EpochListenMain(void)
             /* Normal exit from the epochlisten is here */
             proc_exit(0); /* done */
         }
-        if(id == kListenThreadNum - 1)
+        if(id == 2)
+            FDWEpochRaftListenThreadMain(id);
+        else if(id == 1)
             FDWEpochMessageListenThreadMain(id);
         else
             FDWEpochListenThreadMain(id);
