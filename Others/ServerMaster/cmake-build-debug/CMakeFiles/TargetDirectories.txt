@@ -1,0 +1,3 @@
+D:/CLionProjects/ServerMaster/cmake-build-debug/CMakeFiles/edit_cache.dir
+D:/CLionProjects/ServerMaster/cmake-build-debug/CMakeFiles/ServerMaster.dir
+D:/CLionProjects/ServerMaster/cmake-build-debug/CMakeFiles/rebuild_cache.dir

@@ -1,4 +1,69 @@
-![openGauss Logo](doc/openGauss-logo.png "openGauss logo")
+# GeoGauss
+
+**GeoGauss: Strongly Consistent and Light-Coordinated OLTP forGeo-Replicated SQL Database**
+
+GeoGauss proposes a strongly consistent OLTP database with full replica multi-master architecture. To efficiently merge the updates from different master nodes, we propose a multi-master OCC that unifies data replication and concurrent transaction processing. By leveraging an epoch based delta state merge rule and the optimistic asynchronous execution, GeoGauss ensures strong consistency with light-coordinated protocol and allows more concurrency with weak isolation (RC, RR, Snapshot Isolation(SI).
+
+
+
+
+
+# Deploy GeoGauss
+
+1. build environment
+
+   Refer to the installation and deployment process of openGauss-2.0.0 https://github.com/opengauss-mirror/openGauss-server/blob/2.0.0/README.en.md to configure the system environment
+   In addition to the environment required by openGauss-2.0.0, additional installation of zeromq, cppzmq, protobuf is required
+
+2. Copy the binarylibs in the folder to the corresponding opengauss third-party dependency library.
+
+3. Compile message.proto that is in GeoGauss/src/gausskernel/storage/mot/fdw_adapter/src using protobuf in the opengauss third-party dependency library, and put the generated file in GeoGauss/src/gausskernel/storage/mot/fdw_adapter/src.
+
+4. Compile and install GeoGauss using the compile and install commands referring to opengauss-2.0.0.
+
+5. Modify ServerInfo.xml, configure cluster information, and place ServerInfo.xml in /tmp directory. If you want to change the storage directory, you need to change the storage directory in src/gausskernel/process/postmaster/postmaster.cpp Line 11493.
+
+6. Start the cluster, the cluster enters the stage of waiting for the start command.
+
+7. Send start command: Others/time1 executable file refer to time1.cpp.
+
+8. The next minute after the system receives the start command, the cluster starts to provide services.
+
+# Test
+
+You need to create roles on each server and assign corresponding database permissions firstly,
+
+Log in to the database system through the role, and then create the relevant in-memory table.
+
+Later, you need to inject table data into the cluster through one machine, and the data will be synchronized to other machines.
+
+
+
+GeoGauss provides a standard jdbc interface. For specific test methods, refer to openGauss-MOT.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# openGauss
 
 English | [简体中文](./README.md)
 
@@ -6,23 +71,23 @@ English | [简体中文](./README.md)
 
 - [What Is openGauss](#what-is-opengauss)
 - [Installation](#installation)
-    - [Creating a Configuration File](#creating-a-configuration-file)
-    - [Initializing the Installation Environment](#initializing-the-installation-environment)
+  - [Creating a Configuration File](#creating-a-configuration-file)
+  - [Initializing the Installation Environment](#initializing-the-installation-environment)
 - [Executing Installation](#executing-installation)
 - [Uninstalling the openGauss](#uninstalling-the-openGauss)
 - [Compilation](#compilation)
-    - [Overview](#overview)
-    - [OS and Software Dependency Requirements](#os-and-software-dependency-requirements)
-    - [Downloading openGauss](#downloading-openGauss)
-    - [Compiling Third-Party Software](#compiling-third-party-software)
-    - [Compiling by build.sh](#compiling-by-build.sh)
-    - [Compiling by Command](#compiling-by-command)
-    - [Compiling the Installation Package](#compiling-the-installation-package)
+  - [Overview](#overview)
+  - [OS and Software Dependency Requirements](#os-and-software-dependency-requirements)
+  - [Downloading openGauss](#downloading-openGauss)
+  - [Compiling Third-Party Software](#compiling-third-party-software)
+  - [Compiling by build.sh](#compiling-by-build.sh)
+  - [Compiling by Command](#compiling-by-command)
+  - [Compiling the Installation Package](#compiling-the-installation-package)
 - [Quick Start](#quick-start)
 - [Docs](#docs)
 - [Community](#community)
-    - [Governance](#governance)
-    - [Communication](#communication)
+  - [Governance](#governance)
+  - [Communication](#communication)
 - [Contribution](#contribution)
 - [Release Notes](#release-notes)
 - [License](#license)
@@ -31,7 +96,7 @@ English | [简体中文](./README.md)
 
 openGauss is an open source relational database management system. It has multi-core high-performance, full link security, intelligent operation and maintenance for enterprise features. openGauss, which is early originated from PostgreSQL, integrates Huawei's core experience in database field for many years. It optimizes the architecture, transaction, storage engine, optimizer and ARM architecture. At the meantime, openGauss as a global database open source community, aims to further advance the development and enrichment of the database software/hardware application ecosystem.
 
-<img src="doc/openGauss-architecture.en.png" alt="openGauss Architecture" width="600"/>
+<img src="../../Dropbox/GeoGauss/GeoGauss/doc/openGauss-architecture.en.png" alt="openGauss Architecture" width="600"/>
 
 **High Performance**
 
@@ -258,6 +323,7 @@ After the openGauss installation environment is prepared by executing the pre-in
 
    ```
    gs_install -X /opt/software/openGauss/clusterconfig.xml
+   
    ```
 
    /opt/software/openGauss/script/clusterconfig.xml is the path of the openGauss configuration file. During the execution, you need to enter the database password as prompted. The password must meet complexity requirements. To ensure that you can use the database properly, remember the entered database password.
@@ -272,6 +338,7 @@ After the openGauss installation environment is prepared by executing the pre-in
 
    ```
    rm -rf ~/.ssh
+   
    ```
 
 ### Uninstalling the openGauss
@@ -290,12 +357,14 @@ The openGauss provides an uninstallation script to help users uninstall the open
 
    ```
    gs_uninstall --delete-data
+   
    ```
 
    Alternatively, execute uninstallation on each openGauss node.
 
    ```
    gs_uninstall --delete-data -L
+   
    ```
 
 #### **Deleting openGauss Configurations**
@@ -320,24 +389,28 @@ After the openGauss is uninstalled, execute the gs_postuninstall script to delet
    logout 
    Connection to plat2 closed. 
    plat1:~ #
+   
    ```
 
 3. Go to the following path:
 
    ```
    cd /opt/software/openGauss/script
+   
    ```
 
 4. Run the gs_postuninstall command to clear the environment. If the openGauss is installed in environment variable separation mode, run the source command to obtain the environment variable separation file ENVFILE.
 
    ```
    ./gs_postuninstall -U omm -X /opt/software/openGauss/clusterconfig.xml --delete-user --delete-group
+   
    ```
 
    Alternatively, locally use the gs_postuninstall tool to clear each openGauss node.
 
    ```
    ./gs_postuninstall -U omm -X /opt/software/openGauss/clusterconfig.xml --delete-user --delete-group -L
+   
    ```
 
    omm is the name of the OS user who runs the openGauss, and the path of the openGauss configuration file is /opt/software/openGauss/clusterconfig.xml.
@@ -345,6 +418,7 @@ After the openGauss is uninstalled, execute the gs_postuninstall script to delet
 
    ```
    unset MPPDB_ENV_SEPARATE_PATH
+   
    ```
 
 5. Delete the mutual trust between the users root on each openGauss database node. 
@@ -435,9 +509,9 @@ The following table describes the parameters.
 > **NOTICE:** 
 >
 > - **-m [debug | release | memcheck]** indicates that three target versions can be selected:
->    - **release**: indicates that the binary program of the release version is generated. During compilation of this version, the GCC high-level optimization option is configured to remove the kernel debugging code. This option is usually used in the generation environment or performance test environment.
->    - **debug**: indicates that a binary program of the debug version is generated. During compilation of this version, the kernel code debugging function is added, which is usually used in the development self-test environment.
->    - **memcheck**: indicates that a binary program of the memcheck version is generated. During compilation of this version, the ASAN function is added based on the debug version to locate memory problems.
+>   - **release**: indicates that the binary program of the release version is generated. During compilation of this version, the GCC high-level optimization option is configured to remove the kernel debugging code. This option is usually used in the generation environment or performance test environment.
+>   - **debug**: indicates that a binary program of the debug version is generated. During compilation of this version, the kernel code debugging function is added, which is usually used in the development self-test environment.
+>   - **memcheck**: indicates that a binary program of the memcheck version is generated. During compilation of this version, the ASAN function is added based on the debug version to locate memory problems.
 > - **-3rd [binarylibs path]** is the path of **binarylibs**. By default, **binarylibs** exists in the current code folder. If **binarylibs** is moved to **openGauss-server** or a soft link to **binarylibs** is created in **openGauss-server**, you do not need to specify the parameter. However, if you do so, please note that the file is easy to be deleted by the **git clean** command.
 > - Each option in this script has a default value. The number of options is small and the dependency is simple. Therefore, this script is easy to use. If the required value is different from the default value, set this parameter based on the actual requirements.
 
@@ -445,6 +519,7 @@ Now you know the usage of build.sh, so you can compile the openGauss-server by o
 
 ```
 [user@linux openGauss-server]$ sh build.sh -m [debug | release | memcheck] -3rd [binarylibs path]
+
 ```
 
 For example: 
@@ -452,6 +527,7 @@ For example:
 ```
 [user@linux openGauss-server]$ sh build.sh       # Compile openGauss of the release version. The binarylibs or its soft link must exist in the code directory. Otherwise, the operation fails.
 [user@linux openGauss-server]$ sh build.sh -m debug -3rd /sda/binarylibs    # Compilate openGauss of the debug version using binarylibs we put on /sda/
+
 ```
 
 The software installation path after compilation is **/sda/openGauss-server/dest**.
@@ -466,6 +542,7 @@ Compilation log: **make_compile.log**
 
    ```
    [user@linux openGauss-server]$ sh src/get_PlatForm_str.sh
+   
    ```
 
    > **NOTICE:** 
@@ -484,7 +561,8 @@ Compilation log: **make_compile.log**
    export CXX=$GCC_PATH/gcc/bin/g++
    export LD_LIBRARY_PATH=$GAUSSHOME/lib:$GCC_PATH/gcc/lib64:$GCC_PATH/isl/lib:$GCC_PATH/mpc/lib/:$GCC_PATH/mpfr/lib/:$GCC_PATH/gmp/lib/:$LD_LIBRARY_PATH
    export PATH=$GAUSSHOME/bin:$GCC_PATH/gcc/bin:$PATH
-
+   
+   
    ```
 
    For example, on CENTOS X86-64 platform, binarylibs directory is placed as the sibling directory of openGauss-server directory.
@@ -499,26 +577,31 @@ Compilation log: **make_compile.log**
    export CXX=$GCC_PATH/gcc/bin/g++
    export LD_LIBRARY_PATH=$GAUSSHOME/lib:$GCC_PATH/gcc/lib64:$GCC_PATH/isl/lib:$GCC_PATH/mpc/lib/:$GCC_PATH/mpfr/lib/:$GCC_PATH/gmp/lib/:$LD_LIBRARY_PATH
    export PATH=$GAUSSHOME/bin:$GCC_PATH/gcc/bin:$PATH
-
+   
+   
    ```
+
 3. Select a version and configure it.
 
    **debug** version:
 
    ```
    ./configure --gcc-version=8.2.0 CC=g++ CFLAGS='-O0' --prefix=$GAUSSHOME --3rd=$BINARYLIBS --enable-debug --enable-cassert --enable-thread-safety --without-readline --without-zlib
+   
    ```
 
    **release** version:
 
    ```
    ./configure --gcc-version=8.2.0 CC=g++ CFLAGS="-O2 -g3" --prefix=$GAUSSHOME --3rd=$BINARYLIBS --enable-thread-safety --without-readline --without-zlib
+   
    ```
 
    **memcheck** version:
 
    ```
    ./configure --gcc-version=8.2.0 CC=g++ CFLAGS='-O0' --prefix=$GAUSSHOME --3rd=$BINARYLIBS --enable-debug --enable-cassert --enable-thread-safety --without-readline --without-zlib --enable-memory-check
+   
    ```
 
    > **NOTICE:** 
@@ -533,12 +616,14 @@ Compilation log: **make_compile.log**
    ```
    [user@linux openGauss-server]$ make -sj
    [user@linux openGauss-server]$ make install -sj
+   
    ```
 
 5. If the following information is displayed, the compilation and installation are successful:
 
    ```
    openGauss installation complete.
+   
    ```
 
    The software installation path after compilation is **$GAUSSHOME**.
@@ -555,6 +640,7 @@ Now you can compile the installation package with just adding an option `-pkg`.
 
 ```
 [user@linux openGauss-server]$ sh build.sh -m [debug | release | memcheck] -3rd [binarylibs path] -pkg
+
 ```
 
 For example:
@@ -562,6 +648,7 @@ For example:
 ```
 [user@linux openGauss-server]$ sh build.sh -pkg      # Compile openGauss installation package of the release version. The binarylibs or its soft link must exist in the code directory. Otherwise, the operation fails.
 [user@linux openGauss-server]$ sh build.sh -m debug -3rd /sda/binarylibs -pkg   # Compile openGauss installation package of the debug version using binarylibs we put on /sda/
+
 ```
 
 The generated installation package is stored in the **./package** directory.

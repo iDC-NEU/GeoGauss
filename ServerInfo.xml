@@ -1,40 +1,71 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root>
-	<server_num priority="0">1</server_num>
-	
-	<local_remote_ip>
-		<ip>172.21.16.6</ip>
-	</local_remote_ip>
-	
-	<local_ip_index>0</local_ip_index><!-- 0, 1, 2, ...-->
-	
-	<sleep_time priority="5">20000</sleep_time>
-	
-	<package_num priority="0">1</package_num><!-- 一个epoch打包的数量 -->
+        <server_num>3</server_num>
+        <local_remote_ip>
+                <ip>47.92.37.81</ip>
+                <ip>120.79.78.174</ip>
+                <ip>47.108.177.202</ip>
+        </local_remote_ip>
+        <local_ip_index>2</local_ip_index><!-- 0, 1, 2, ...-->
+        <sleep_time>10000</sleep_time>
+        <cache_max_length>50000</cache_max_length>
+<!-- Isolation -->
+        <is_read_repeatable>0</is_read_repeatable>
+        <is_snap_isolation>0</is_snap_isolation>
+<!-- breakdown -->
+        <is_breakdown>1</is_breakdown>
+<!-- Threads -->
+        <package_num>32</package_num>
+        <pack_thread_num>4</pack_thread_num>
+        <merge_thread_num>64</merge_thread_num>
+        <commit_thread_num>64</commit_thread_num>
+<!-- sync/async exec-->
+        <is_sync_exec>0</is_sync_exec>
+        <is_full_async_exec>0</is_full_async_exec>
+<!-- Long Transaction-->
+        <delay_time>0</delay_time>
+        <delay_ratio>0</delay_ratio>
+<!-- Raft -->
+        <is_raft_enable>0</is_raft_enable>
+		<raft_start_check_epoch>4000</raft_start_check_epoch>
+        <raft_stop_epoch>0</raft_stop_epoch> <!-- 0 means do not stop any server 16000-->
+        <raft_restart_epoch>22000</raft_restart_epoch>
+		<raft_lerder_id>1</raft_lerder_id>
+        <raft_stop_server_id>2</raft_stop_server_id>
+        <raft_time_out_us>500000</raft_time_out_us>
+<!-- Cache Server-->
+		<is_remote_cache_server_enable>0</is_remote_cache_server_enable>
+		<is_fault_tolerance_enable>0</is_fault_tolerance_enable>
+        <is_cache_server_available>0</is_cache_server_available>
+        <local_remote_cache_ip>
+                <cache_ip>47.92.108.148</cache_ip>
+                <cache_ip>39.108.226.223</cache_ip>
+                <cache_ip>47.109.69.53</cache_ip>
+                <cache_ip>172.20.149.143</cache_ip>
+        </local_remote_cache_ip>
+        <server_time_out_us>700000</server_time_out_us>
+        <start_check_state_num>20000</start_check_state_num>
 
-	<notify_num priority="0">1</notify_num><!-- 共享条件变量的数量 -->
-	
-	<notify_thread_num priority="0">1</notify_thread_num><!-- 使用队列进行唤醒的线程数量 在使用共享条件变量的情况下不需要-->
-	
-	<pack_thread_num priority="0">1</pack_thread_num><!-- 打包的线程数量 -->
-	
-	<unseri_thread_num priority="0">2</unseri_thread_num><!-- 反序列化线程数量 -->
-	
-	<unpack_thread_num priority="0">2</unpack_thread_num><!-- 拆分txn线程数量 -->
-	
-	<merge_thread_num priority="0">2</merge_thread_num><!-- 远端txn RowHeader写入数量 -->
-	
-	<commit_thread_num priority="0">2</commit_thread_num><!-- 远端txn提交线程数量 -->
 
-	<!-- 
-		
-		端口监听规则 20000 + ip_index*100 + package ， 一个package交由多个发送线程发送往其他peer节点 
-		
-		发送线程数量为 (server_num - 1) * (package_num) 与端口监听线程数量相同
-		
-		notify线程数量为packnum的4倍
-		
-		pack线程数量为packnum的2倍
-	-->
+<!-- not used-->
+        <is_limite_txn>0</is_limite_txn>
+        <limite_txn_num>0</limite_txn_num>
+        <delay_epoch_num>0</delay_epoch_num><!-- private network delay-->
 
+        <notify_num>0</notify_num>
+        <batch_size>0</batch_size>
+
+        <master_ip>172.30.67.186</master_ip>
+        <private_ip>172.27.91.247</private_ip>
+        <is_new_add>0</is_new_add>
+        <is_stable_epoch_send>0</is_stable_epoch_send>
+        <is_epoch_advanced_by_message>0</is_epoch_advanced_by_message>
+
+        <is_total_pack>0</is_total_pack>
+        <is_protobuf_gzip>1</is_protobuf_gzip>
+
+        <notify_thread_num>0</notify_thread_num>
+        <unseri_thread_num>0</unseri_thread_num>
+        <unpack_thread_num>0</unpack_thread_num>
+        <record_commit_thread_num>0</record_commit_thread_num>
 </root>

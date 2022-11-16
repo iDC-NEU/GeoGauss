@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package merge;
+
+message MergeRequest {
+  message Transaction{  
+    message Row{
+      message Column {
+        uint64 id = 1; // column id
+        bytes value = 2; // column value/data
+      }
+      string tableName = 1;        
+      bytes key = 2;
+      uint32 type = 3; /// 0-update, 1-insert, 2-delete
+      repeated Column column = 4;
+      bytes data = 5;
+    }
+    uint64 TxnID = 1;
+    repeated Row row = 2;
+    uint64 StartEpoch = 3;
+    uint64 CommitEpoch = 4;
+    uint64 CSN = 5;
+    uint64 server_id = 6;
+    bool type = 7;//区分普通事务和结尾事务
+    uint64 pack_epoch = 8;//在哪个epoch打包 delete
+  }
+  repeated Transaction Txn = 1;
+  uint64 server_id = 2;
+  uint64 epoch = 3;
+  uint64 pack_id = 4;
+}
+
+message ServerMessage{
+  uint32 type = 1;//server to master 消息类型 0:新增节点以及新增节点开始时间？ 1:server节点通报自己的情况 运行到了哪个epoch 
+                                             //2: server节点反馈 epoch size更新信息 3:server节点返回新增节点信息
+                    //master to server 消息类型 0:新增节点 1:adjust epoch size 2:
+  uint32 server_id = 2;
+  string ip = 3;
+  uint64 physical_epoch = 4;//新epochsize开始时间epoch 发送给server进行修改自己的sleeptime或修改发送线程sleeptime
+  uint64 logical_epoch = 5;
+  uint64 epoch_size = 6;//新epochsize 或现有的epochsize大小
+  uint64 commit_time = 7;//提交耗时
+  uint64 send_time = 8; //用以确定网络时延，决定新epoch size开启时间
+  uint64 new_server_id = 9;
+  string new_server_ip = 10;
+}
